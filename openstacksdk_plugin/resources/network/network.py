@@ -1,4 +1,4 @@
-########
+# #######
 # Copyright (c) 2018 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,17 +13,15 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+from openstack_sdk.resources.networks import OpenstackNetwork
+from openstacksdk_plugin.decorators import with_openstack_resource
 
-from setuptools import setup
+
+@with_openstack_resource(OpenstackNetwork)
+def create(openstack_resource):
+    openstack_resource.create()
 
 
-setup(
-    name='cloudify-openstacksdk-plugin',
-    version='1.0.0',
-    author='Cloudify',
-    author_email='info@cloudify.co',
-    license='LICENSE',
-    zip_safe=False,
-    packages=['openstacksdk_plugin', 'openstack_sdk'],
-    install_requires=['cloudify-plugins-common>=4.0', 'openstacksdk'],
-    test_requires=['mock', 'requests-mock'])
+@with_openstack_resource(OpenstackNetwork)
+def delete(openstack_resource):
+    openstack_resource.delete()

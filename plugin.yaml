@@ -1,0 +1,263 @@
+plugins:
+
+  openstacksdk:
+    executor: central_deployment_agent
+    source: https://github.com/cloudify-incubator/cloudify-openstacksdk-plugin/archive/master.zip
+    package_name: cloudify-openstacksdk-plugin
+    package_version: '1.0.0'
+
+dsl_definitions:
+
+  # Every resource uses this property unless noted.
+  client_config: &client_config
+    client_config:
+      type: cloudify.types.openstack.client_config
+      description: Your OpenStack client configuration.
+      required: true
+
+  # Every resource uses this property unless noted.
+  external_resource: &external_resource
+    use_external_resource:
+      description: Indicate whether the resource exists or if Cloudify should create the resource, true if you are bringing an existing resource, false if you want cloudify to create it.
+      type: boolean
+      default: false
+
+  # Every resource uses this property unless noted.
+  resource_id: &resource_id
+    resource_id:
+      description: The Openstack resource ID of the external resource, if use_external_resource is true. Otherwise it is an empty string.
+      type: string
+      default: ''
+
+  base_operation_inputs: &base_operation_inputs
+    <<: *client_config
+    resource_id:
+      description: This overrides the resource_id property (useful for setting the resource ID of a node instance at runtime).
+      type: string
+      required: false
+      default: ~
+    runtime_properties:
+      description: >
+        This overrides any runtime property at runtime. This is a key-value pair / dictionary that will be passed, as-is, to the runtime properties of the running instance.
+      required: false
+      default: ~
+
+    kwargs: &data_type_kwargs
+      kwargs:
+        description: A dictionary of keys and values that is not validated but will override other values in the resource config.
+        default: {}
+
+    name: &data_type_name
+      name:
+        description: Resource name.
+        type: string
+        required: false
+
+    description: &data_type_description
+      name:
+        description: Resource description.
+        type: string
+        required: false
+
+data_types:
+
+  cloudify.types.openstack.client_config:
+    # See: https://docs.openstack.org/python-openstackclient/pike/cli/man/openstack.html.
+    properties:
+      auth_url:
+        type: string
+        description: Your OpenStack Client Authorization URL.
+        required: true
+      username:
+        type: string
+        description: Your OpenStack username.
+        required: true
+      password:
+        type: string
+        description: Your OpenStack password.
+        required: true
+      project_name:
+        type: string
+        description: The name of your OpenStack project.
+        required: false
+      region_name:
+        type: string
+        description: The region where you want this particular resource to be created.
+        required: false
+
+  cloudify.types.openstack.Network:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_name
+      <<: *data_type_description
+      admin_state_up:
+        description: The administrative state of the network, which is up (true) or down (false).
+        type: boolean
+        required: false
+      availability_zone_hints :
+        description: Availability zone hints to use when scheduling the network. Type: list of availability zone names.
+        required: false
+      availability_zones :
+        description: Availability zones for the network. Type: list of availability zone names.
+        required: false
+      dns_domain:
+        description: A valid DNS domain.
+        type: string
+        required: false
+      mtu:
+        description: The maximum transmission unit (MTU) value to address fragmentation. Minimum value is 68 for IPv4, and 1280 for IPv6.
+        type: number
+        required: false
+      port_security_enabled:
+        description: The port security status of the network. Valid values are enabled (true) and disabled (false). This value is used as the default value of port_security_enabled field of a newly created port.
+        type: boolean
+        required: false
+      provider:
+        description: >
+          A dictionary with the following keys:
+            - network_type: string. The type of physical network that this network should be mapped to. For example, flat, vlan, vxlan, or gre. Valid values depend on a networking back-end.
+            - physical_network: string. The physical network where this network should be implemented. The Networking API v2.0 does not provide a way to list available physical networks. For example, the Open vSwitch plug-in configuration file defines a symbolic name that maps to specific bridges on each compute host.
+            - segmentation_id: integer. The ID of the isolated segment on the physical network. The network_type attribute defines the segmentation model. For example, if the network_type value is vlan, this ID is a vlan identifier. If the network_type value is gre, this ID is a gre key.
+      qos_policy_id:
+        description: The ID of the QoS policy associated with the network.
+        type: string
+        required: false
+      router:
+        description: >
+          A dictionary with the following keys:
+            - external: boolean. Indicates whether the network has an external routing facility that’s not managed by the networking service.
+      segments:
+        description: A list of provider segment objects.
+        required: false
+      shared:
+        description: Indicates whether this network is shared across all tenants. By default, only administrative users can change this value.
+        type: boolean
+        required: false
+      tenant_id:
+        description: The ID of the project that owns the resource. Only administrative and users with advsvc role can specify a project ID other than their own. You cannot change this value through authorization policies.
+        type: string
+        required: false
+      vlan_transparent:
+        description: Indicates the VLAN transparency mode of the network, which is VLAN transparent (true) or not VLAN transparent (false).
+        type: boolean
+        required: false
+      is_default:
+        description: The network is default or not.
+        type: boolean
+        required: false
+
+  # Note that the OpenStack API object specifies Subnets, a list of subnet. This data type refers to a member of that list.
+  cloudify.types.openstack.Subnet:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_name
+      <<: *data_type_description
+      enable_dhcp:
+        description: Indicates whether dhcp is enabled or disabled for the subnet. Default is true.
+        type: boolean
+        required: false
+      network_id:
+        description: The ID of the network to which the subnet belongs.
+        type: string
+        required: false
+      dns_nameservers:
+        description: List of dns name servers associated with the subnet. Default is an empty list.
+        required: false
+      allocation_pools:
+        description: Allocation pools with start and end IP addresses for this subnet. If allocation_pools are not specified, OpenStack Networking automatically allocates pools for covering all IP addresses in the CIDR, excluding the address reserved for the subnet gateway by default.
+        required: false
+      host_routes:
+        description: Additional routes for the subnet. A list of dictionaries with destination and nexthop parameters. Default value is an empty list.
+        required: false
+      ip_version:
+        description: The IP protocol version. Value is 4 or 6.
+        type: string
+        required: false
+      gateway_ip:
+        description: Gateway IP of this subnet. If the value is null that implies no gateway is associated with the subnet. If the gateway_ip is not specified, OpenStack Networking allocates an address from the CIDR for the gateway for the subnet by default.
+        type: string
+        required: false
+      cidr:
+        description: The CIDR of the subnet.
+        type: string
+        required: false.
+      prefixlen:
+        description: The prefix length to use for subnet allocation from a subnet pool. If not specified, the default_prefixlen value of the subnet pool will be used.
+        type: number
+        required: false
+      ipv6_address_mode:
+        description: The IPv6 address modes specifies mechanisms for assigning IP addresses. Value is slaac, dhcpv6-stateful, dhcpv6-stateless.
+        type: string
+        required: false
+      ipv6_ra_mode:
+        description: The IPv6 router advertisement specifies whether the networking service should transmit ICMPv6 packets, for a subnet. Value is slaac, dhcpv6-stateful, dhcpv6-stateless.
+        type: string
+        required: false
+      segment_id:
+        description: The ID of a network segment the subnet is associated with. It is available when segment extension is enabled.
+        type: string
+        required: false
+      subnetpool_id:
+        description: The ID of the subnet pool associated with the subnet.
+        type: string
+        required: false
+      use_default_subnetpool:
+        description: Whether to allocate this subnet from the default subnet pool.
+        type: boolean
+        required: false
+      service_types:
+        description: The service types associated with the subnet.
+        required: false
+
+node_types:
+
+  cloudify.nodes.openstack.Base:
+    derived_from: cloudify.nodes.Network
+    properties:
+      <<: *client_config
+      <<: *external_resource
+      <<: *resource_id
+
+  cloudify.nodes.openstack.Network:
+    derived_from: cloudify.nodes.openstack.Base
+    properties:
+      resource_config:
+        type: cloudify.types.openstack.Network
+        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-network.
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.create
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.delete
+          inputs: *base_operation_inputs
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.update
+          inputs:
+            <<: *base_operation_inputs
+            resource_config:
+              required: false
+              default: { get_property: [ SELF, resource_config ] }
+
+  cloudify.nodes.openstack.Subnet:
+    derived_from: cloudify.nodes.openstack.Base
+    properties:
+      resource_config:
+        type: cloudify.types.openstack.Subnet
+        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-subnet. This is not a list of cloudify.types.openstack.Subnet as the OpenStack API specifies.
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.subnet.create
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.subnet.delete
+          inputs: *base_operation_inputs
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.subnet.update
+          inputs:
+            <<: *base_operation_inputs
+            resource_config:
+              required: false
+              default: { get_property: [ SELF, resource_config ] }

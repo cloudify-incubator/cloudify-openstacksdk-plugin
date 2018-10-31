@@ -31,10 +31,25 @@ def with_openstack_resource(class_decl=None):
     """
     def wrapper_outer(func):
         def wrapper_inner(**kwargs):
+            def get_property_by_name(property_name):
+                # TODO: Work out this logic.
+                # Operation kwargs have the highest reliability.
+                # Runtime properties have the next highest reliability.
+                # Node Properties are considered seed information and lowest reliability.
+                # The problem is we also want the default of operation kwargs to map to { get_property: node_property_name }
+                # We either need to let go of this option, or we need to compare node properties to operation kwargs and if they are the same disqualify operation kwargs.
+                # if property_name in ctx.instance.runtime_properties:
+                #     return ctx.instance.runtime_properties.get(property_name)
+                # if property_name in kwargs:
+                #     return kwargs.pop(property_name)
+                if property_name in ctx.node.properties:
+                    return ctx.node.properties.get(property_name)
+            client_config = get_property_by_name('client_config')
+            resource_config = get_property_by_name('resource_config')
             try:
-                client_config = ctx.node.properties.get('client_config')
                 kwargs['openstack_resource'] = class_decl(
                     client_config=client_config,
+                    resource_config=resource_config,
                     logger=ctx.logger
                 )
                 func(**kwargs)
