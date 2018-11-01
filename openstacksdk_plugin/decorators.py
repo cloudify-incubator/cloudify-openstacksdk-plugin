@@ -35,9 +35,13 @@ def with_openstack_resource(class_decl=None):
                 # TODO: Work out this logic.
                 # Operation kwargs have the highest reliability.
                 # Runtime properties have the next highest reliability.
-                # Node Properties are considered seed information and lowest reliability.
-                # The problem is we also want the default of operation kwargs to map to { get_property: node_property_name }
-                # We either need to let go of this option, or we need to compare node properties to operation kwargs and if they are the same disqualify operation kwargs.
+                # Node Properties are considered seed information
+                #  and lowest reliability.
+                # The problem is we also want the default of operation kwargs
+                #  to map to { get_property: node_property_name }
+                # We either need to let go of this option, or we need to
+                #  compare node properties to operation kwargs and if they
+                #  are the same disqualify operation kwargs.
                 # if property_name in ctx.instance.runtime_properties:
                 #     return ctx.instance.runtime_properties.get(property_name)
                 # if property_name in kwargs:
