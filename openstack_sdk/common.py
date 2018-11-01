@@ -23,7 +23,8 @@ class OpenstackResource(object):
         self.connection = openstack.connect(**client_config)
         self.config = resource_config or {}
         self.name = self.config.get('name')
-        self.resource_id = None if 'id' not in self.config else self.config['id']
+        self.resource_id =\
+            None if 'id' not in self.config else self.config['id']
         self.logger = logger
 
     def list(self):
