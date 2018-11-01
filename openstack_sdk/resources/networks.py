@@ -142,7 +142,7 @@ class OpenstackPort(OpenstackResource):
         port = self.get()
         self.logger.debug(
             'Attempting to delete this port: {0}'.format(port))
-        result = self.connection.network.delete_subnet(port)
+        result = self.connection.network.delete_port(port)
         self.logger.debug(
             'Deleted port with this result: {0}'.format(result))
         return result

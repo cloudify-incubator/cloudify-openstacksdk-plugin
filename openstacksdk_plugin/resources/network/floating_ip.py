@@ -15,13 +15,21 @@
 
 from openstack_sdk.resources.networks import OpenstackFloatingIP
 from openstacksdk_plugin.decorators import with_openstack_resource
+from openstacksdk_plugin.constants import RESOURCE_ID
+
+from cloudify import ctx
 
 
 @with_openstack_resource(OpenstackFloatingIP)
 def create(openstack_resource):
-    openstack_resource.create()
+    created_resource = openstack_resource.create()
+    ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
 
 
 @with_openstack_resource(OpenstackFloatingIP)
 def delete(openstack_resource):
     openstack_resource.delete()
+
+
+def update():
+    pass

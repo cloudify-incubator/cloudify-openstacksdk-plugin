@@ -24,8 +24,11 @@ from openstacksdk_plugin.resources.network import (
     security_group,
     security_group_rule,
     floating_ip)
+from openstacksdk_plugin.constants import RESOURCE_ID
 
 from cloudify.state import current_ctx
+
+MODULE_PATH = 'openstack.cloud.openstackcloud._OpenStackCloudMixin'
 
 
 @mock.patch('openstack.connect')
@@ -36,8 +39,14 @@ class TestNetwork(OpenStackTestBase):
         self._ctx = self.get_mock_ctx('TestNetwork')
         current_ctx.set(self._ctx)
 
-    def test_create(self, _cx):
+    @mock.patch(
+        '{0}.create_network'.format(MODULE_PATH),
+        return_value=mock.MagicMock())
+    def test_create(self, _cx, _fn):
         network.create()
+        self.assertIn(
+            RESOURCE_ID,
+            self._ctx.instance.runtime_properties)
 
     def test_delete(self, _cx):
         network.delete()
@@ -51,8 +60,14 @@ class TestSubnet(OpenStackTestBase):
         self._ctx = self.get_mock_ctx('TestSubnet')
         current_ctx.set(self._ctx)
 
-    def test_create(self, _cx):
+    @mock.patch(
+        '{0}.create_subnet'.format(MODULE_PATH),
+        return_value=mock.MagicMock())
+    def test_create(self, _cx, _fn):
         subnet.create()
+        self.assertIn(
+            RESOURCE_ID,
+            self._ctx.instance.runtime_properties)
 
     def test_delete(self, _cx):
         subnet.delete()
@@ -66,8 +81,14 @@ class TestRouter(OpenStackTestBase):
         self._ctx = self.get_mock_ctx('TestRouter')
         current_ctx.set(self._ctx)
 
-    def test_create(self, _cx):
+    @mock.patch(
+        '{0}.create_router'.format(MODULE_PATH),
+        return_value=mock.MagicMock())
+    def test_create(self, _cx, _fn):
         router.create()
+        self.assertIn(
+            RESOURCE_ID,
+            self._ctx.instance.runtime_properties)
 
     def test_delete(self, _cx):
         router.delete()
@@ -81,8 +102,14 @@ class TestPort(OpenStackTestBase):
         self._ctx = self.get_mock_ctx('TestPort')
         current_ctx.set(self._ctx)
 
-    def test_create(self, _cx):
+    @mock.patch(
+        '{0}.create_port'.format(MODULE_PATH),
+        return_value=mock.MagicMock())
+    def test_create(self, _cx, _fn):
         port.create()
+        self.assertIn(
+            RESOURCE_ID,
+            self._ctx.instance.runtime_properties)
 
     def test_delete(self, _cx):
         port.delete()
@@ -96,8 +123,14 @@ class TestSecurityGroup(OpenStackTestBase):
         self._ctx = self.get_mock_ctx('TestSecurityGroup')
         current_ctx.set(self._ctx)
 
-    def test_create(self, _cx):
+    @mock.patch(
+        '{0}.create_security_group'.format(MODULE_PATH),
+        return_value=mock.MagicMock())
+    def test_create(self, _cx, _fn):
         security_group.create()
+        self.assertIn(
+            RESOURCE_ID,
+            self._ctx.instance.runtime_properties)
 
     def test_delete(self, _cx):
         security_group.delete()
@@ -111,8 +144,14 @@ class TestSecurityGroupRule(OpenStackTestBase):
         self._ctx = self.get_mock_ctx('TestSecurityGroupRule')
         current_ctx.set(self._ctx)
 
-    def test_create(self, _cx):
+    @mock.patch(
+        '{0}.create_security_group_rule'.format(MODULE_PATH),
+        return_value=mock.MagicMock())
+    def test_create(self, _cx, _fn):
         security_group_rule.create()
+        self.assertIn(
+            RESOURCE_ID,
+            self._ctx.instance.runtime_properties)
 
     def test_delete(self, _cx):
         security_group_rule.delete()
@@ -126,8 +165,14 @@ class TestFloatingIP(OpenStackTestBase):
         self._ctx = self.get_mock_ctx('TestFloatingIP')
         current_ctx.set(self._ctx)
 
-    def test_create(self, _cx):
+    @mock.patch(
+        '{0}.create_floating_ip'.format(MODULE_PATH),
+        return_value=mock.MagicMock())
+    def test_create(self, _cx, _fn):
         floating_ip.create()
+        self.assertIn(
+            RESOURCE_ID,
+            self._ctx.instance.runtime_properties)
 
     def test_delete(self, _cx):
         floating_ip.delete()
