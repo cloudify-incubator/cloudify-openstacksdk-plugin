@@ -13,7 +13,9 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-# Based on this documentation: https://docs.openstack.org/openstacksdk/latest/user/proxies/network.html.
+
+# Based on this documentation:
+# https://docs.openstack.org/openstacksdk/latest/user/proxies/network.html.
 
 from openstack_sdk.common import OpenstackResource
 

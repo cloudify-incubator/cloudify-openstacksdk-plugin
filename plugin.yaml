@@ -211,7 +211,7 @@ data_types:
 
 node_types:
 
-  cloudify.nodes.openstack.Base:
+  cloudify.nodes.openstack.NetworkBase:
     derived_from: cloudify.nodes.Network
     properties:
       <<: *client_config
@@ -219,7 +219,7 @@ node_types:
       <<: *resource_id
 
   cloudify.nodes.openstack.Network:
-    derived_from: cloudify.nodes.openstack.Base
+    derived_from: cloudify.nodes.openstack.NetworkBase
     properties:
       resource_config:
         type: cloudify.types.openstack.Network
@@ -241,7 +241,7 @@ node_types:
               default: { get_property: [ SELF, resource_config ] }
 
   cloudify.nodes.openstack.Subnet:
-    derived_from: cloudify.nodes.openstack.Base
+    derived_from: cloudify.nodes.openstack.NetworkBase
     properties:
       resource_config:
         type: cloudify.types.openstack.Subnet
