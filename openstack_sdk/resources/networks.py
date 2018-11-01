@@ -21,6 +21,8 @@ from openstack_sdk.common import OpenstackResource
 
 
 class OpenstackNetwork(OpenstackResource):
+    # SDK documentation link:
+    # https://bit.ly/2D2S1xw.
 
     def list(self):
         return self.connection.network.networks()
@@ -29,7 +31,8 @@ class OpenstackNetwork(OpenstackResource):
         self.logger.debug(
             'Attempting to find this network: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
-        network = self.connection.network.find_network()
+        network = self.connection.network.get_network(
+            self.name if not self.resource_id else self.resource_id)
         self.logger.debug(
             'Found network with this result: {0}'.format(network))
         return network
@@ -64,6 +67,8 @@ class OpenstackNetwork(OpenstackResource):
 
 
 class OpenstackSubnet(OpenstackResource):
+    # SDK documentation link:
+    # https://bit.ly/2SMLuvY
 
     def list(self):
         return self.connection.network.subnets()
@@ -72,7 +77,8 @@ class OpenstackSubnet(OpenstackResource):
         self.logger.debug(
             'Attempting to find this subnet: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
-        subnet = self.connection.network.find_subnet()
+        subnet = self.connection.network.get_subnet(
+            self.name if not self.resource_id else self.resource_id)
         self.logger.debug(
             'Found subnet with this result: {0}'.format(subnet))
         return subnet
@@ -103,4 +109,233 @@ class OpenstackSubnet(OpenstackResource):
         result = self.connection.network.update_subnet(subnet, new_config)
         self.logger.debug(
             'Updated subnet with this result: {0}'.format(result))
+        return result
+
+
+class OpenstackPort(OpenstackResource):
+    # SDK documentation link:
+    # https://bit.ly/2DlPnUj
+
+    def list(self):
+        return self.connection.network.ports()
+
+    def get(self):
+        self.logger.debug(
+            'Attempting to find this port: {0}'.format(
+                self.name if not self.resource_id else self.resource_id))
+        port = self.connection.network.get_port(
+            self.name if not self.resource_id else self.resource_id)
+        self.logger.debug(
+            'Found port with this result: {0}'.format(port))
+        return port
+
+    def create(self):
+        self.logger.debug(
+            'Attempting to create port with these args: {0}'.format(
+                self.config))
+        port = self.connection.network.create_port(**self.config)
+        self.logger.debug(
+            'Created port with this result: {0}'.format(port))
+        return port
+
+    def delete(self):
+        port = self.get()
+        self.logger.debug(
+            'Attempting to delete this port: {0}'.format(port))
+        result = self.connection.network.delete_subnet(port)
+        self.logger.debug(
+            'Deleted port with this result: {0}'.format(result))
+        return result
+
+    def update(self, new_config=None):
+        port = self.get()
+        self.logger.debug(
+            'Attempting to update this port: {0} with args {1}'.format(
+                port, new_config))
+        result = self.connection.network.update_port(port, new_config)
+        self.logger.debug(
+            'Updated port with this result: {0}'.format(result))
+        return result
+
+
+class OpenstackRouter(OpenstackResource):
+    # SDK documentation link:
+    # https://bit.ly/2QioQdg
+
+    def list(self):
+        return self.connection.network.routers()
+
+    def get(self):
+        self.logger.debug(
+            'Attempting to find this router: {0}'.format(
+                self.name if not self.resource_id else self.resource_id))
+        router = self.connection.network.get_router(
+            self.name if not self.resource_id else self.resource_id)
+        self.logger.debug(
+            'Found router with this result: {0}'.format(router))
+        return router
+
+    def create(self):
+        self.logger.debug(
+            'Attempting to create router with these args: {0}'.format(
+                self.config))
+        router = self.connection.network.create_router(**self.config)
+        self.logger.debug(
+            'Created router with this result: {0}'.format(router))
+        return router
+
+    def delete(self):
+        router = self.get()
+        self.logger.debug(
+            'Attempting to delete this router: {0}'.format(router))
+        result = self.connection.network.delete_router(router)
+        self.logger.debug(
+            'Deleted router with this result: {0}'.format(result))
+        return result
+
+    def update(self, new_config=None):
+        router = self.get()
+        self.logger.debug(
+            'Attempting to update this router: {0} with args {1}'.format(
+                router, new_config))
+        result = self.connection.network.update_router(router, new_config)
+        self.logger.debug(
+            'Updated router with this result: {0}'.format(result))
+        return result
+
+
+class OpenstackFloatingIP(OpenstackResource):
+    # SDK documentation link:
+    # https://bit.ly/2JGHqcQ
+
+    def list(self):
+        return self.connection.network.ips()
+
+    def get(self):
+        self.logger.debug(
+            'Attempting to find this floating_ip: {0}'.format(
+                self.name if not self.resource_id else self.resource_id))
+        floating_ip = self.connection.network.get_ip(
+            self.name if not self.resource_id else self.resource_id)
+        self.logger.debug(
+            'Found floating_ip with this result: {0}'.format(floating_ip))
+        return floating_ip
+
+    def create(self):
+        self.logger.debug(
+            'Attempting to create floating_ip with these args: {0}'.format(
+                self.config))
+        floating_ip = self.connection.network.create_ip(**self.config)
+        self.logger.debug(
+            'Created floating_ip with this result: {0}'.format(floating_ip))
+        return floating_ip
+
+    def delete(self):
+        floating_ip = self.get()
+        self.logger.debug(
+            'Attempting to delete this floating_ip: {0}'.format(floating_ip))
+        result = self.connection.network.delete_ip(floating_ip)
+        self.logger.debug(
+            'Deleted floating_ip with this result: {0}'.format(result))
+        return result
+
+    def update(self, new_config=None):
+        floating_ip = self.get()
+        self.logger.debug(
+            'Attempting to update this floating_ip: {0} with args {1}'.format(
+                floating_ip, new_config))
+        result = self.connection.network.update_ip(floating_ip, new_config)
+        self.logger.debug(
+            'Updated floating_ip with this result: {0}'.format(result))
+        return result
+
+
+class OpenstackSecurityGroup(OpenstackResource):
+    # SDK documentation link:
+    # https://bit.ly/2PCsWA0
+
+    def list(self):
+        return self.connection.network.security_groups()
+
+    def get(self):
+        self.logger.debug(
+            'Attempting to find this security_group: {0}'.format(
+                self.name if not self.resource_id else self.resource_id))
+        security_group = self.connection.network.get_security_group(
+            self.name if not self.resource_id else self.resource_id)
+        self.logger.debug(
+            'Found security_group with this result: {0}'.format(
+                security_group))
+        return security_group
+
+    def create(self):
+        self.logger.debug(
+            'Attempting to create security_group with these args: {0}'.format(
+                self.config))
+        security_group = self.connection.network.create_security_group(
+            **self.config)
+        self.logger.debug(
+            'Created security_group with this result: {0}'.format(
+                security_group))
+        return security_group
+
+    def delete(self):
+        security_group = self.get()
+        self.logger.debug(
+            'Attempting to delete this security_group: {0}'.format(
+                security_group))
+        result = self.connection.network.delete_security_group(security_group)
+        self.logger.debug(
+            'Deleted security_group with this result: {0}'.format(result))
+        return result
+
+    def update(self, new_config=None):
+        security_group = self.get()
+        self.logger.debug('Attempting to update this '
+                          'security_group: {0} with args {1}'.format(
+                              security_group, new_config))
+        result = self.connection.network.update_security_group(
+            security_group, new_config)
+        self.logger.debug(
+            'Updated security_group with this result: {0}'.format(result))
+        return result
+
+
+class OpenstackSecurityGroupRule(OpenstackResource):
+    # SDK documentation link:
+    # https://bit.ly/2PCsWA0
+
+    def list(self):
+        return self.connection.network.security_group_rules()
+
+    def get(self):
+        self.logger.debug(
+            'Attempting to find this security_group_rule: {0}'.format(
+                self.name if not self.resource_id else self.resource_id))
+        security_group_rule = self.connection.network.get_security_group_rule(
+            self.name if not self.resource_id else self.resource_id)
+        self.logger.debug(
+            'Found security_group with this result: {0}'.format(
+                security_group_rule))
+        return security_group_rule
+
+    def create(self):
+        self.logger.debug('Attempting to create security_group_rule '
+                          'with these args: {0}'.format(self.config))
+        security_group_rule = \
+            self.connection.network.create_security_group_rule(**self.config)
+        self.logger.debug(
+            'Created security_group_rule with this result: {0}'.format(
+                security_group_rule))
+        return security_group_rule
+
+    def delete(self):
+        security_group_rule = self.get()
+        self.logger.debug(
+            'Attempting to delete this security_group_rule: {0}'.format(
+                security_group_rule))
+        result = self.connection.network.delete_security_group_rule(
+            security_group_rule)
+        self.logger.debug(
+            'Deleted security_group with this result: {0}'.format(result))
         return result

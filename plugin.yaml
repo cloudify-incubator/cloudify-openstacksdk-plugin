@@ -29,19 +29,6 @@ dsl_definitions:
       type: string
       default: ''
 
-  base_operation_inputs: &base_operation_inputs
-    <<: *client_config
-    resource_id:
-      description: This overrides the resource_id property (useful for setting the resource ID of a node instance at runtime).
-      type: string
-      required: false
-      default: ~
-    runtime_properties:
-      description: >
-        This overrides any runtime property at runtime. This is a key-value pair / dictionary that will be passed, as-is, to the runtime properties of the running instance.
-      required: false
-      default: ~
-
     kwargs: &data_type_kwargs
       kwargs:
         description: A dictionary of keys and values that is not validated but will override other values in the resource config.
@@ -85,69 +72,14 @@ data_types:
         description: The region where you want this particular resource to be created.
         required: false
 
+
   cloudify.types.openstack.Network:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
       <<: *data_type_description
-      admin_state_up:
-        description: The administrative state of the network, which is up (true) or down (false).
-        type: boolean
-        required: false
-      availability_zone_hints :
-        description: Availability zone hints to use when scheduling the network. Type: list of availability zone names.
-        required: false
-      availability_zones :
-        description: Availability zones for the network. Type: list of availability zone names.
-        required: false
-      dns_domain:
-        description: A valid DNS domain.
-        type: string
-        required: false
-      mtu:
-        description: The maximum transmission unit (MTU) value to address fragmentation. Minimum value is 68 for IPv4, and 1280 for IPv6.
-        type: number
-        required: false
-      port_security_enabled:
-        description: The port security status of the network. Valid values are enabled (true) and disabled (false). This value is used as the default value of port_security_enabled field of a newly created port.
-        type: boolean
-        required: false
-      provider:
-        description: >
-          A dictionary with the following keys:
-            - network_type: string. The type of physical network that this network should be mapped to. For example, flat, vlan, vxlan, or gre. Valid values depend on a networking back-end.
-            - physical_network: string. The physical network where this network should be implemented. The Networking API v2.0 does not provide a way to list available physical networks. For example, the Open vSwitch plug-in configuration file defines a symbolic name that maps to specific bridges on each compute host.
-            - segmentation_id: integer. The ID of the isolated segment on the physical network. The network_type attribute defines the segmentation model. For example, if the network_type value is vlan, this ID is a vlan identifier. If the network_type value is gre, this ID is a gre key.
-      qos_policy_id:
-        description: The ID of the QoS policy associated with the network.
-        type: string
-        required: false
-      router:
-        description: >
-          A dictionary with the following keys:
-            - external: boolean. Indicates whether the network has an external routing facility that’s not managed by the networking service.
-      segments:
-        description: A list of provider segment objects.
-        required: false
-      shared:
-        description: Indicates whether this network is shared across all tenants. By default, only administrative users can change this value.
-        type: boolean
-        required: false
-      tenant_id:
-        description: The ID of the project that owns the resource. Only administrative and users with advsvc role can specify a project ID other than their own. You cannot change this value through authorization policies.
-        type: string
-        required: false
-      vlan_transparent:
-        description: Indicates the VLAN transparency mode of the network, which is VLAN transparent (true) or not VLAN transparent (false).
-        type: boolean
-        required: false
-      is_default:
-        description: The network is default or not.
-        type: boolean
-        required: false
 
-  # Note that the OpenStack API object specifies Subnets, a list of subnet.
-  # This data type refers to a member of that list.
+  # Note that the OpenStack API object specifies Subnets, a list of subnet. This data type refers to a member of that list.
   cloudify.types.openstack.Subnet:
     properties:
       <<: *data_type_kwargs
@@ -194,20 +126,119 @@ data_types:
         description: The IPv6 router advertisement specifies whether the networking service should transmit ICMPv6 packets, for a subnet. Value is slaac, dhcpv6-stateful, dhcpv6-stateless.
         type: string
         required: false
-      segment_id:
-        description: The ID of a network segment the subnet is associated with. It is available when segment extension is enabled.
+
+  cloudify.types.openstack.Port:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_name
+      <<: *data_type_description
+      allowed_address_pairs :
+        description: A set of zero or more allowed address pair objects each where address pair object contains an ip_address and mac_address. While the ip_address is required, the mac_address will be taken from the port if not specified. The value of ip_address can be an IP Address or a CIDR (if supported by the underlying extension plugin). A server connected to the port can send a packet with source address which matches one of the specified allowed address pairs.
+        required: false
+      device_id:
+        description: The ID of the device that uses this port. For example, a server instance or a logical router.
         type: string
         required: false
-      subnetpool_id:
-        description: The ID of the subnet pool associated with the subnet.
+      device_owner:
+        description: The entity type that uses this port. For example, compute:nova (server instance), network:dhcp (DHCP agent) or network:router_interface (router interface).
         type: string
         required: false
-      use_default_subnetpool:
-        description: Whether to allocate this subnet from the default subnet pool.
-        type: boolean
+      fixed_ips:
+        description: >
+          list.
+          The IP addresses for the port. If you would like to assign multiple IP addresses for the port, specify multiple entries in this field. Each entry consists of IP address (ip_address) and the subnet ID from which the IP address is assigned (subnet_id).
+          - If you specify both a subnet ID and an IP address, OpenStack Networking tries to allocate the IP address on that subnet to the port.
+          - If you specify only a subnet ID, OpenStack Networking allocates an available IP from that subnet to the port.
+          - If you specify only an IP address, OpenStack Networking tries to allocate the IP address if the address is a valid IP for any of the subnets on the specified network.
         required: false
-      service_types:
-        description: The service types associated with the subnet.
+      network_id:
+        description: The ID of the network to which the subnet belongs.
+        type: string
+        required: false
+      security_groups:
+        description: list. The IDs of security groups applied to the port.
+        required: false
+
+  cloudify.types.openstack.Router:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_name
+      <<: *data_type_description
+
+  cloudify.types.openstack.FloatingIP:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_description
+      floating_network_id:
+        description: The ID of the network associated with the floating IP.
+        type: string
+        required: false
+      fixed_ip_address:
+        description: The fixed IP address that is associated with the floating IP. If an internal port has multiple associated IP addresses, the service chooses the first IP address unless you explicitly define a fixed IP address in the fixed_ip_address parameter.
+        type: string
+        required: false
+      floating_ip_address:
+        description: The floating IP address.
+        type: string
+        required: false
+      port_id:
+        description: The ID of a port associated with the floating IP. To associate the floating IP with a fixed IP at creation time, you must specify the identifier of the internal port.
+        type: string
+        required: false
+      subnet_id:
+        description: The subnet ID on which you want to create the floating IP.
+        type: string
+        required: false
+      dns_domain:
+        description: A valid DNS domain.
+        type: string
+        required: false
+      dns_name:
+        description: A valid DNS name.
+        type: string
+        required: false
+
+  cloudify.types.openstack.SecurityGroup:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_name
+      <<: *data_type_description
+
+  cloudify.types.openstack.SecurityGroupRule:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_description
+      remote_group_id:
+        description: The remote group UUID to associate with this security group rule. You can specify either the remote_group_id or remote_ip_prefix attribute in the request body.
+        type: string
+        required: false
+      direction:
+        description: Ingress or egress, which is the direction in which the security group rule is applied.
+        type: string
+        required: false
+      protocol:
+        description: The IP protocol can be represented by a string, an integer, or null. Valid string or integer values are any or 0, ah or 51, dccp or 33, egp or 8, esp or 50, gre or 47, icmp or 1, icmpv6 or 58, igmp or 2, ipip or 4, ipv6-encap or 41, ipv6-frag or 44, ipv6-icmp or 58, ipv6-nonxt or 59, ipv6-opts or 60, ipv6-route or 43, ospf or 89, pgm or 113, rsvp or 46, sctp or 132, tcp or 6, udp or 17, udplite or 136, vrrp or 112. Additionally, any integer value between [0-255] is also valid. The string any (or integer 0) means all IP protocols. See the constants in neutron_lib.constants for the most up-to-date list of supported strings.
+        type: string
+        required: false
+      ethertype:
+        description: Must be IPv4 or IPv6, and addresses represented in CIDR must match the ingress or egress rules.
+        type: string
+        required: false
+      port_range_max:
+        description: The maximum port number in the range that is matched by the security group rule. If the protocol is TCP, UDP, DCCP, SCTP or UDP-Lite this value must be greater than or equal to the port_range_min attribute value. If the protocol is ICMP, this value must be an ICMP code.
+        type: number
+        required: false
+      port_range_min:
+        description: The minimum port number in the range that is matched by the security group rule. If the protocol is TCP, UDP, DCCP, SCTP or UDP-Lite this value must be less than or equal to the port_range_max attribute value. If the protocol is ICMP, this value must be an ICMP type.
+        type: number
+        required: false
+      security_group_id:
+        description: The security group ID to associate with this security group rule.
+        type: string
+        required: false
+      remote_ip_prefix:
+        description: The remote IP prefix that is matched by this security group rule.
+        type: string
         required: false
 
   cloudify.types.openstack.Server:
@@ -364,6 +395,7 @@ data_types:
 
 node_types:
 
+
   cloudify.nodes.openstack.NetworkBase:
     derived_from: cloudify.nodes.Network
     properties:
@@ -376,22 +408,16 @@ node_types:
     properties:
       resource_config:
         type: cloudify.types.openstack.Network
-        description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-network.
+        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-network.
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.create
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.network.create
         delete:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.delete
-          inputs: *base_operation_inputs
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.network.delete
         update:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.update
-          inputs:
-            <<: *base_operation_inputs
-            resource_config:
-              required: false
-              default: { get_property: [ SELF, resource_config ] }
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.network.update
 
   cloudify.nodes.openstack.Subnet:
     derived_from: cloudify.nodes.openstack.NetworkBase
@@ -403,17 +429,104 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: openstacksdk.openstacksdk_plugin.resources.subnet.create
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.subnet.create
         delete:
-          implementation: openstacksdk.openstacksdk_plugin.resources.subnet.delete
-          inputs: *base_operation_inputs
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.subnet.delete
         update:
-          implementation: openstacksdk.openstacksdk_plugin.resources.subnet.update
-          inputs:
-            <<: *base_operation_inputs
-            resource_config:
-              required: false
-              default: { get_property: [ SELF, resource_config ] }
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.subnet.update
+
+  cloudify.nodes.openstack.Port:
+    derived_from: cloudify.nodes.Port
+    properties:
+      <<: *client_config
+      <<: *external_resource
+      <<: *resource_id
+      resource_config:
+        type: cloudify.types.openstack.Port
+        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-port.
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.port.create
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.port.delete
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.port.update
+
+  cloudify.nodes.openstack.Router:
+    derived_from: cloudify.nodes.Router
+    properties:
+      <<: *client_config
+      <<: *external_resource
+      <<: *resource_id
+      resource_config:
+        type: cloudify.types.openstack.Router
+        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-router.
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.create
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.delete
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.update
+
+  cloudify.nodes.openstack.FloatingIP:
+    derived_from: cloudify.nodes.VirtualIP
+    properties:
+      <<: *client_config
+      <<: *external_resource
+      <<: *resource_id
+      resource_config:
+        type: cloudify.types.openstack.FloatingIP
+        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-floating-ip.
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.floating_ip.create
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.floating_ip.delete
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.floating_ip.update
+
+  cloudify.nodes.openstack.SecurityGroup:
+    derived_from: cloudify.nodes.SecurityGroup
+    properties:
+      <<: *client_config
+      <<: *external_resource
+      <<: *resource_id
+      resource_config:
+        type: cloudify.types.openstack.SecurityGroup
+        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-security-group.
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.create
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.delete
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.update
+
+  cloudify.nodes.openstack.SecurityGroupRule:
+    derived_from: cloudify.nodes.SecurityGroup
+    properties:
+      <<: *client_config
+      <<: *external_resource
+      <<: *resource_id
+      resource_config:
+        type: cloudify.types.openstack.SecurityGroupRule
+        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-security-group-rule
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group_rule.create
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group_rule.delete
 
   cloudify.nodes.openstack.Server:
     derived_from: cloudify.nodes.Compute
