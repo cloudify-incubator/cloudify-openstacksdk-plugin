@@ -239,7 +239,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
-      imageRef:
+      image_id:
         description: >
           The UUID of the image to use for your server instance.
           This is not required in case of boot from volume.
@@ -247,7 +247,7 @@ data_types:
           and must be a valid UUID otherwise API will return 400
         required: false
         type: string
-      flavorRef:
+      flavor_id:
         description: >
          The flavor reference, as an ID (including a UUID) or
          full URL, for the flavor for your server instance.
