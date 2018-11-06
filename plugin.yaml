@@ -8,7 +8,6 @@ plugins:
 
 dsl_definitions:
 
-  # Every resource uses this property unless noted.
   client_config: &client_config
     client_config:
       type: cloudify.types.openstack.ClientConfig
@@ -29,26 +28,26 @@ dsl_definitions:
       type: string
       default: ''
 
-    kwargs: &data_type_kwargs
-      kwargs:
-        description: A dictionary of keys and values that is not validated but will override other values in the resource config.
-        default: {}
+  kwargs: &data_type_kwargs
+    kwargs:
+      description: A dictionary of keys and values that is not validated but will override other values in the resource config.
+      default: {}
 
-    name: &data_type_name
-      name:
-        description: Resource name.
-        type: string
-        required: true
+  name: &data_type_name
+    name:
+      description: Resource name.
+      type: string
+      required: false
 
-    description: &data_type_description
-      description:
-        description: Resource description.
-        type: string
-        required: false
+  description: &data_type_description
+    description:
+      description: Resource description.
+      type: string
+      required: false
 
 data_types:
 
-  cloudify.types.openstack.client_config:
+  cloudify.types.openstack.ClientConfig:
     # See: https://docs.openstack.org/python-openstackclient/pike/cli/man/openstack.html.
     properties:
       auth_url:
@@ -77,14 +76,16 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
-      <<: *data_type_description
+      external:
+        description: Whether this network is externally accessible.
+        type: boolean
+        required: false
 
   # Note that the OpenStack API object specifies Subnets, a list of subnet. This data type refers to a member of that list.
   cloudify.types.openstack.Subnet:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
-      <<: *data_type_description
       enable_dhcp:
         description: Indicates whether dhcp is enabled or disabled for the subnet. Default is true.
         type: boolean
@@ -105,7 +106,7 @@ data_types:
       ip_version:
         description: The IP protocol version. Value is 4 or 6.
         type: string
-        required: false
+        required: true
       gateway_ip:
         description: Gateway IP of this subnet. If the value is null that implies no gateway is associated with the subnet. If the gateway_ip is not specified, OpenStack Networking allocates an address from the CIDR for the gateway for the subnet by default.
         type: string
@@ -113,10 +114,10 @@ data_types:
       cidr:
         description: The CIDR of the subnet.
         type: string
-        required: false.
+        required: false
       prefixlen:
         description: The prefix length to use for subnet allocation from a subnet pool. If not specified, the default_prefixlen value of the subnet pool will be used.
-        type: number
+        type: integer
         required: false
       ipv6_address_mode:
         description: The IPv6 address modes specifies mechanisms for assigning IP addresses. Value is slaac, dhcpv6-stateful, dhcpv6-stateless.
@@ -131,8 +132,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
-      <<: *data_type_description
-      allowed_address_pairs :
+      allowed_address_pairs:
         description: A set of zero or more allowed address pair objects each where address pair object contains an ip_address and mac_address. While the ip_address is required, the mac_address will be taken from the port if not specified. The value of ip_address can be an IP Address or a CIDR (if supported by the underlying extension plugin). A server connected to the port can send a packet with source address which matches one of the specified allowed address pairs.
         required: false
       device_id:
@@ -159,11 +159,16 @@ data_types:
         description: list. The IDs of security groups applied to the port.
         required: false
 
-  cloudify.types.openstack.Router:
+  cloudify.types.openstack.SecurityGroup:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
       <<: *data_type_description
+
+  cloudify.types.openstack.Router:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_name
 
   cloudify.types.openstack.FloatingIP:
     properties:
@@ -198,39 +203,28 @@ data_types:
         type: string
         required: false
 
-  cloudify.types.openstack.SecurityGroup:
-    properties:
-      <<: *data_type_kwargs
-      <<: *data_type_name
-      <<: *data_type_description
-
   cloudify.types.openstack.SecurityGroupRule:
     properties:
       <<: *data_type_kwargs
-      <<: *data_type_description
       remote_group_id:
         description: The remote group UUID to associate with this security group rule. You can specify either the remote_group_id or remote_ip_prefix attribute in the request body.
+        type: string
+        required: false
+      protocol:
+        description: The IP protocol of the security group rule.
         type: string
         required: false
       direction:
         description: Ingress or egress, which is the direction in which the security group rule is applied.
         type: string
         required: false
-      protocol:
-        description: The IP protocol can be represented by a string, an integer, or null. Valid string or integer values are any or 0, ah or 51, dccp or 33, egp or 8, esp or 50, gre or 47, icmp or 1, icmpv6 or 58, igmp or 2, ipip or 4, ipv6-encap or 41, ipv6-frag or 44, ipv6-icmp or 58, ipv6-nonxt or 59, ipv6-opts or 60, ipv6-route or 43, ospf or 89, pgm or 113, rsvp or 46, sctp or 132, tcp or 6, udp or 17, udplite or 136, vrrp or 112. Additionally, any integer value between [0-255] is also valid. The string any (or integer 0) means all IP protocols. See the constants in neutron_lib.constants for the most up-to-date list of supported strings.
-        type: string
-        required: false
-      ethertype:
-        description: Must be IPv4 or IPv6, and addresses represented in CIDR must match the ingress or egress rules.
-        type: string
-        required: false
-      port_range_max:
-        description: The maximum port number in the range that is matched by the security group rule. If the protocol is TCP, UDP, DCCP, SCTP or UDP-Lite this value must be greater than or equal to the port_range_min attribute value. If the protocol is ICMP, this value must be an ICMP code.
-        type: number
-        required: false
       port_range_min:
         description: The minimum port number in the range that is matched by the security group rule. If the protocol is TCP, UDP, DCCP, SCTP or UDP-Lite this value must be less than or equal to the port_range_max attribute value. If the protocol is ICMP, this value must be an ICMP type.
-        type: number
+        type: integer
+        required: false
+      port_range_max:
+        description: The maximum port number in the range that is matched by the security group rule. If the protocol is TCP, UDP, DCCP, SCTP or UDP-Lite this value must be greater than or equal to the port_range_min attribute value. If the protocol is ICMP, this value must be an ICMP type.
+        type: integer
         required: false
       security_group_id:
         description: The security group ID to associate with this security group rule.
@@ -247,10 +241,10 @@ data_types:
       <<: *data_type_name
       imageRef:
         description: >
-	      The UUID of the image to use for your server instance.
-	      This is not required in case of boot from volume.
-	      In all other cases it is required
-	      and must be a valid UUID otherwise API will return 400
+          The UUID of the image to use for your server instance.
+          This is not required in case of boot from volume.
+          In all other cases it is required
+          and must be a valid UUID otherwise API will return 400
         required: false
         type: string
       flavorRef:
@@ -305,7 +299,7 @@ data_types:
           applied to pre-existing ports
         required: false
         default: []
-      key_name :
+      key_name: 
         description: >
           Key pair name.
         required: false
@@ -372,12 +366,12 @@ data_types:
           this is really a string. If not provided, this defaults to a uuid.
         required: false
         type: string
-      ram :
+      ram: 
         description: >
-          	The amount of RAM a flavor has, in MiB
+              The amount of RAM a flavor has, in MiB
         required: true
         type: integer
-      disk :
+      disk: 
         description: >
           The size of the root disk that will be created in GiB.
           If 0 the root disk will be set to exactly the size of the image used
@@ -386,12 +380,11 @@ data_types:
           Therefore, 0 should only be used for volume booted instances or for testing purposes.
         required: true
         type: integer
-      vcpus :
+      vcpus: 
         description: >
           The number of virtual CPUs that will be allocated to the server.
         required: true
         type: integer
-
 
 node_types:
 
@@ -399,16 +392,16 @@ node_types:
   cloudify.nodes.openstack.NetworkBase:
     derived_from: cloudify.nodes.Network
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
 
   cloudify.nodes.openstack.Network:
     derived_from: cloudify.nodes.openstack.NetworkBase
     properties:
       resource_config:
         type: cloudify.types.openstack.Network
-        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-network.
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-network.
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -424,7 +417,7 @@ node_types:
     properties:
       resource_config:
         type: cloudify.types.openstack.Subnet
-        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-subnet. This is not a list of cloudify.types.openstack.Subnet as the OpenStack API specifies.
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-subnet. This is not a list of cloudify.types.openstack.Subnet as the OpenStack API specifies.
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -438,12 +431,12 @@ node_types:
   cloudify.nodes.openstack.Port:
     derived_from: cloudify.nodes.Port
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Port
-        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-port.
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-port.
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -457,12 +450,12 @@ node_types:
   cloudify.nodes.openstack.Router:
     derived_from: cloudify.nodes.Router
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Router
-        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-router.
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-router.
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -476,12 +469,12 @@ node_types:
   cloudify.nodes.openstack.FloatingIP:
     derived_from: cloudify.nodes.VirtualIP
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.FloatingIP
-        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-floating-ip.
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-floating-ip.
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -495,12 +488,12 @@ node_types:
   cloudify.nodes.openstack.SecurityGroup:
     derived_from: cloudify.nodes.SecurityGroup
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.SecurityGroup
-        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-security-group.
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-security-group.
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -514,12 +507,12 @@ node_types:
   cloudify.nodes.openstack.SecurityGroupRule:
     derived_from: cloudify.nodes.SecurityGroup
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.SecurityGroupRule
-        Description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/network/v2/#create-security-group-rule
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-security-group-rule
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -531,12 +524,12 @@ node_types:
   cloudify.nodes.openstack.Server:
     derived_from: cloudify.nodes.Compute
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Server
-        description: A dictionary that may contain these keys: https://developer.openstack.org/api-ref/compute/?expanded=create-server-detail
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/compute/?expanded=create-server-detail
         required: true
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -575,9 +568,9 @@ node_types:
   cloudify.nodes.openstack.ServerGroup:
     derived_from: cloudify.nodes.Root
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.ServerGroup
         description: https://developer.openstack.org/api-ref/compute/?expanded=create-server-detail#create-server-group
@@ -594,9 +587,9 @@ node_types:
   cloudify.nodes.openstack.KeyPair:
     derived_from: cloudify.nodes.Root
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.KeyPair
         description: https://developer.openstack.org/api-ref/compute/?expanded=create-or-import-keypair-detail
@@ -613,9 +606,9 @@ node_types:
   cloudify.nodes.openstack.Image:
     derived_from: cloudify.nodes.Root
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Image
         description: https://developer.openstack.org/api-ref/image/v2/index.html?expanded=show-image-detail,create-image-detail#create-image
@@ -632,9 +625,9 @@ node_types:
   cloudify.nodes.openstack.Flavor:
     derived_from: cloudify.nodes.Root
     properties:
-      <<: *client_config
       <<: *external_resource
       <<: *resource_id
+      <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Flavor
         description: https://developer.openstack.org/api-ref/compute/?expanded=create-flavor-detail

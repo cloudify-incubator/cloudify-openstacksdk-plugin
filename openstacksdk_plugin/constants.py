@@ -13,24 +13,4 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-from openstack_sdk.resources.networks import OpenstackRouter
-from openstacksdk_plugin.decorators import with_openstack_resource
-
-from openstacksdk_plugin.constants import RESOURCE_ID
-
-from cloudify import ctx
-
-
-@with_openstack_resource(OpenstackRouter)
-def create(openstack_resource):
-    created_resource = openstack_resource.create()
-    ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
-
-
-@with_openstack_resource(OpenstackRouter)
-def delete(openstack_resource):
-    openstack_resource.delete()
-
-
-def update():
-    pass
+RESOURCE_ID = 'resource_id'
