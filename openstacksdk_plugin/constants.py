@@ -13,4 +13,5 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-RESOURCE_ID = 'resource_id'
+RESOURCE_ID = 'id'
+USE_EXTERNAL_RESOURCE_PROPERTY = 'use_external_resource'

@@ -92,7 +92,7 @@ class OpenStackSDKTestBase(unittest.TestCase):
     def _fake_compute_key_pair(self):
         key_pair_conn = mock.MagicMock()
         key_pair_conn.keypairs = self._gen_openstack_sdk_error()
-        key_pair_conn.find_keypair = self._gen_openstack_sdk_error()
+        key_pair_conn.get_keypair = self._gen_openstack_sdk_error()
         key_pair_conn.create_keypair = self._gen_openstack_sdk_error()
         key_pair_conn.delete_keypair = self._gen_openstack_sdk_error()
         key_pair_conn.update_keypair = self._gen_openstack_sdk_error()
