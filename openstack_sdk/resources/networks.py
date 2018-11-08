@@ -17,6 +17,7 @@
 # Based on this documentation:
 # https://docs.openstack.org/openstacksdk/latest/user/proxies/network.html.
 
+# Local imports
 from openstack_sdk.common import OpenstackResource
 
 

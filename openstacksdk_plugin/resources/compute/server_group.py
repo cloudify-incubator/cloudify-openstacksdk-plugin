@@ -13,6 +13,7 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Local imports
 from openstack_sdk.resources.compute import OpenstackServerGroup
 from openstacksdk_plugin.decorators import with_openstack_resource
 

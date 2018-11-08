@@ -29,7 +29,9 @@ class OpenstackServer(OpenstackResource):
         self.logger.debug(
             'Attempting to find this server: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
-        server = self.connection.compute.get_server()
+        server = self.connection.compute.get_server(
+            self.name if not self.resource_id else self.resource_id
+        )
         self.logger.debug(
             'Found server with this result: {0}'.format(server))
         return server
@@ -72,7 +74,9 @@ class OpenstackServerGroup(OpenstackResource):
         self.logger.debug(
             'Attempting to find this server group: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
-        server_group = self.connection.compute.get_server()
+        server_group = self.connection.compute.get_server_group(
+            self.name if not self.resource_id else self.resource_id
+        )
         self.logger.debug(
             'Found server group with this result: {0}'.format(server_group))
         return server_group
@@ -81,7 +85,8 @@ class OpenstackServerGroup(OpenstackResource):
         self.logger.debug(
             'Attempting to create server group with these args: {0}'.format(
                 self.config))
-        server_group = self.connection.compute.create_server(**self.config)
+        server_group =\
+            self.connection.compute.create_server_group(**self.config)
         self.logger.debug(
             'Created server group with this result: {0}'.format(server_group))
         return server_group
@@ -90,21 +95,13 @@ class OpenstackServerGroup(OpenstackResource):
         server_group = self.get()
         self.logger.debug(
             'Attempting to delete this server group: {0}'.format(server_group))
-        result = self.connection.compute.delete_server(server_group)
+        result = self.connection.compute.delete_server_group(server_group)
         self.logger.debug(
             'Deleted server group with this result: {0}'.format(result))
         return result
 
     def update(self, new_config=None):
-        server_group = self.get()
-        self.logger.debug(
-            'Attempting to update this server group:'
-            ' {0} with args {1}'.format(server_group, new_config))
-        result = self.connection.compute.update_server(server_group,
-                                                       new_config)
-        self.logger.debug(
-            'Updated server group with this result: {0}'.format(result))
-        return result
+        pass
 
 
 class OpenstackKeyPair(OpenstackResource):
@@ -116,7 +113,11 @@ class OpenstackKeyPair(OpenstackResource):
         self.logger.debug(
             'Attempting to find this key pair: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
-        key_pair = self.connection.compute.get_keypair()
+
+        key_pair = self.connection.compute.find_keypair(
+            self.name if not self.resource_id else self.resource_id,
+            ignore_missing=False)
+
         self.logger.debug(
             'Found key pair with this result: {0}'.format(key_pair))
         return key_pair
@@ -140,14 +141,7 @@ class OpenstackKeyPair(OpenstackResource):
         return result
 
     def update(self, new_config=None):
-        key_pair = self.get()
-        self.logger.debug(
-            'Attempting to update this key pair:'
-            ' {0} with args {1}'.format(key_pair, new_config))
-        result = self.connection.compute.update_server(key_pair, new_config)
-        self.logger.debug(
-            'Updated key pair with this result: {0}'.format(result))
-        return result
+        pass
 
 
 class OpenstackFlavor(OpenstackResource):
@@ -159,7 +153,9 @@ class OpenstackFlavor(OpenstackResource):
         self.logger.debug(
             'Attempting to find this flavor: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
-        flavor = self.connection.compute.get_flavor()
+        flavor = self.connection.compute.get_flavor(
+            self.name if not self.resource_id else self.resource_id
+        )
         self.logger.debug(
             'Found flavor with this result: {0}'.format(flavor))
         return flavor
@@ -183,4 +179,11 @@ class OpenstackFlavor(OpenstackResource):
         return result
 
     def update(self, new_config=None):
-        pass
+        flavor = self.get()
+        self.logger.debug(
+            'Attempting to update this flavor:'
+            ' {0} with args {1}'.format(flavor, new_config))
+        result = self.connection.compute.update_server(flavor, new_config)
+        self.logger.debug(
+            'Updated flavor with this result: {0}'.format(result))
+        return result
