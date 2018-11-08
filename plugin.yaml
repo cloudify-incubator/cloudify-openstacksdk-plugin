@@ -28,6 +28,12 @@ dsl_definitions:
       type: string
       default: ''
 
+  id: &data_type_id
+    id:
+      description: Resource id
+      type: string
+      required: false
+
   kwargs: &data_type_kwargs
     kwargs:
       description: A dictionary of keys and values that is not validated but will override other values in the resource config.
@@ -76,6 +82,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       external:
         description: Whether this network is externally accessible.
         type: boolean
@@ -86,6 +93,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       enable_dhcp:
         description: Indicates whether dhcp is enabled or disabled for the subnet. Default is true.
         type: boolean
@@ -132,6 +140,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       allowed_address_pairs:
         description: A set of zero or more allowed address pair objects each where address pair object contains an ip_address and mac_address. While the ip_address is required, the mac_address will be taken from the port if not specified. The value of ip_address can be an IP Address or a CIDR (if supported by the underlying extension plugin). A server connected to the port can send a packet with source address which matches one of the specified allowed address pairs.
         required: false
@@ -163,17 +172,20 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       <<: *data_type_description
 
   cloudify.types.openstack.Router:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
 
   cloudify.types.openstack.FloatingIP:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_description
+      <<: *data_type_id
       floating_network_id:
         description: The ID of the network associated with the floating IP.
         type: string
@@ -205,7 +217,9 @@ data_types:
 
   cloudify.types.openstack.SecurityGroupRule:
     properties:
+      <<: *data_type_name
       <<: *data_type_kwargs
+      <<: *data_type_id
       remote_group_id:
         description: The remote group UUID to associate with this security group rule. You can specify either the remote_group_id or remote_ip_prefix attribute in the request body.
         type: string
@@ -239,6 +253,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       image_id:
         description: >
           The UUID of the image to use for your server instance.
@@ -309,6 +324,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       policies:
         description: >
           A list of exactly one policy name to associate with the server group. The current valid policy names are:
@@ -333,6 +349,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       container_format:
         description: >
           Format of the image container.
@@ -359,6 +376,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       <<: *data_type_description
       id:
         description: >
@@ -588,7 +606,6 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.KeyPair

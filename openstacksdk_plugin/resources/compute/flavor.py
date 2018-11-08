@@ -13,14 +13,20 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+
+# Third party imports
+from cloudify import ctx
+
 # Local imports
 from openstack_sdk.resources.compute import OpenstackFlavor
 from openstacksdk_plugin.decorators import with_openstack_resource
+from openstacksdk_plugin.constants import RESOURCE_ID
 
 
 @with_openstack_resource(OpenstackFlavor)
 def create(openstack_resource):
-    openstack_resource.create()
+    created_resource = openstack_resource.create()
+    ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
 
 
 @with_openstack_resource(OpenstackFlavor)

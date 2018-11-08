@@ -42,7 +42,7 @@ class KeyPairTestCase(base.OpenStackSDKTestBase):
 
         })
         self.keypair_instance.name = 'test_key_pair'
-        self.fake_client.find_keypair = mock.MagicMock(return_value=image)
+        self.fake_client.get_keypair = mock.MagicMock(return_value=image)
 
         response = self.keypair_instance.get()
         self.assertEqual(response.name, 'test_key_pair')
@@ -96,7 +96,7 @@ class KeyPairTestCase(base.OpenStackSDKTestBase):
         })
 
         self.keypair_instance.resource_id = '2'
-        self.fake_client.find_keypair = mock.MagicMock(return_value=keypair)
+        self.fake_client.get_keypair = mock.MagicMock(return_value=keypair)
         self.fake_client.delete_keypair = mock.MagicMock(return_value=None)
 
         response = self.keypair_instance.delete()

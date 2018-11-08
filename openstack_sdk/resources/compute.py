@@ -111,12 +111,10 @@ class OpenstackKeyPair(OpenstackResource):
 
     def get(self):
         self.logger.debug(
-            'Attempting to find this key pair: {0}'.format(
-                self.name if not self.resource_id else self.resource_id))
+            'Attempting to find this key pair: {0}'.format(self.name))
 
-        key_pair = self.connection.compute.find_keypair(
-            self.name if not self.resource_id else self.resource_id,
-            ignore_missing=False)
+        key_pair = self.connection.compute.get_keypair(self.name,
+                                                       ignore_missing=False)
 
         self.logger.debug(
             'Found key pair with this result: {0}'.format(key_pair))

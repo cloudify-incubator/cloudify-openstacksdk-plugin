@@ -22,7 +22,9 @@ from cloudify import ctx as CloudifyContext
 from cloudify.exceptions import NonRecoverableError
 from cloudify.utils import exception_to_error_cause
 
+# Local imports
 from openstacksdk_plugin.constants import RESOURCE_ID
+from openstacksdk_plugin.constants import USE_EXTERNAL_RESOURCE_PROPERTY
 
 
 def with_openstack_resource(class_decl=None):
@@ -34,6 +36,8 @@ def with_openstack_resource(class_decl=None):
     def wrapper_outer(func):
         def wrapper_inner(**kwargs):
             ctx = kwargs.pop('ctx', CloudifyContext)
+            # Get the operation name
+            _, _, _, operation_name = ctx.operation.name.split('.')
 
             def get_property_by_name(property_name):
                 property_value = None
@@ -57,21 +61,47 @@ def with_openstack_resource(class_decl=None):
 
             client_config = get_property_by_name('client_config')
             resource_config = get_property_by_name('resource_config')
-            resource_id = get_property_by_name(RESOURCE_ID)
-            if resource_id:
-                resource_config['id'] = resource_id
+            resource = class_decl(client_config=client_config,
+                                  resource_config=resource_config,
+                                  logger=ctx.logger)
+
+            # # Check if "use_external_resource" is set to True
+            is_external = get_property_by_name(USE_EXTERNAL_RESOURCE_PROPERTY)
+            if is_external and operation_name in ['create', 'delete']:
+                ctx.logger.info(
+                    'Using external resource {0}'.format(RESOURCE_ID))
+
+                # Get the remote resource
+                try:
+                    resource = resource.get()
+                except exceptions.SDKException as error:
+                    _, _, tb = sys.exc_info()
+                    raise NonRecoverableError(
+                        'Failure while trying to request '
+                        'Openstack API: {}'.format(error.message),
+                        causes=[exception_to_error_cause(error, tb)])
+
+                # Check the operation type and based on that decide what to do
+                if operation_name == 'create':
+                    ctx.logger.info(
+                        'not creating resource {0}'
+                        ' since an external resource is being used'
+                        ''.format(resource.name))
+                    ctx.instance.runtime_properties[RESOURCE_ID] = resource.id
+                elif operation_name == 'delete':
+                    ctx.logger.info(
+                        'not deleting resource {0}'
+                        ' since an external resource is being used'
+                        ''.format(resource.name))
+                return
             try:
-                kwargs['openstack_resource'] = class_decl(
-                    client_config=client_config,
-                    resource_config=resource_config,
-                    logger=ctx.logger
-                )
+                kwargs['openstack_resource'] = resource
                 func(**kwargs)
             except exceptions.SDKException as error:
                 _, _, tb = sys.exc_info()
                 raise NonRecoverableError(
                     'Failure while trying to request '
-                    'NetApp API: {}'.format(error.message),
+                    'Openstack API: {}'.format(error.message),
                     causes=[exception_to_error_cause(error, tb)])
 
         return wrapper_inner
