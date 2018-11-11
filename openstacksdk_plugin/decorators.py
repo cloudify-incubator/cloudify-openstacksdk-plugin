@@ -61,6 +61,19 @@ def with_openstack_resource(class_decl=None):
 
             client_config = get_property_by_name('client_config')
             resource_config = get_property_by_name('resource_config')
+
+            # If this arg is exist, that means user
+            # provide extra/optional configuration for the defined node
+            if resource_config.get('kwargs'):
+                extra_config = resource_config.pop('kwargs')
+                resource_config.update(extra_config)
+
+            # Check if resource_id is part of runtime properties so that we
+            # can add it to the resource_config
+            if RESOURCE_ID in ctx.instance.runtime_properties:
+                resource_config['id'] =\
+                    ctx.instance.runtime_properties[RESOURCE_ID]
+
             resource = class_decl(client_config=client_config,
                                   resource_config=resource_config,
                                   logger=ctx.logger)

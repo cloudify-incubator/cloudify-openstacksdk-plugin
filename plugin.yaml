@@ -314,6 +314,14 @@ data_types:
           applied to pre-existing ports
         required: false
         default: []
+      networks:
+        description: >
+          A list of network object.
+          Required parameter when there are multiple networks
+          defined for the tenant. When you do not specify the networks parameter,
+          the server attaches to the only network created for the current tenant.
+        required: false
+        default: []
       key_name: 
         description: >
           Key pair name.
@@ -360,9 +368,9 @@ data_types:
           The format of the disk.
         required: false
         type: string
-      id:
+      url:
         description: >
-          A unique, user-defined image UUID
+          The URL to access the image file kept in external storea.
         required: false
         type: string
       tags:
@@ -411,7 +419,6 @@ node_types:
     derived_from: cloudify.nodes.Network
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
 
   cloudify.nodes.openstack.Network:
@@ -450,7 +457,6 @@ node_types:
     derived_from: cloudify.nodes.Port
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Port
@@ -469,7 +475,6 @@ node_types:
     derived_from: cloudify.nodes.Router
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Router
@@ -488,7 +493,6 @@ node_types:
     derived_from: cloudify.nodes.VirtualIP
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.FloatingIP
@@ -507,7 +511,6 @@ node_types:
     derived_from: cloudify.nodes.SecurityGroup
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.SecurityGroup
@@ -526,7 +529,6 @@ node_types:
     derived_from: cloudify.nodes.SecurityGroup
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.SecurityGroupRule
@@ -543,7 +545,6 @@ node_types:
     derived_from: cloudify.nodes.Compute
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Server
@@ -587,7 +588,6 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.ServerGroup
@@ -624,7 +624,6 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Image
@@ -643,7 +642,6 @@ node_types:
     derived_from: cloudify.nodes.Root
     properties:
       <<: *external_resource
-      <<: *resource_id
       <<: *client_config
       resource_config:
         type: cloudify.types.openstack.Flavor
@@ -657,3 +655,11 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.flavor.delete
         update:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.flavor.update
+
+relationships:
+
+  cloudify.openstack.server_connected_to_keypair:
+    derived_from: cloudify.relationships.connected_to
+
+  cloudify.openstack.server_connected_to_server_group:
+    derived_from: cloudify.relationships.connected_to

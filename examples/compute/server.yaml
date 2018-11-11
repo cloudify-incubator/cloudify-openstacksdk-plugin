@@ -1,0 +1,50 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
+  - plugin.yaml
+
+inputs:
+
+  auth_url:
+    type: string
+
+  username:
+    type: string
+
+  password:
+    type: string
+
+  region_name:
+    type: string
+
+  project_name:
+    type: string
+
+  server_config:
+    default:
+      name: 'openstack-server'
+      image_id: 70de1e0f-2951-4eae-9a8f-05afd97cd036
+      flavor_id: 2
+      key_name: 'test-server'
+      networks:
+         - uuid: 4eda4ad3-3380-40e3-adf6-15e12516f024
+
+
+dsl_definitions:
+  client_config: &client_config
+    auth_url: { get_input: auth_url }
+    username: { get_input: username }
+    password: { get_input: password }
+    region_name: { get_input: region_name }
+    project_name: { get_input: project_name }
+
+node_templates:
+
+  server_node:
+    type: cloudify.nodes.openstack.Server
+    properties:
+      client_config: *client_config
+      agent_config:
+        install_method: none
+      resource_config: { get_input:  server_config }

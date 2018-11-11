@@ -64,6 +64,18 @@ class OpenstackServer(OpenstackResource):
             'Updated server with this result: {0}'.format(result))
         return result
 
+    def start(self):
+        server = self.get()
+        self.logger.debug(
+            'Attempting to start this server: {0}'.format(server))
+        self.connection.compute.start_server(server)
+
+    def stop(self):
+        server = self.get()
+        self.logger.debug(
+            'Attempting to stop this server: {0}'.format(server))
+        self.connection.compute.stop_server(server)
+
 
 class OpenstackServerGroup(OpenstackResource):
 
@@ -113,8 +125,7 @@ class OpenstackKeyPair(OpenstackResource):
         self.logger.debug(
             'Attempting to find this key pair: {0}'.format(self.name))
 
-        key_pair = self.connection.compute.get_keypair(self.name,
-                                                       ignore_missing=False)
+        key_pair = self.connection.compute.get_keypair(self.name)
 
         self.logger.debug(
             'Found key pair with this result: {0}'.format(key_pair))

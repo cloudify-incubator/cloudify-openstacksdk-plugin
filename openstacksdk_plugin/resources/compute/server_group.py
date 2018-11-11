@@ -30,9 +30,10 @@ def create(openstack_resource):
 
 @with_openstack_resource(OpenstackServerGroup)
 def delete(openstack_resource):
+    # Delete the server group resource after lookup the resource_id values
     openstack_resource.delete()
 
 
 @with_openstack_resource(OpenstackServerGroup)
 def update(openstack_resource):
-    openstack_resource.update()
+    pass

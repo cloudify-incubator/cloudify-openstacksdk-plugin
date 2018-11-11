@@ -35,4 +35,4 @@ def delete(openstack_resource):
 
 @with_openstack_resource(OpenstackKeyPair)
 def update(openstack_resource):
-    openstack_resource.update()
+    pass
