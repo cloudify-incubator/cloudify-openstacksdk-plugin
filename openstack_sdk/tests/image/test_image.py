@@ -20,7 +20,7 @@ import mock
 import openstack.image.v2.image
 
 # Local imports
-from . import base
+from openstack_sdk.tests import base
 from openstack_sdk.resources import images
 
 

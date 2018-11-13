@@ -20,7 +20,7 @@ import mock
 import openstack.network.v2.security_group
 
 # Local imports
-from . import base
+from openstack_sdk.tests import base
 from openstack_sdk.resources import networks
 
 
