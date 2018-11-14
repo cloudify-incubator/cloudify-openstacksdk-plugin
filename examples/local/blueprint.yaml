@@ -36,6 +36,7 @@ inputs:
 
   name_prefix:
     type: string
+    default: network_
 
 dsl_definitions:
 

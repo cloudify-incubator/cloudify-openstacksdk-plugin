@@ -30,6 +30,10 @@ IGNORED_LOCAL_WORKFLOW_MODULES = (
 )
 
 
+class TestEnvironmentValidationError(Exception):
+    pass
+
+
 class LiveUseCaseTests(unittest.TestCase):
     """ Test a use case using a "local" Cloudify Workflow.
 
@@ -97,7 +101,7 @@ class LiveUseCaseTests(unittest.TestCase):
                 continue
             resource_interface_list.append(
                 resource_interface(
-                    node_instance.node_id,
+                    node_template.properties['resource_config'].get('name'),
                     self.client_config
                 ))
         return resource_interface_list
@@ -111,9 +115,9 @@ class LiveUseCaseTests(unittest.TestCase):
         for resource_interface in self.get_resource_interfaces():
             try:
                 conflicting_resource = resource_interface.get()
-            except openstack.exceptions.SDKException:
+            except openstack.exceptions.HttpException:
                 continue
-            raise Exception(
+            raise TestEnvironmentValidationError(
                 'Conflicting resource found {0}'.format(conflicting_resource))
 
     def delete_all_resources(self):

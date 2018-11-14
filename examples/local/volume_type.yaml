@@ -23,7 +23,7 @@ inputs:
 
   name_prefix:
     type: string
-    default: block_storage
+    default: block_storage_
 
   volume_type_config:
     default:

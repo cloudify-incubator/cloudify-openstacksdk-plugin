@@ -29,7 +29,7 @@ inputs:
 
   name_prefix:
     type: string
-    default: compute
+    default: compute_
 
 
 dsl_definitions:
