@@ -23,10 +23,14 @@ inputs:
 
   flavor_config:
     default:
-      name: 'cloudify-falvor'
+      name: { concat: [ { get_input: name_prefix }, 'flavor' ] }
       ram: 4024
       disk: 8
       vcpus: 2
+
+  name_prefix:
+    type: string
+    default: compute_
 
 dsl_definitions:
 
@@ -39,7 +43,7 @@ dsl_definitions:
 
 node_templates:
 
-  flavor_node:
+  example-flavor:
     type: cloudify.nodes.openstack.Flavor
     properties:
       client_config: *client_config

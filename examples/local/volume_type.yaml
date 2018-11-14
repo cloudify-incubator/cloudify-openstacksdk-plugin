@@ -21,6 +21,16 @@ inputs:
   project_name:
     type: string
 
+  name_prefix:
+    type: string
+    default: block_storage_
+
+  volume_type_config:
+    default:
+      name: { concat: [ { get_input: name_prefix }, 'volume_type' ] }
+      extra_specs:
+        capabilities: 'gpu'
+
 dsl_definitions:
 
   client_config: &client_config
@@ -32,9 +42,8 @@ dsl_definitions:
 
 node_templates:
 
-  keypair_node:
-    type: cloudify.nodes.openstack.KeyPair
+  volume_type_node:
+    type: cloudify.nodes.openstack.VolumeType
     properties:
       client_config: *client_config
-      resource_config:
-        name: 'keypair_test'
+      resource_config: { get_input: volume_type_config }

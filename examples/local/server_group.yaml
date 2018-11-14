@@ -23,9 +23,13 @@ inputs:
 
   server_group_config:
     default:
-      name: 'openstack-server-group'
+      name: { concat: [ { get_input: name_prefix }, 'server_group' ] }
       policies:
        - anti-affinity
+
+  name_prefix:
+    type: string
+    default: compute_
 
 
 dsl_definitions:
@@ -38,7 +42,7 @@ dsl_definitions:
 
 node_templates:
 
-  server_group:
+  example-server_group:
     type: cloudify.nodes.openstack.ServerGroup
     properties:
       client_config: *client_config

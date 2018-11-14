@@ -414,12 +414,12 @@ data_types:
       default_project_id:
         description: >
           The ID of the default project for the user.
-          A user’s default project must not be a domain.
+          A user's default project must not be a domain.
           Setting this attribute does not grant any actual authorization
           on the project, and is merely provided for convenience.
-          Therefore, the referenced project does not need to exist within the user domain.
-          (Since v3.1) If the user does not have authorization to their default project,
-          the default project is ignored at token creation.(Since v3.1)
+          Therefore, the referenced project does not need to exist within the user domain. Since v3.1.
+          If the user does not have authorization to their default project,
+          the default project is ignored at token creation. Since v3.1.
           Additionally, if your default project is not valid, a token is issued without an explicit scope of authorization
         required: false
         type: string
@@ -660,13 +660,13 @@ node_types:
         type: string
         default: windows
         description: >
-          (updates the os_family default as a convenience)
+          updates the os_family default as a convenience
       agent_config:
         type: cloudify.datatypes.AgentConfig
         default:
           port: 5985
         description: >
-          (updates the defaults for the agent_config for Windows)
+          updates the defaults for the agent_config for Windows)
 
   cloudify.nodes.openstack.ServerGroup:
     derived_from: cloudify.nodes.Root
@@ -752,11 +752,11 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.yaml.create
+          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.create
         delete:
-          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.yaml.delete
+          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.delete
         update:
-          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.yaml.update
+          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.update
 
   cloudify.nodes.openstack.Project:
     derived_from: cloudify.nodes.Root
@@ -776,7 +776,6 @@ node_types:
         update:
           implementation: openstacksdk.openstacksdk_plugin.resources.identity.project.update
 
-
   cloudify.nodes.openstack.VolumeType:
     derived_from: cloudify.nodes.Root
     properties:
@@ -789,11 +788,11 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.yaml.create
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.create
         delete:
-          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.yaml.delete
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.delete
         update:
-          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.yaml.update
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.update
 
 relationships:
 

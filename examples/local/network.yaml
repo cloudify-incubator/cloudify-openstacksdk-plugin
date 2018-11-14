@@ -7,10 +7,6 @@ imports:
 
 inputs:
 
-  example_subnet_cidr:
-    type: string
-    default: 10.10.0.0/24
-
   auth_url:
     type: string
 
@@ -26,6 +22,16 @@ inputs:
   project_name:
     type: string
 
+  example_subnet_cidr:
+    type: string
+
+  example_fixed_ip:
+    type: string
+
+  name_prefix:
+    type: string
+    default: network_
+
 dsl_definitions:
 
   client_config: &client_config
@@ -37,41 +43,41 @@ dsl_definitions:
 
 node_templates:
 
-  example_router:
+  example-router:
     type: cloudify.nodes.openstack.Router
     properties:
       client_config: *client_config
       resource_config:
-        name: 'example_router'
+        name: { concat: [ { get_input: name_prefix }, 'router' ] }
 
-  example_network:
+  example-network:
     type: cloudify.nodes.openstack.Network
     properties:
       client_config: *client_config
       resource_config:
-        name: 'example_network'
+        name: { concat: [ { get_input: name_prefix }, 'network' ] }
 
-  example_security_group:
+  example-security_group:
     type: cloudify.nodes.openstack.SecurityGroup
     properties:
       client_config: *client_config
       resource_config:
-        name: 'example_security_group'
+        name: { concat: [ { get_input: name_prefix }, 'security_group' ] }
         description: 'A security group created by Cloudify OpenStack SDK plugin.'
 
-  example_subnet:
+  example-subnet:
     type: cloudify.nodes.openstack.Subnet
     properties:
       client_config: *client_config
       resource_config:
-        name: 'example_subnet'
-        network_id: { get_attribute: [ example_network, resource_id ] }
+        name: { concat: [ { get_input: name_prefix }, 'subnet' ] }
+        network_id: { get_attribute: [ example-network, id ] }
         cidr: { get_input: example_subnet_cidr }
         enable_dhcp: true
         ip_version: 4
     relationships:
       - type: cloudify.relationships.contained_in
-        target: example_network
+        target: example-network
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -79,7 +85,7 @@ node_templates:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
 
-  example_security_group_rule:
+  example-security_group_rule:
     type: cloudify.nodes.openstack.SecurityGroupRule
     properties:
       client_config: *client_config
@@ -88,35 +94,38 @@ node_templates:
         protocol: tcp
         port_range_max: 22
         port_range_min: 22
-        security_group_id: { get_attribute: [ example_security_group, resource_id ] }
+        security_group_id: { get_attribute: [ example-security_group, id ] }
     relationships:
       - type: cloudify.relationships.contained_in
-        target: example_security_group
+        target: example-security_group
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
 
-  example_network_interface:
+  example-port:
     type: cloudify.nodes.openstack.Port
     properties:
       client_config: *client_config
       resource_config:
-        name: 'example_port'
-        network_id: { get_attribute: [ example_network, resource_id ] }
+        name: { concat: [ { get_input: name_prefix }, 'port' ] }
+        network_id: { get_attribute: [ example-network, id ] }
         fixed_ips:
-          - subnet_id: { get_attribute: [ example_subnet, resource_id ] }
+          - subnet_id: { get_attribute: [ example-subnet, id ] }
+            ip_address: { get_input: example_fixed_ip }
         security_groups:
-          - { get_attribute: [ example_security_group, resource_id ] }
-        device_id: { get_attribute: [ example_router, resource_id ] }
+          - { get_attribute: [ example-security_group, id ] }
+        device_id: { get_attribute: [ example-router, id ] }
     relationships:
       - type: cloudify.relationships.contained_in
-        target: example_subnet
+        target: example-subnet
       - type: cloudify.relationships.connected_to
-        target: example_router
+        target: example-router
       - type: cloudify.relationships.connected_to
-        target: example_security_group
+        target: example-security_group
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
