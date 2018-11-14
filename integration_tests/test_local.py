@@ -135,6 +135,55 @@ class LiveUseCaseTests(unittest.TestCase):
         self.verify_no_conflicting_resources()
         self.addCleanup(self.delete_all_resources)
 
+    def test_keypair_example(self, *_):
+        self.test_name = 'test_keypair_example'
+        self.blueprint_path = './examples/local/keypair.yaml'
+        self.inputs = dict(self.client_config)
+        self.initialize_local_blueprint()
+        # execute install workflow
+        self.cfy_local.execute(
+            'install',
+            task_retries=30,
+            task_retry_interval=1)
+        # execute uninstall workflow
+        self.cfy_local.execute(
+            'uninstall',
+            task_retries=30,
+            task_retry_interval=1)
+
+    def test_server_group_example(self, *_):
+        self.test_name = 'test_server_group_example'
+        self.blueprint_path = './examples/local/server_group.yaml'
+        self.inputs = dict(self.client_config)
+        self.initialize_local_blueprint()
+        # execute install workflow
+        self.cfy_local.execute(
+            'install',
+            task_retries=30,
+            task_retry_interval=1)
+        # execute uninstall workflow
+        self.cfy_local.execute(
+            'uninstall',
+            task_retries=30,
+            task_retry_interval=1)
+
+    # # Requires Special Permissions
+    # def test_volume_type_example(self, *_):
+    #     self.test_name = 'test_volume_type_example'
+    #     self.blueprint_path = './examples/local/volume_type.yaml'
+    #     self.inputs = dict(self.client_config)
+    #     self.initialize_local_blueprint()
+    #     # execute install workflow
+    #     self.cfy_local.execute(
+    #         'install',
+    #         task_retries=30,
+    #         task_retry_interval=1)
+    #     # execute uninstall workflow
+    #     self.cfy_local.execute(
+    #         'uninstall',
+    #         task_retries=30,
+    #         task_retry_interval=1)
+
     def test_network_example(self, *_):
         self.test_name = 'test_network_example'
         self.blueprint_path = './examples/local/network.yaml'
@@ -153,19 +202,3 @@ class LiveUseCaseTests(unittest.TestCase):
         # execute uninstall workflow
         self.cfy_local.execute(
             'uninstall', task_retries=30, task_retry_interval=1)
-
-    def test_keypair_example(self, *_):
-        self.test_name = 'test_keypair_example'
-        self.blueprint_path = './examples/local/keypair.yaml'
-        self.inputs = dict(self.client_config)
-        self.initialize_local_blueprint()
-        # execute install workflow
-        self.cfy_local.execute(
-            'install',
-            task_retries=30,
-            task_retry_interval=1)
-        # execute uninstall workflow
-        self.cfy_local.execute(
-            'uninstall',
-            task_retries=30,
-            task_retry_interval=1)

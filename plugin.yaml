@@ -752,11 +752,11 @@ node_types:
 #    interfaces:
 #      cloudify.interfaces.lifecycle:
 #        create:
-#          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.yaml.create
+#          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.create
 #        delete:
-#          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.yaml.delete
+#          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.delete
 #        update:
-#          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.yaml.update
+#          implementation: openstacksdk.openstacksdk_plugin.resources.identity.user.update
 
   cloudify.nodes.openstack.Project:
     derived_from: cloudify.nodes.Root
@@ -789,11 +789,11 @@ node_types:
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
-          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.yaml.create
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.create
         delete:
-          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.yaml.delete
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.delete
         update:
-          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.yaml.update
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.update
 
 relationships:
 

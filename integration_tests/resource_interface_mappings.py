@@ -82,3 +82,11 @@ class KeyPair(InterfaceBase):
     client_name = 'compute'
     get_method_name = 'get_keypair'
     delete_method_name = 'delete_keypair'
+
+
+class VolumeType(InterfaceBase):
+
+    type_name = 'cloudify.nodes.openstack.VolumeType'
+    client_name = 'block_storage'
+    get_method_name = 'get_type'
+    delete_method_name = 'delete_type'
