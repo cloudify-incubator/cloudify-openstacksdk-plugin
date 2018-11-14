@@ -1,8 +1,26 @@
+# #######
+# Copyright (c) 2018 Cloudify Platform Ltd. All rights reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    * See the License for the specific language governing permissions and
+#    * limitations under the License.
+
 from os import getenv
 import unittest
 
 import openstack
 from cloudify.workflows import local
+
+import resource_interface_mappings
+
 
 IGNORED_LOCAL_WORKFLOW_MODULES = (
     'worker_installer.tasks',
@@ -45,79 +63,10 @@ class LiveUseCaseTests(unittest.TestCase):
     openstack_auth_url=https://....;=
     ```
 
-    Your node template names should end with the name of the
-    type of resource separated by a dash.
-    Your resource name should have a test_prefix followed by the type:
-
-    ```yaml
-      example-security_group:
-        type: cloudify.nodes.openstack.SecurityGroup
-        properties:
-          client_config: *client_config
-          resource_config:
-            name: { concat: [ { get_input: name_prefix }, 'security_group' ] }
-            description: >
-                'A security group created by Cloudify OpenStack SDK plugin.'
-    ```
-
-    These values are used to resolve conflicts and cleanup.
-
     """
 
     def setUp(self):
         super(LiveUseCaseTests, self).setUp()
-
-    def _get_get_call(self, _client_name, _node_instance):
-        """ This method finds the client call for getting a resource.
-        :param _client: The Openstack Client
-        :param _node_instance: The Cloudify Node Instance
-        :return: The appropriate method for getting a particular resource.
-        """
-        client = getattr(self.client, _client_name)
-        name = _node_instance.node_id.split('-')[-1]
-        function_name = 'get_{0}'.format(name)
-        return getattr(client, function_name)
-
-    def _get_delete_call(self, client_name, _node_instance):
-        """ This method finds the client call for deleting a resource.
-        :param _client: The Openstack Client
-        :param _node_instance: The Cloudify Node Instance
-        :return: The appropriate method for deleting a particular resource.
-        """
-        client = getattr(self.client, client_name)
-        name = _node_instance.node_id.split('-')[-1]
-        function_name = 'delete_{0}'.format(name)
-        return getattr(client, function_name)
-
-    def verify_no_conflicting_resources(self, client_name):
-        """ This method checks that there are no conflicting resources in
-        Openstack before we run a test.
-        :param client_name: The appropriate client,
-            such as "network" or "compute".
-        :return: Nothing. Raises if a resource is found.
-        """
-        for node_instance in self.cfy_local.storage.get_node_instances():
-            node_template = \
-                self.cfy_local.storage.get_node(node_instance.node_id)
-            if node_template.type == \
-                    'cloudify.nodes.openstack.SecurityGroupRule':
-                continue
-            get_call = self._get_get_call(client_name, node_instance)
-            try:
-                conflicting_resource = get_call(
-                    node_template.properties['resource_config']['name'])
-            except openstack.exceptions.SDKException:
-                continue
-            raise Exception(
-                'Conflicting resource found {0}'.format(conflicting_resource))
-
-    def clean_up_script(self, client_name):
-        try:
-            for node_instance in self.cfy_local.storage.get_node_instances():
-                delete_call = self._get_delete_call(client_name, node_instance)
-                delete_call(node_instance.runtime_properties['id'])
-        except openstack.exceptions.SDKException:
-            pass
 
     @property
     def client_config(self):
@@ -129,64 +78,94 @@ class LiveUseCaseTests(unittest.TestCase):
             'region_name': getenv('openstack_region_name'),
         }
 
-    def _check_primary_identifier_property_node_instances(self):
-        for instance in self.instances:
-            self.assertIn('id', instance.runtime_properties)
+    @staticmethod
+    def resolve_resource_interface(node_type):
+        try:
+            return getattr(resource_interface_mappings, node_type.split('.')[-1])
+        except AttributeError:
+            return None
 
-    def test_network_example_blueprint(self, *_):
+    def get_resource_interfaces(self):
+        resource_interface_list = []
+        for node_instance in self.cfy_local.storage.get_node_instances():
+            node_template = \
+                self.cfy_local.storage.get_node(node_instance.node_id)
+            resource_interface = \
+                self.resolve_resource_interface(
+                    node_template.type)
+            if not resource_interface:
+                continue
+            resource_interface_list.append(
+                resource_interface(
+                    node_instance.node_id,
+                    self.client_config
+                ))
+        return resource_interface_list
 
-        inputs = dict(self.client_config)
-        inputs.update(
+    def verify_no_conflicting_resources(self):
+        """ This method checks that there are no conflicting resources in
+        Openstack before we run a test.
+        :return: Nothing.
+        :Raises Exception: Raises an exception if there are such resources.
+        """
+        for resource_interface in self.get_resource_interfaces():
+            try:
+                conflicting_resource = resource_interface.get()
+            except openstack.exceptions.SDKException:
+                continue
+            raise Exception(
+                'Conflicting resource found {0}'.format(conflicting_resource))
+
+    def delete_all_resources(self):
+        """Deletes orphan resources in Openstack.
+        :return: Nothing.
+        """
+        for resource_interface in self.get_resource_interfaces():
+            try:
+                resource_interface.delete()
+            except openstack.exceptions.SDKException:
+                pass
+
+    def initialize_local_blueprint(self):
+        self.cfy_local = local.init_env(
+            self.blueprint_path,
+            self.test_name,
+            inputs=self.inputs,
+            ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
+        self.verify_no_conflicting_resources()
+        self.addCleanup(self.delete_all_resources)
+
+    def test_network_example(self, *_):
+        self.test_name = 'test_network_example'
+        self.blueprint_path = './examples/local/network.yaml'
+        self.inputs = dict(self.client_config)
+        self.inputs.update(
             {
                 'example_subnet_cidr': '10.10.0.0/24',
                 'example_fixed_ip': '10.10.0.11',
                 'name_prefix': 'network_'
             }
         )
-
-        self.cfy_local = local.init_env(
-            './examples/local/network.yaml',
-            name='example_network_blueprint',
-            inputs=inputs,
-            ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
-        self.client = openstack.connect(**self.client_config)
-        self.verify_no_conflicting_resources('network')
-        self.addCleanup(self.clean_up_script, 'network')
-
+        self.initialize_local_blueprint()
         # execute install workflow
         self.cfy_local.execute(
             'install', task_retries=30, task_retry_interval=1)
-        self.instances = self.cfy_local.storage.get_node_instances()
-        self.assertEqual(len(self.instances), 6)
-        self._check_primary_identifier_property_node_instances()
         # execute uninstall workflow
         self.cfy_local.execute(
             'uninstall', task_retries=30, task_retry_interval=1)
 
     def test_keypair_example(self, *_):
-
-        inputs = dict(self.client_config)
-        inputs.update(
-            {
-                'name_prefix': 'compute_'
-            }
-        )
-
-        self.cfy_local = local.init_env(
-            './examples/local/keypair.yaml',
-            name='example_keypair_blueprint',
-            inputs=inputs,
-            ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
-        self.client = openstack.connect(**self.client_config)
-        self.verify_no_conflicting_resources('compute')
-        self.addCleanup(self.clean_up_script, 'compute')
-
+        self.test_name = 'test_keypair_example'
+        self.blueprint_path = './examples/local/keypair.yaml'
+        self.inputs = dict(self.client_config)
+        self.initialize_local_blueprint()
         # execute install workflow
         self.cfy_local.execute(
-            'install', task_retries=30, task_retry_interval=1)
-        self.instances = self.cfy_local.storage.get_node_instances()
-        self.assertEqual(len(self.instances), 1)
-        self._check_primary_identifier_property_node_instances()
+            'install',
+            task_retries=30,
+            task_retry_interval=1)
         # execute uninstall workflow
         self.cfy_local.execute(
-            'uninstall', task_retries=30, task_retry_interval=1)
+            'uninstall',
+            task_retries=30,
+            task_retry_interval=1)
