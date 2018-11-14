@@ -47,8 +47,10 @@ class OpenStackSDKTestBase(unittest.TestCase):
             'security_group_rule': self._fake_network_security_group_rule,
             'volume': self._fake_block_storage_volume,
             'volume_attachment': self._fake_compute_volume_attachment,
+            'volume_type': self._fake_block_storage_type,
             'snapshot': self._fake_block_storage_snapshot,
-            'type': self._fake_block_storage_type,
+            'user': self._fake_identity_user,
+            'project': self._fake_identity_project,
         }
 
     @property
@@ -260,3 +262,23 @@ class OpenStackSDKTestBase(unittest.TestCase):
         snapshot.delete_snapshot = self._gen_openstack_sdk_error()
         self.connection.block_storage = snapshot
         return self.connection.block_storage
+
+    def _fake_identity_user(self):
+        user_conn = mock.MagicMock()
+        user_conn.users = self._gen_openstack_sdk_error()
+        user_conn.get_user = self._gen_openstack_sdk_error()
+        user_conn.create_user = self._gen_openstack_sdk_error()
+        user_conn.delete_user = self._gen_openstack_sdk_error()
+        user_conn.update_user = self._gen_openstack_sdk_error()
+        self.connection.identity = user_conn
+        return self.connection.identity
+
+    def _fake_identity_project(self):
+        project_conn = mock.MagicMock()
+        project_conn.projects = self._gen_openstack_sdk_error()
+        project_conn.get_project = self._gen_openstack_sdk_error()
+        project_conn.create_project = self._gen_openstack_sdk_error()
+        project_conn.delete_project = self._gen_openstack_sdk_error()
+        project_conn.update_project = self._gen_openstack_sdk_error()
+        self.connection.identity = project_conn
+        return self.connection.identity

@@ -20,7 +20,7 @@ import mock
 import openstack.compute.v2.server_group
 
 # Local imports
-from . import base
+from openstack_sdk.tests import base
 from openstack_sdk.resources import compute
 
 
