@@ -21,6 +21,9 @@ inputs:
   project_name:
     type: string
 
+  name_prefix:
+    type: string
+
 dsl_definitions:
 
   client_config: &client_config
@@ -32,9 +35,9 @@ dsl_definitions:
 
 node_templates:
 
-  keypair_node:
+  example-keypair:
     type: cloudify.nodes.openstack.KeyPair
     properties:
       client_config: *client_config
       resource_config:
-        name: 'keypair_test'
+        name: { concat: [ { get_input: name_prefix }, 'keypair' ] }
