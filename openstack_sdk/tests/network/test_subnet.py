@@ -20,7 +20,7 @@ import mock
 import openstack.network.v2.subnet
 
 # Local imports
-from . import base
+from openstack_sdk.tests import base
 from openstack_sdk.resources import networks
 
 
