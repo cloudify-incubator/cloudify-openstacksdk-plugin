@@ -854,3 +854,20 @@ relationships:
           inputs:
             subnet_id:
               default: { get_attribute: [ SOURCE, id ] }
+
+  cloudify.relationships.openstack.port_connected_to_floating_ip:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish:
+          implementation: openstacksdk.openstacksdk_plugin.resources.floating_ip.update
+          inputs:
+            floating_ip_id:
+              default: { get_attribute: [ TARGET, id ] }
+            port_id:
+              default: { get_attribute: [ SOURCE, id ] }
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.floating_ip.update
+          inputs:
+            floating_ip_id:
+              default: { get_attribute: [ TARGET, id ] }

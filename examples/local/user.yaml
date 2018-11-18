@@ -21,6 +21,10 @@ inputs:
   project_name:
     type: string
 
+  user_domain_id:
+    type: string
+    default: default
+
   user_config:
     default:
       name: 'test-user'
