@@ -35,6 +35,5 @@ def delete(openstack_resource):
 
 
 @with_openstack_resource(OpenstackFloatingIP)
-def update(openstack_resource, floating_ip_id, port_id=None):
-    openstack_resource.resource_id = floating_ip_id
-    openstack_resource.update(new_config={'port_id': port_id})
+def update(openstack_resource, **new_config):
+    openstack_resource.update(**new_config)
