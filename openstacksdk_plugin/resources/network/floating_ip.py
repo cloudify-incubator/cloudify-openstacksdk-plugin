@@ -23,7 +23,10 @@ from cloudify import ctx
 @with_openstack_resource(OpenstackFloatingIP)
 def create(openstack_resource):
     created_resource = openstack_resource.create()
-    ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
+    ctx.instance.runtime_properties[RESOURCE_ID] = \
+        created_resource.id
+    ctx.instance.runtime_properties['floating_ip_address'] = \
+        created_resource.floating_ip_address
 
 
 @with_openstack_resource(OpenstackFloatingIP)

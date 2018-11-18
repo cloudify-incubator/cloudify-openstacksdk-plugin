@@ -207,3 +207,59 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
         response = self.router_instance.delete()
         self.assertIsNone(response)
+
+    def test_add_interface_router(self):
+        router = openstack.network.v2.router.Router(**{
+            'id': '1',
+            'name': 'test_name',
+            'description': 'test_description',
+            'availability_zone_hints': ['1'],
+            'availability_zones': ['2'],
+            'created_at': 'timestamp1',
+            'distributed': False,
+            'external_gateway_info': {'4': 4},
+            'flavor_id': '5',
+            'ha': False,
+            'revision': 7,
+            'routes': ['8'],
+            'status': '9',
+            'tenant_id': '10',
+            'updated_at': 'timestamp2',
+
+        })
+
+        self.router_instance.resource_id = '1'
+        self.fake_client.get_router = mock.MagicMock(return_value=router)
+        self.fake_client.add_interface_to_router = \
+            mock.MagicMock(return_value=None)
+
+        response = self.router_instance.add_interface({'subnet_id': 'abc'})
+        self.assertIsNone(response)
+
+    def test_remove_interface_router(self):
+        router = openstack.network.v2.router.Router(**{
+            'id': '1',
+            'name': 'test_name',
+            'description': 'test_description',
+            'availability_zone_hints': ['1'],
+            'availability_zones': ['2'],
+            'created_at': 'timestamp1',
+            'distributed': False,
+            'external_gateway_info': {'4': 4},
+            'flavor_id': '5',
+            'ha': False,
+            'revision': 7,
+            'routes': ['8'],
+            'status': '9',
+            'tenant_id': '10',
+            'updated_at': 'timestamp2',
+
+        })
+
+        self.router_instance.resource_id = '1'
+        self.fake_client.get_router = mock.MagicMock(return_value=router)
+        self.fake_client.remove_interface_from_router = \
+            mock.MagicMock(return_value=None)
+
+        response = self.router_instance.remove_interface({'subnet_id': 'abc'})
+        self.assertIsNone(response)

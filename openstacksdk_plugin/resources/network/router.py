@@ -32,5 +32,15 @@ def delete(openstack_resource):
     openstack_resource.delete()
 
 
+@with_openstack_resource(OpenstackRouter)
+def add_interface_to_router(openstack_resource, **kwargs):
+    openstack_resource.add_interface(kwargs)
+
+
+@with_openstack_resource(OpenstackRouter)
+def remove_interface_from_router(openstack_resource, **kwargs):
+    openstack_resource.remove_interface(kwargs)
+
+
 def update():
     pass

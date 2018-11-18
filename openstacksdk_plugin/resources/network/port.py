@@ -24,6 +24,7 @@ from cloudify import ctx
 def create(openstack_resource):
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
+    ctx.instance.runtime_properties['fixed_ips'] = created_resource.fixed_ips
 
 
 @with_openstack_resource(OpenstackPort)
@@ -31,5 +32,6 @@ def delete(openstack_resource):
     openstack_resource.delete()
 
 
-def update():
-    pass
+@with_openstack_resource(OpenstackPort)
+def update(openstack_resource, **new_config):
+    openstack_resource.update(new_config)

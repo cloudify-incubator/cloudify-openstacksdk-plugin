@@ -796,8 +796,53 @@ node_types:
 
 relationships:
 
-  cloudify.openstack.server_connected_to_keypair:
+  cloudify.relationships.openstack.server_connected_to_keypair:
     derived_from: cloudify.relationships.connected_to
 
-  cloudify.openstack.server_connected_to_server_group:
+  cloudify.relationships.openstack.server_connected_to_server_group:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.openstack.server_connected_to_port:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        postconfigure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.port.update
+          inputs:
+            device_id:
+              default: { get_attribute: [ SOURCE, id ] }
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.port.update
+          inputs:
+            device_id:
+              default: ''
+
+  cloudify.relationships.openstack.port_connected_to_router:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        postconfigure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.add_interface_to_router
+          inputs:
+            port_id:
+              default: { get_attribute: [ SOURCE, id ] }
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.remove_interface_from_router
+          inputs:
+            port_id:
+              default: { get_attribute: [ SOURCE, id ] }
+
+  cloudify.relationships.openstack.subnet_connected_to_router:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        postconfigure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.add_interface_to_router
+          inputs:
+            subnet_id:
+              default: { get_attribute: [ SOURCE, id ] }
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.remove_interface_from_router
+          inputs:
+            subnet_id:
+              default: { get_attribute: [ SOURCE, id ] }
