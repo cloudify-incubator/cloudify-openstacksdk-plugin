@@ -25,6 +25,7 @@ from cloudify.utils import exception_to_error_cause
 # Local imports
 from openstacksdk_plugin.constants import RESOURCE_ID
 from openstacksdk_plugin.constants import USE_EXTERNAL_RESOURCE_PROPERTY
+from openstacksdk_plugin import utils
 
 
 def with_openstack_resource(class_decl=None):
@@ -33,24 +34,28 @@ def with_openstack_resource(class_decl=None):
     invoked
     :return: a wrapper object encapsulating the invoked function
     """
+
     def wrapper_outer(func):
         def wrapper_inner(**kwargs):
             ctx = kwargs.pop('ctx', CloudifyContext)
-            # Get the operation name
+            node_instance = utils.set_ctx(ctx)
             _, _, _, operation_name = ctx.operation.name.split('.')
 
             def get_property_by_name(property_name):
                 property_value = None
                 # TODO: Improve this to be more thorough.
-                if property_name in ctx.node.properties:
-                    property_value = ctx.node.properties.get(property_name)
-                if property_name in ctx.instance.runtime_properties:
+                if property_name in node_instance.node.properties:
+                    property_value = \
+                        node_instance.node.properties.get(property_name)
+                if property_name in node_instance.instance.runtime_properties:
                     if isinstance(property_value, dict):
                         property_value.update(
-                            ctx.instance.runtime_properties.get(property_name))
+                            node_instance.instance.runtime_properties.get(
+                                property_name))
                     else:
-                        property_value = ctx.instance.runtime_properties.get(
-                            property_name)
+                        property_value = \
+                            node_instance.instance.runtime_properties.get(
+                                property_name)
                 if property_name in kwargs:
                     kwargs_value = kwargs.pop(property_name)
                     if isinstance(property_value, dict):
@@ -70,9 +75,9 @@ def with_openstack_resource(class_decl=None):
 
             # Check if resource_id is part of runtime properties so that we
             # can add it to the resource_config
-            if RESOURCE_ID in ctx.instance.runtime_properties:
-                resource_config['id'] =\
-                    ctx.instance.runtime_properties[RESOURCE_ID]
+            if RESOURCE_ID in node_instance.instance.runtime_properties:
+                resource_config['id'] = \
+                    node_instance.instance.runtime_properties[RESOURCE_ID]
 
             resource = class_decl(client_config=client_config,
                                   resource_config=resource_config,
@@ -100,7 +105,8 @@ def with_openstack_resource(class_decl=None):
                         'not creating resource {0}'
                         ' since an external resource is being used'
                         ''.format(resource.name))
-                    ctx.instance.runtime_properties[RESOURCE_ID] = resource.id
+                    node_instance.instance.runtime_properties[RESOURCE_ID] = \
+                        resource.id
                 elif operation_name == 'delete':
                     ctx.logger.info(
                         'not deleting resource {0}'

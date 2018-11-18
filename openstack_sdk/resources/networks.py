@@ -153,7 +153,7 @@ class OpenstackPort(OpenstackResource):
         self.logger.debug(
             'Attempting to update this port: {0} with args {1}'.format(
                 port, new_config))
-        result = self.connection.network.update_port(port, new_config)
+        result = self.connection.network.update_port(port, **new_config)
         self.logger.debug(
             'Updated port with this result: {0}'.format(result))
         return result
@@ -202,6 +202,28 @@ class OpenstackRouter(OpenstackResource):
         result = self.connection.network.update_router(router, new_config)
         self.logger.debug(
             'Updated router with this result: {0}'.format(result))
+        return result
+
+    def add_interface(self, kwargs):
+        router = self.get()
+        self.logger.debug(
+            'Attempting to add {0} interface this router: {1}'.format(
+                kwargs, router))
+        result = self.connection.network.add_interface_to_router(
+            router, **kwargs)
+        self.logger.debug(
+            'Added this interface to router: {0}'.format(result))
+        return result
+
+    def remove_interface(self, kwargs):
+        router = self.get()
+        self.logger.debug(
+            'Attempting to remove {0} interface this router: {1}'.format(
+                kwargs, router))
+        result = self.connection.network.remove_interface_from_router(
+            router, **kwargs)
+        self.logger.debug(
+            'Removed this interface to router: {0}'.format(result))
         return result
 
 

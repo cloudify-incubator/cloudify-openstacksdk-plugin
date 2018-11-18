@@ -25,7 +25,12 @@ from openstacksdk_plugin.constants import RESOURCE_ID
 @with_openstack_resource(OpenstackKeyPair)
 def create(openstack_resource):
     created_resource = openstack_resource.create()
-    ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
+    ctx.instance.runtime_properties[RESOURCE_ID] = \
+        created_resource.id
+    ctx.instance.runtime_properties['private_key'] = \
+        created_resource.private_key
+    ctx.instance.runtime_properties['public_key'] = \
+        created_resource.public_key
 
 
 @with_openstack_resource(OpenstackKeyPair)

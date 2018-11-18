@@ -51,9 +51,8 @@ def create(openstack_resource):
     if server.status != SERVER_STATUS_ACTIVE:
         ctx.instance.runtime_properties[SERVER_TASK_CREATE] = True
         raise OperationRetry(
-            message='Waiting for server to be in {0} state but is in {1}'
-                    'state. Retrying...'.format(SERVER_STATUS_ACTIVE,
-                                                status,), retry_after=30)
+            message='Waiting for server to be in {0} state but is in {1} '
+                    'state. Retrying...'.format(SERVER_STATUS_ACTIVE, status))
 
 
 @with_openstack_resource(OpenstackServer)
@@ -85,8 +84,7 @@ def delete(openstack_resource):
     ctx.logger.info('Waiting for server "{0}" to be deleted.'
                     ' current status: {1}'.format(server.id, server.status))
 
-    raise OperationRetry(message='Server has {} state.'.format(
-        server.status), retry_after=30)
+    raise OperationRetry(message='Server has {} state.'.format(server.status))
 
 
 @with_openstack_resource(OpenstackServer)
