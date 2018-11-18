@@ -28,5 +28,6 @@ def set_ctx(_ctx):
     if _ctx.type != NODE_INSTANCE:
         _ctx.logger.warn(
             'CloudifyContext is neither {0} nor {1} type. '
-            'Falling back to {0}. However, this indicates a problem.')
+            'Falling back to {0}. Tthis indicates a problem.'.format(
+                NODE_INSTANCE, RELATIONSHIP_INSTANCE))
     return _ctx

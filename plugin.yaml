@@ -802,6 +802,10 @@ relationships:
   cloudify.relationships.openstack.server_connected_to_server_group:
     derived_from: cloudify.relationships.connected_to
 
+  # This is a little confusing, so I will make sure it is clear.
+  # The relationship is from a cloudify.nodes.openstack.Server to a cloudify.nodes.openstack.Port.
+  # The operation occurs on a Port object. We use target_interfaces to get that resource.
+  # We get the source ID (the server) to set the device_id on the port.
   cloudify.relationships.openstack.server_connected_to_port:
     derived_from: cloudify.relationships.connected_to
     target_interfaces:
