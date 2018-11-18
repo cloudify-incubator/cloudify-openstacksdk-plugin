@@ -76,6 +76,10 @@ data_types:
         type: string
         description: The region where you want this particular resource to be created.
         required: false
+      user_domain_id:
+        type: string
+        description: The user domain id
+        required: false
 
   cloudify.types.openstack.Network:
     properties:
