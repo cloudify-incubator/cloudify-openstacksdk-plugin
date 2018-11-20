@@ -36,7 +36,8 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
 def create(openstack_resource):
     if SERVER_TASK_CREATE not in ctx.instance.runtime_properties:
 
-        # User Data must be encoded to base64 encode whenever user_data provided
+        # User Data must be encoded to base64 encode whenever
+        # user_data provided
         if openstack_resource.config.get('user_data'):
             openstack_resource.config['user_data'] = \
                 base64.b64encode(openstack_resource.config['user_data'])
