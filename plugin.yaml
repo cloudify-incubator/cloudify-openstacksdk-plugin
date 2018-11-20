@@ -104,7 +104,7 @@ data_types:
       network_id:
         description: The ID of the network to which the subnet belongs.
         type: string
-        required: false
+        required: true
       dns_nameservers:
         description: List of dns name servers associated with the subnet. Default is an empty list.
         required: false
@@ -600,6 +600,10 @@ node_types:
     properties:
       <<: *external_resource
       <<: *client_config
+      security_group_rules:
+        description: List of security groups rule.
+        required: false
+        default: []
       resource_config:
         type: cloudify.types.openstack.SecurityGroup
         description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-security-group.
@@ -608,6 +612,11 @@ node_types:
       cloudify.interfaces.lifecycle:
         create:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.create
+        configure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.configure
+          inputs:
+            security_group_rules:
+              default: { get_property: [ SELF, security_group_rules ] }
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.delete
         update:
@@ -859,13 +868,13 @@ relationships:
     derived_from: cloudify.relationships.connected_to
     target_interfaces:
       cloudify.interfaces.relationship_lifecycle:
-        establish:
-          implementation: openstacksdk.openstacksdk_plugin.resources.floating_ip.update
+        postconfigure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.floating_ip.update
           inputs:
             port_id:
               default: { get_attribute: [ SOURCE, id ] }
         unlink:
-          implementation: openstacksdk.openstacksdk_plugin.resources.floating_ip.update
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.floating_ip.update
           inputs:
             port_id:
               default: ''

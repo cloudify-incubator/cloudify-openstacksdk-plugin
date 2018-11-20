@@ -36,4 +36,11 @@ def delete(openstack_resource):
 
 @with_openstack_resource(OpenstackFloatingIP)
 def update(openstack_resource, **new_config):
-    openstack_resource.update(**new_config)
+    # At some case like remove ip from port, openstack API refuse to to set
+    # port_id to '' empty string in order to delete the port, it should be
+    # set to None in order to set it, so it is required to change '' to None
+    for key, item in new_config.iteritems():
+        if not item:
+            new_config[key] = None
+
+    openstack_resource.update(new_config)

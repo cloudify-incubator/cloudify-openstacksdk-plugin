@@ -13,6 +13,9 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Standard imports
+import base64
+
 # Third party imports
 from cloudify import ctx
 from openstack import exceptions
@@ -32,6 +35,13 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
 @with_openstack_resource(OpenstackServer)
 def create(openstack_resource):
     if SERVER_TASK_CREATE not in ctx.instance.runtime_properties:
+
+        # User Data must be encoded to base64 encode whenever user_data provided
+        if openstack_resource.config.get('user_data'):
+            openstack_resource.config['user_data'] = \
+                base64.b64encode(openstack_resource.config['user_data'])
+
+        # Create resource
         created_resource = openstack_resource.create()
 
         # Set the "id" as a runtime property for the created server

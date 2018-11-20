@@ -267,7 +267,7 @@ class OpenstackFloatingIP(OpenstackResource):
         self.logger.debug(
             'Attempting to update this floating_ip: {0} with args {1}'.format(
                 floating_ip, new_config))
-        result = self.connection.network.update_ip(floating_ip, new_config)
+        result = self.connection.network.update_ip(floating_ip, **new_config)
         self.logger.debug(
             'Updated floating_ip with this result: {0}'.format(result))
         return result

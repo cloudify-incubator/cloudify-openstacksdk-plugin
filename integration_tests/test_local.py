@@ -13,15 +13,18 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Standard Imports
 from os import getenv
 import StringIO
 from time import sleep
 import unittest
 
+# Third party imports
 import openstack
 from fabric.api import settings as fabric_settings, run as fabric_run
 from cloudify.workflows import local
 
+# Local imports
 import resource_interface_mappings
 
 
@@ -184,22 +187,22 @@ class LiveUseCaseTests(unittest.TestCase):
         self.install_blueprint()
         self.uninstall_blueprint()
 
-    # # Requires Special Permissions
-    # def test_volume_type_example(self, *_):
-    #     self.test_name = 'test_volume_type_example'
-    #     self.blueprint_path = './examples/local/volume_type.yaml'
-    #     self.inputs = dict(self.client_config)
-    #     self.initialize_local_blueprint()
-    #     # execute install workflow
-    #     self.cfy_local.execute(
-    #         'install',
-    #         task_retries=30,
-    #         task_retry_interval=1)
-    #     # execute uninstall workflow
-    #     self.cfy_local.execute(
-    #         'uninstall',
-    #         task_retries=30,
-    #         task_retry_interval=1)
+    # Requires Special Permissions
+    def test_volume_type_example(self, *_):
+        self.test_name = 'test_volume_type_example'
+        self.blueprint_path = './examples/local/volume_type.yaml'
+        self.inputs = dict(self.client_config)
+        self.initialize_local_blueprint()
+        # execute install workflow
+        self.cfy_local.execute(
+            'install',
+            task_retries=30,
+            task_retry_interval=1)
+        # execute uninstall workflow
+        self.cfy_local.execute(
+            'uninstall',
+            task_retries=30,
+            task_retry_interval=1)
 
     def test_network_example(self, *_):
         self.test_name = 'test_network_example'
@@ -258,5 +261,24 @@ class LiveUseCaseTests(unittest.TestCase):
             fabric_run_output = fabric_run('last')
             self.assertEqual(0, fabric_run_output.return_code)
 
+        # execute uninstall workflow
+        self.uninstall_blueprint()
+
+    def test_hello_world_example(self, *_):
+        self.test_name = 'test_hello_world_example'
+        self.blueprint_path = \
+            './examples/cloudify-hello-world-example/openstack.yaml'
+        self.inputs = dict(self.client_config)
+        self.inputs.update(
+            {
+                'external_network_id': 'dda079ce-12cf-4309-879a-8e67aec94de4',
+                'name_prefix': 'hello_world',
+                'image': 'e41430f7-9131-495b-927f-e7dc4b8994c8',
+                'flavor': '2',
+            }
+        )
+        self.initialize_local_blueprint()
+        self.install_blueprint()
+        sleep(10)
         # execute uninstall workflow
         self.uninstall_blueprint()
