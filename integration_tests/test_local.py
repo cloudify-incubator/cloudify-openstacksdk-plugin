@@ -15,12 +15,14 @@
 
 # Standard Imports
 from os import getenv
+import time
 import StringIO
-from time import sleep
 import unittest
 
 # Third party imports
 import openstack
+import requests
+import requests.exceptions
 from fabric.api import settings as fabric_settings, run as fabric_run
 from cloudify.workflows import local
 
@@ -151,7 +153,6 @@ class LiveUseCaseTests(unittest.TestCase):
             inputs=self.inputs,
             ignored_modules=IGNORED_LOCAL_WORKFLOW_MODULES)
         self.verify_no_conflicting_resources()
-        self.addCleanup(self.delete_all_resources)
 
     def install_blueprint(self,
                           task_retries=RETRY_MAX,
@@ -164,12 +165,23 @@ class LiveUseCaseTests(unittest.TestCase):
 
     def uninstall_blueprint(self,
                             task_retries=RETRY_MAX,
-                            task_retry_interval=RETRY_INT):
+                            task_retry_interval=RETRY_INT,
+                            ignore_failure=False):
 
-        self.cfy_local.execute(
-            'uninstall',
-            task_retries=task_retries,
-            task_retry_interval=task_retry_interval)
+        if ignore_failure:
+            self.cfy_local.execute(
+                'uninstall',
+                parameters={'ignore_failure': True},
+                task_retries=task_retries,
+                task_retry_interval=task_retry_interval)
+        else:
+            self.cfy_local.execute(
+                'uninstall',
+                task_retries=task_retries,
+                task_retry_interval=task_retry_interval)
+
+    def cleanup_uninstall(self):
+        self.uninstall_blueprint(ignore_failure=True)
 
     def test_keypair_example(self, *_):
         self.test_name = 'test_keypair_example'
@@ -235,7 +247,7 @@ class LiveUseCaseTests(unittest.TestCase):
         )
         self.initialize_local_blueprint()
         self.install_blueprint()
-        sleep(10)
+        time.sleep(10)
         private_key = StringIO.StringIO()
         try:
             server_floating_ip = \
@@ -265,6 +277,7 @@ class LiveUseCaseTests(unittest.TestCase):
         self.uninstall_blueprint()
 
     def test_hello_world_example(self, *_):
+        self.addCleanup(self.cleanup_uninstall)
         self.test_name = 'test_hello_world_example'
         self.blueprint_path = \
             './examples/cloudify-hello-world-example/openstack.yaml'
@@ -279,6 +292,37 @@ class LiveUseCaseTests(unittest.TestCase):
         )
         self.initialize_local_blueprint()
         self.install_blueprint()
-        sleep(10)
+        time.sleep(10)
+
+        try:
+            server_floating_ip = \
+                self.cfy_local.storage.get_node_instances('ip')[0]
+            ip_address = \
+                server_floating_ip.runtime_properties[
+                    'floating_ip_address']
+
+            # Before checking the response returned from the apache server
+            # installed on the server of this blueprint, it could take up to
+            # 30 seconds or less to be up and running, so that we need to
+            # have to wait this time
+            timeout = 30
+            current_time = time.time()
+            is_up = False
+
+            while not is_up and time.time() <= timeout + current_time:
+                try:
+                    response = requests.get('http://{0}'.format(ip_address))
+                    self.assertEqual(response.status_code, 200)
+                    is_up = True
+                except requests.exceptions.ConnectionError:
+                    pass
+
+            if not is_up:
+                raise Exception(
+                    'Server is not responding,'
+                    ' please check your blueprint configuration')
+
+        except (KeyError, IndexError) as e:
+            raise Exception('Missing Runtime Property: {0}'.format(str(e)))
         # execute uninstall workflow
         self.uninstall_blueprint()
