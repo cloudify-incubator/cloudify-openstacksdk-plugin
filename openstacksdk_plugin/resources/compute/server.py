@@ -77,18 +77,18 @@ def _set_server_ips_runtime_properties(server):
             ctx.instance.runtime_properties['public_ip_address'] = ip
 
     for ipv6 in ipv6_addresses:
-        ip = ipv6['addr']
+        ip_v6 = ipv6['addr']
 
         # Only set the first "ipv6" as runtime property
         if ipv6['type'] == 'fixed' \
                 and 'ipv6' not in ctx.instance.runtime_properties:
-            ctx.instance.runtime_properties['ipv6'] = ip
+            ctx.instance.runtime_properties['ipv6'] = ip_v6
 
         # Only set the first "public_ip6_address" as runtime property
         elif ipv6['type'] == 'floating'\
                 and 'public_ip6_address' not in\
                     ctx.instance.runtime_properties:
-            ctx.instance.runtime_properties['public_ip6_address'] = ip
+            ctx.instance.runtime_properties['public_ip6_address'] = ip_v6
 
     # Get list of all ipv4 associated with server
     ipv4_list = map(lambda ipv4_conf: ipv4_conf['addr'], ipv4_addresses)
