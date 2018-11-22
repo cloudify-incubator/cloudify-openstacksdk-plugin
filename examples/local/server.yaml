@@ -26,9 +26,8 @@ inputs:
       name: 'openstack-server'
       image_id: 70de1e0f-2951-4eae-9a8f-05afd97cd036
       flavor_id: 2
-      key_name: 'test-server'
       networks:
-         - uuid: 4eda4ad3-3380-40e3-adf6-15e12516f024
+         - uuid: b33948d6-2243-49a6-91be-c076cb1208d5
 
 
 dsl_definitions:
