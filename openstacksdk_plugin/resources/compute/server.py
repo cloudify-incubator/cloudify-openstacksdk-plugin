@@ -90,6 +90,17 @@ def _set_server_ips_runtime_properties(server):
                     ctx.instance.runtime_properties:
             ctx.instance.runtime_properties['public_ip6_address'] = ip_v6
 
+    # Check to see if "use_public_ip" is set or not in order to update the
+    # "ip" to use the public address
+    if ctx.node.properties['use_public_ip']:
+        pip = ctx.instance.runtime_properties.get('public_ip_address')
+        if pip:
+            ctx.instance.runtime_properties['ip'] = pip
+
+    elif ctx.node.properties.get('use_ipv6_ip', False) and ipv6_addresses:
+        ip_v6 = ctx.instance.runtime_properties['ipv6']
+        ctx.instance.runtime_properties['ip'] = ip_v6
+
     # Get list of all ipv4 associated with server
     ipv4_list = map(lambda ipv4_conf: ipv4_conf['addr'], ipv4_addresses)
 

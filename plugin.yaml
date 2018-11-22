@@ -647,6 +647,17 @@ node_types:
         type: cloudify.types.openstack.Server
         description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/compute/?expanded=create-server-detail
         required: true
+      use_ipv6_ip:
+        type: boolean
+        description: >
+          Tells us to use the IPv6 IP if one exists for agent installation. If use_public_ip is provided, this is overridden.
+        default: false
+      use_public_ip:
+        type: boolean
+        description: >
+          Tells the deployment to use the public IP (if available) of the resource
+          for Cloudify Agent connections
+        default: false
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
