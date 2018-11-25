@@ -15,6 +15,7 @@
 
 
 from setuptools import setup
+from setuptools import find_packages
 
 
 setup(
@@ -24,6 +25,6 @@ setup(
     author_email='info@cloudify.co',
     license='LICENSE',
     zip_safe=False,
-    packages=['openstacksdk_plugin', 'openstack_sdk'],
+    packages=find_packages(exclude=['tests*']),
     install_requires=['cloudify-plugins-common>=4.0', 'openstacksdk'],
     test_requires=['mock', 'requests-mock'])

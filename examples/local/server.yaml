@@ -2,7 +2,8 @@ tosca_definitions_version: cloudify_dsl_1_3
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
-  - plugin.yaml
+  - https://raw.githubusercontent.com/cloudify-incubator/cloudify-openstacksdk-plugin/CY-799-support-agent-Installation/plugin.yaml
+  - install-script.yaml
 
 inputs:
 
@@ -21,13 +22,25 @@ inputs:
   project_name:
     type: string
 
-  server_config:
-    default:
-      name: 'openstack-server'
-      image_id: 70de1e0f-2951-4eae-9a8f-05afd97cd036
-      flavor_id: 2
-      networks:
-         - uuid: b33948d6-2243-49a6-91be-c076cb1208d5
+  external_network_id:
+    type: string
+    description: A network that provisions floating IPs.
+
+  image:
+    type: string
+    description: The UUID of an Ubuntu Trusty 14.04 image in your Openstack account.
+
+  flavor:
+    type: string
+    description: The UUID of small flavor in your Openstack account.
+
+  network_id:
+    type: string
+    description: The UUID for your Cloudify Manager Openstack Network.
+
+  subnet_id:
+    type: string
+    description: The UUID for your Cloudify Manager Openstack Subnet.
 
 
 dsl_definitions:
@@ -45,5 +58,204 @@ node_templates:
     properties:
       client_config: *client_config
       agent_config:
-        install_method: none
-      resource_config: { get_input:  server_config }
+        install_method: init_script
+        user: ubuntu
+      resource_config:
+        name: 'server-agent-enabled'
+        key_name: 'agent-key'
+        user_data: { get_input: install_script }
+        image_id: { get_input: image }
+        flavor_id: { get_input: flavor }
+        networks:
+           - port: { get_attribute: [ port, id ] }
+    relationships:
+    - type: cloudify.relationships.openstack.server_connected_to_port
+      target: port
+
+  security_group:
+    type: cloudify.nodes.openstack.SecurityGroup
+    properties:
+      client_config: *client_config
+      security_group_rules:
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_max: 80
+          port_range_min: 80
+          direction: ingress
+          protocol: tcp
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_max: 80
+          port_range_min: 80
+          direction: egress
+          protocol: tcp
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 443
+          port_range_max: 443
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 443
+          port_range_max: 443
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 5671
+          port_range_max: 5671
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 5671
+          port_range_max: 5671
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 5672
+          port_range_max: 5672
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 5672
+          port_range_max: 5672
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8086
+          port_range_max: 8086
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8086
+          port_range_max: 8086
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8101
+          port_range_max: 8101
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8101
+          port_range_max: 8101
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8300
+          port_range_max: 8301
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8300
+          port_range_max: 8301
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8500
+          port_range_max: 8500
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 8500
+          port_range_max: 8500
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 15432
+          port_range_max: 15432
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 15432
+          port_range_max: 15432
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 22000
+          port_range_max: 22000
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 22000
+          port_range_max: 22000
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 53229
+          port_range_max: 53229
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 53229
+          port_range_max: 53229
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 53333
+          port_range_max: 53333
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 53333
+          port_range_max: 53333
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_max: 22
+          port_range_min: 22
+          direction: ingress
+          protocol: tcp
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_max: 22
+          port_range_min: 22
+          direction: egress
+          protocol: tcp
+      resource_config:
+        name: 'agent_sg'
+        description: 'A security group created by Cloudify OpenStack SDK plugin.'
+
+  port:
+    type: cloudify.nodes.openstack.Port
+    properties:
+      client_config: *client_config
+      resource_config:
+        name: 'server_port'
+        network_id: { get_input: network_id }
+        fixed_ips:
+          - subnet_id: { get_input: subnet_id }
+        security_groups:
+          - { get_attribute: [ security_group, id ] }
+    relationships:
+       - type: cloudify.relationships.connected_to
+         target: security_group
+       - type: cloudify.relationships.openstack.port_connected_to_floating_ip
+         target: ip
+
+  ip:
+    type: cloudify.nodes.openstack.FloatingIP
+    properties:
+      client_config: *client_config
+      resource_config:
+        floating_network_id: { get_input: external_network_id }

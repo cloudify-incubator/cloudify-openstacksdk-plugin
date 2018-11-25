@@ -76,6 +76,13 @@ class OpenstackServer(OpenstackResource):
             'Attempting to stop this server: {0}'.format(server))
         self.connection.compute.stop_server(server)
 
+    def get_server_password(self):
+        server = self.get()
+        self.logger.debug(
+            'Attempting to get server'
+            ' password for this server: {0}'.format(server))
+        return self.connection.compute.get_server_password(server)
+
 
 class OpenstackServerGroup(OpenstackResource):
 
