@@ -14,7 +14,7 @@
 #    * limitations under the License.
 
 # Standard imports
-import base64
+import json
 
 # Third party imports
 from cloudify import ctx
@@ -30,6 +30,8 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_TASK_CREATE,
                                            SERVER_TASK_DELETE,
                                            SERVER_TASK_STOP,)
+
+from openstacksdk_plugin.utils import handle_userdata
 
 
 def _set_server_ips_runtime_properties(server):
@@ -114,12 +116,10 @@ def _set_server_ips_runtime_properties(server):
 @with_openstack_resource(OpenstackServer)
 def create(openstack_resource):
     if SERVER_TASK_CREATE not in ctx.instance.runtime_properties:
-
-        # User Data must be encoded to base64 encode whenever
-        # user_data provided
-        if openstack_resource.config.get('user_data'):
-            openstack_resource.config['user_data'] = \
-                base64.b64encode(openstack_resource.config['user_data'])
+        blueprint_user_data = openstack_resource.config.get('user_data')
+        user_data = handle_userdata(blueprint_user_data)
+        if user_data:
+            openstack_resource.config['user_data'] = user_data
 
         # Create resource
         created_resource = openstack_resource.create()
@@ -155,6 +155,11 @@ def start(openstack_resource):
     if status == SERVER_STATUS_ACTIVE:
         ctx.logger.info('Server is already started')
         _set_server_ips_runtime_properties(server)
+
+        # The password returned from `Win` instances return always empty
+        res = openstack_resource.get_server_password()
+        password = json.loads(res.content) if res.content else None
+        ctx.instance.runtime_properties['password'] = password
         return
 
 

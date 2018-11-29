@@ -3,7 +3,6 @@ tosca_definitions_version: cloudify_dsl_1_3
 imports:
   - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
   - plugin.yaml
-  - install-script.yaml
 
 inputs:
 
@@ -54,23 +53,27 @@ dsl_definitions:
 node_templates:
 
   server_node:
-    type: cloudify.nodes.openstack.Server
+    type: cloudify.nodes.openstack.WindowsServer
     properties:
       client_config: *client_config
       agent_config:
         install_method: init_script
-        user: ubuntu
+        user: Admin
       resource_config:
         name: 'server-agent-enabled'
-        key_name: 'agent-key'
-        user_data: { get_input: install_script }
         image_id: { get_input: image }
         flavor_id: { get_input: flavor }
         networks:
            - port: { get_attribute: [ port, id ] }
     relationships:
-    - type: cloudify.relationships.openstack.server_connected_to_port
-      target: port
+     - type: cloudify.relationships.openstack.server_connected_to_port
+       target: port
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            resource_config: { get_property: [ SELF, resource_config ] }
+
 
   security_group:
     type: cloudify.nodes.openstack.SecurityGroup
@@ -102,16 +105,17 @@ node_templates:
           direction: egress
 
         - remote_ip_prefix: 0.0.0.0/0
-          port_range_max: 22
-          port_range_min: 22
+          port_range_max: 5985
+          port_range_min: 5985
           direction: ingress
           protocol: tcp
 
         - remote_ip_prefix: 0.0.0.0/0
-          port_range_max: 22
-          port_range_min: 22
+          port_range_max: 5985
+          port_range_min: 5985
           direction: egress
           protocol: tcp
+
       resource_config:
         name: 'agent_sg'
         description: 'A security group created by Cloudify OpenStack SDK plugin.'
@@ -132,6 +136,11 @@ node_templates:
          target: security_group
        - type: cloudify.relationships.openstack.port_connected_to_floating_ip
          target: ip
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            resource_config: { get_property: [ SELF, resource_config ] }
 
   ip:
     type: cloudify.nodes.openstack.FloatingIP
@@ -139,3 +148,8 @@ node_templates:
       client_config: *client_config
       resource_config:
         floating_network_id: { get_input: external_network_id }
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            resource_config: { get_property: [ SELF, resource_config ] }

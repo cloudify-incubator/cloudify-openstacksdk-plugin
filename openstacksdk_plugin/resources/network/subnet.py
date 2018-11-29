@@ -32,5 +32,6 @@ def delete(openstack_resource):
     openstack_resource.delete()
 
 
-def update():
-    pass
+@with_openstack_resource(OpenstackSubnet)
+def update(openstack_resource, **new_config):
+    openstack_resource.update(new_config)

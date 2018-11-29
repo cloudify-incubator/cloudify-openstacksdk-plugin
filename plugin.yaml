@@ -2,7 +2,7 @@ plugins:
 
   openstacksdk:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-openstacksdk-plugin/archive/master.zip
+    source: https://github.com/cloudify-incubator/cloudify-openstacksdk-plugin/archive/dev.zip
     package_name: cloudify-openstacksdk-plugin
     package_version: '1.0.0'
 
@@ -177,6 +177,19 @@ data_types:
       <<: *data_type_name
       <<: *data_type_id
       <<: *data_type_description
+
+  cloudify.types.openstack.Routes:
+    properties:
+      <<: *data_type_name
+      <<: *data_type_id
+      host_routes:
+        description: >
+          Additional routes for the subnet.
+          A list of dictionaries with destination and nexthop parameters.
+          Default value is an empty list.
+        required: false
+        default: []
+
 
   cloudify.types.openstack.Router:
     properties:
@@ -818,6 +831,17 @@ node_types:
         update:
           implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.update
 
+
+  cloudify.nodes.openstack.Routes:
+    derived_from: cloudify.nodes.Root
+    properties:
+      <<: *external_resource
+      <<: *client_config
+      resource_config:
+        type: cloudify.types.openstack.Routes
+        description: https://developer.openstack.org/api-ref/block-storage/v3/index.html?expanded=create-a-volume-type-detail#volume-types-types
+        required: false
+
 relationships:
 
   cloudify.relationships.openstack.server_connected_to_keypair:
@@ -889,3 +913,18 @@ relationships:
           inputs:
             port_id:
               default: ''
+
+  cloudify.relationships.openstack.route_connected_to_subnet:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        postconfigure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.subnet.update
+          inputs:
+            host_routes:
+              default: { get_attribute: [ SOURCE, resource_config, host_routes ] }
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.subnet.update
+          inputs:
+            host_routes:
+              default: []

@@ -107,7 +107,7 @@ class OpenstackSubnet(OpenstackResource):
         self.logger.debug(
             'Attempting to update this subnet: {0} with args {1}'.format(
                 subnet, new_config))
-        result = self.connection.network.update_subnet(subnet, new_config)
+        result = self.connection.network.update_subnet(subnet, **new_config)
         self.logger.debug(
             'Updated subnet with this result: {0}'.format(result))
         return result

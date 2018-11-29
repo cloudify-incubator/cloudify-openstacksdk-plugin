@@ -107,7 +107,6 @@ node_templates:
          target: security_group
        - type: cloudify.relationships.openstack.port_connected_to_floating_ip
          target: ip
-
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -133,7 +132,6 @@ node_templates:
         target: network
       - type: cloudify.relationships.openstack.subnet_connected_to_router
         target: router
-
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -177,15 +175,39 @@ node_templates:
           port_range_min: 80
           direction: ingress
           protocol: tcp
-          security_group_id: { get_attribute: [ SELF, id ] }
+
         - remote_ip_prefix: 0.0.0.0/0
           port_range_max: 80
           port_range_min: 80
           direction: egress
           protocol: tcp
-          security_group_id: { get_attribute: [ SELF, id ] }
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 53333
+          port_range_max: 53333
+          protocol: tcp
+          direction: ingress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_min: 53333
+          port_range_max: 53333
+          protocol: tcp
+          direction: egress
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_max: 22
+          port_range_min: 22
+          direction: ingress
+          protocol: tcp
+
+        - remote_ip_prefix: 0.0.0.0/0
+          port_range_max: 22
+          port_range_min: 22
+          direction: egress
+          protocol: tcp
+
       resource_config:
-        name: { concat: [ { get_input: name_prefix }, '_security_group' ] }
+        name: { concat: [ { get_input: name_prefix }, 'agent_sg' ] }
         description: 'A security group created by Cloudify OpenStack SDK plugin.'
     interfaces:
       cloudify.interfaces.lifecycle:
