@@ -115,7 +115,7 @@ def handle_userdata(existing_userdata):
 
 def extract_powershell_content(string_with_powershell):
     """We want to filter user data for powershell scripts.
-    However, AWS EC2 allows only one segment that is Powershell.
+    However, Openstack allows only one segment that is Powershell.
     So we have to concat separate Powershell scripts into one.
     First we separate all Powershell scripts without their tags.
     Later we will add the tags back.
