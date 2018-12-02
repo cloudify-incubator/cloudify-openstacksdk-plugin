@@ -26,5 +26,5 @@ setup(
     license='LICENSE',
     zip_safe=False,
     packages=find_packages(exclude=['tests*']),
-    install_requires=['cloudify-plugins-common>=4.0', 'openstacksdk'],
+    install_requires=['cloudify-common', 'openstacksdk'],
     test_requires=['mock', 'requests-mock'])
