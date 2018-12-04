@@ -28,10 +28,13 @@ from openstacksdk_plugin.constants import USE_EXTERNAL_RESOURCE_PROPERTY
 from openstacksdk_plugin import utils
 
 
-def with_openstack_resource(class_decl=None):
+def with_openstack_resource(class_decl, existing_resource_handler=None):
     """
-    :param class_decl: This is a class for the openstack resource need to b
+    :param class_decl: This is a class for the openstack resource need to be
     invoked
+    :param existing_resource_handler: This is a method that handle any
+    custom operation need to be done in case "use_external_resource" is set
+    to true
     :return: a wrapper object encapsulating the invoked function
     """
 
@@ -91,7 +94,7 @@ def with_openstack_resource(class_decl=None):
 
                 # Get the remote resource
                 try:
-                    resource = resource.get()
+                    remote_resource = resource.get()
                 except exceptions.SDKException as error:
                     _, _, tb = sys.exc_info()
                     raise NonRecoverableError(
@@ -104,14 +107,20 @@ def with_openstack_resource(class_decl=None):
                     ctx.logger.info(
                         'not creating resource {0}'
                         ' since an external resource is being used'
-                        ''.format(resource.name))
+                        ''.format(remote_resource.name))
                     node_instance.instance.runtime_properties[RESOURCE_ID] = \
-                        resource.id
+                        remote_resource.id
+
+                    # Check if we need to add custom operation when resource
+                    # is already created
+                    if existing_resource_handler:
+                        existing_resource_handler(remote_resource)
+
                 elif operation_name == 'delete':
                     ctx.logger.info(
                         'not deleting resource {0}'
                         ' since an external resource is being used'
-                        ''.format(resource.name))
+                        ''.format(remote_resource.name))
                 return
             try:
                 kwargs['openstack_resource'] = resource

@@ -13,14 +13,30 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Third party imports
+from cloudify import ctx
+from cloudify.exceptions import RecoverableError
+
+# Local imports
 from openstack_sdk.resources.networks import OpenstackFloatingIP
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import RESOURCE_ID
 
-from cloudify import ctx
+
+def use_external_floating_ip(openstack_resource):
+    status = openstack_resource.status
+    floating_ip = openstack_resource.floating_ip_address
+    if not ctx.node.properties['allow_reallocation'] and status == 'ACTIVE':
+        raise RecoverableError(
+            'Floating IP address {0} is already associated'.format(floating_ip)
+        )
+    # Set the floating ip address as runtime property if "allow_reallocation"
+    # is set to "True"
+    ctx.instance.runtime_properties['floating_ip_address'] = floating_ip
 
 
-@with_openstack_resource(OpenstackFloatingIP)
+@with_openstack_resource(class_decl=OpenstackFloatingIP,
+                         existing_resource_handler=use_external_floating_ip)
 def create(openstack_resource):
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = \
