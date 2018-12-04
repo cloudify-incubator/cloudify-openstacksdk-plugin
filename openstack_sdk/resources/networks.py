@@ -199,7 +199,7 @@ class OpenstackRouter(OpenstackResource):
         self.logger.debug(
             'Attempting to update this router: {0} with args {1}'.format(
                 router, new_config))
-        result = self.connection.network.update_router(router, new_config)
+        result = self.connection.network.update_router(router, **new_config)
         self.logger.debug(
             'Updated router with this result: {0}'.format(result))
         return result

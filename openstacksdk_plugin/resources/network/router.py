@@ -42,5 +42,35 @@ def remove_interface_from_router(openstack_resource, **kwargs):
     openstack_resource.remove_interface(kwargs)
 
 
-def update():
-    pass
+@with_openstack_resource(OpenstackRouter)
+def start(openstack_resource, **kwargs):
+    if kwargs and kwargs.get('routes'):
+        # Store routes in order to use them later on in order to remove them
+        # when the stop operation for router trigger
+        ctx.instance.runtime_properties['routes'] = kwargs['routes']
+        routes = dict()
+        routes['routes'] = kwargs['routes']
+        openstack_resource.update(routes)
+
+
+@with_openstack_resource(OpenstackRouter)
+def stop(openstack_resource, **kwargs):
+    if 'routes' in ctx.instance.runtime_properties:
+        # There are some routes need to be deleted since it is part of the
+        # runtime properties
+
+        # Routes need to be removed
+        routes_to_delete = ctx.instance.runtime_properties['routes']
+
+        # Get the remote router info
+        router = openstack_resource.get()
+
+        updated_routes = []
+        remote_routes = router['routes'] or {}
+        for remote_route in remote_routes:
+            if remote_route not in routes_to_delete:
+                updated_routes.append(remote_route)
+
+        routes = dict()
+        routes['routes'] = updated_routes
+        openstack_resource.update(routes)
