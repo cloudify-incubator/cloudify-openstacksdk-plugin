@@ -840,16 +840,6 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.update
 
 
-  cloudify.nodes.openstack.Routes:
-    derived_from: cloudify.nodes.Root
-    properties:
-      <<: *external_resource
-      <<: *client_config
-      resource_config:
-        type: cloudify.types.openstack.Routes
-        description: https://developer.openstack.org/api-ref/block-storage/v3/index.html?expanded=create-a-volume-type-detail#volume-types-types
-        required: false
-
 relationships:
 
   cloudify.relationships.openstack.server_connected_to_keypair:
@@ -921,18 +911,3 @@ relationships:
           inputs:
             port_id:
               default: ''
-
-  cloudify.relationships.openstack.route_connected_to_subnet:
-    derived_from: cloudify.relationships.connected_to
-    target_interfaces:
-      cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.subnet.update
-          inputs:
-            host_routes:
-              default: { get_attribute: [ SOURCE, resource_config, host_routes ] }
-        unlink:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.subnet.update
-          inputs:
-            host_routes:
-              default: []

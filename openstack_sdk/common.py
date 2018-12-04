@@ -13,6 +13,9 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Standard imports
+import uuid
+
 # Third party imports
 import openstack
 
@@ -26,6 +29,32 @@ class OpenstackResource(object):
         self.resource_id =\
             None if 'id' not in self.config else self.config['id']
         self.logger = logger
+
+    def validate_resource_identifier(self):
+        """
+        This method will validate the resource identifier whenever the
+        "use_external_resource" set "True", so it will check if resource
+        "id" or "name" contains a valid value before start any operation
+        :return: error_message in case the resource identifier is invalid
+        """
+        error_message = None
+        if not (self.name or self.resource_id):
+            error_message = 'Resource id & name cannot be both empty'
+
+        if self.resource_id:
+            try:
+                uuid.UUID(self.resource_id)
+            except ValueError:
+                # If it's a value error, then the string
+                # is not a valid hex code for a UUID.
+                error_message = 'Invalid resource id: {0}' \
+                                ''.format(self.resource_id)
+
+        elif self.name and not isinstance(self.name, basestring):
+                error_message = 'Invalid resource name: {0} ' \
+                                'this should be a string'.format(self.name)
+
+        return error_message
 
     def list(self):
         raise NotImplementedError()
