@@ -3,7 +3,6 @@ tosca_definitions_version: cloudify_dsl_1_3
 imports:
   - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
   - plugin.yaml
-  - install-script.yaml
 
 inputs:
 
@@ -62,15 +61,19 @@ node_templates:
         user: ubuntu
       resource_config:
         name: 'server-agent-enabled'
-        key_name: 'agent-key'
-        user_data: { get_input: install_script }
         image_id: { get_input: image }
         flavor_id: { get_input: flavor }
         networks:
            - port: { get_attribute: [ port, id ] }
     relationships:
-    - type: cloudify.relationships.openstack.server_connected_to_port
-      target: port
+      - type: cloudify.relationships.openstack.server_connected_to_port
+        target: port
+    # This is only run on local mode. For use with a manager, it can be commented out.
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            resource_config: { get_property: [ SELF, resource_config ] }
 
   security_group:
     type: cloudify.nodes.openstack.SecurityGroup
@@ -132,6 +135,12 @@ node_templates:
          target: security_group
        - type: cloudify.relationships.openstack.port_connected_to_floating_ip
          target: ip
+    # This is only run on local mode. For use with a manager, it can be commented out.
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            resource_config: { get_property: [ SELF, resource_config ] }
 
   ip:
     type: cloudify.nodes.openstack.FloatingIP

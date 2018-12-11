@@ -595,6 +595,14 @@ node_types:
     properties:
       <<: *external_resource
       <<: *client_config
+      allow_reallocation:
+        type: boolean
+        default: false
+        description: >
+          (Applicable only when use_external_resource is true)
+          If true, then allow using this floating IP even if it has already been allocated to
+          another instance. If false, and the floating IP is already allocated (that is, it is
+          in 'ACTIVE' state), a recoverable error is raised.
       resource_config:
         type: cloudify.types.openstack.FloatingIP
         description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/#create-floating-ip.
