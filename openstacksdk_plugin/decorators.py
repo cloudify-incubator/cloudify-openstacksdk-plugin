@@ -88,40 +88,50 @@ def with_openstack_resource(class_decl, existing_resource_handler=None):
 
             # # Check if "use_external_resource" is set to True
             is_external = get_property_by_name(USE_EXTERNAL_RESOURCE_PROPERTY)
-            if is_external and operation_name in ['create', 'delete']:
-                ctx.logger.info(
-                    'Using external resource {0}'.format(RESOURCE_ID))
 
-                # Get the remote resource
-                try:
-                    remote_resource = resource.get()
-                except exceptions.SDKException as error:
-                    _, _, tb = sys.exc_info()
-                    raise NonRecoverableError(
-                        'Failure while trying to request '
-                        'Openstack API: {}'.format(error.message),
-                        causes=[exception_to_error_cause(error, tb)])
+            # Validate if the "is_external" is set and the resource
+            # identifier (id|name) for the Openstack is invalid raise error and
+            # abort the operation
+            if is_external:
+                error_message = resource.validate_resource_identifier()
+                if error_message:
+                    raise NonRecoverableError(error_message)
 
-                # Check the operation type and based on that decide what to do
-                if operation_name == 'create':
+                if operation_name in ['create', 'delete']:
                     ctx.logger.info(
-                        'not creating resource {0}'
-                        ' since an external resource is being used'
-                        ''.format(remote_resource.name))
-                    node_instance.instance.runtime_properties[RESOURCE_ID] = \
-                        remote_resource.id
+                        'Using external resource {0}'.format(RESOURCE_ID))
 
-                    # Check if we need to add custom operation when resource
-                    # is already created
-                    if existing_resource_handler:
-                        existing_resource_handler(remote_resource)
+                    # Get the remote resource
+                    try:
+                        remote_resource = resource.get()
+                    except exceptions.SDKException as error:
+                        _, _, tb = sys.exc_info()
+                        raise NonRecoverableError(
+                            'Failure while trying to request '
+                            'Openstack API: {}'.format(error.message),
+                            causes=[exception_to_error_cause(error, tb)])
 
-                elif operation_name == 'delete':
-                    ctx.logger.info(
-                        'not deleting resource {0}'
-                        ' since an external resource is being used'
-                        ''.format(remote_resource.name))
-                return
+                    # Check the operation type and based on that
+                    # decide what to do
+                    if operation_name == 'create':
+                        ctx.logger.info(
+                            'not creating resource {0}'
+                            ' since an external resource is being used'
+                            ''.format(remote_resource.name))
+                        node_instance.instance.runtime_properties[RESOURCE_ID]\
+                            = remote_resource.id
+
+                        # Check if we need to add custom operation
+                        # when resource is already created
+                        if existing_resource_handler:
+                            existing_resource_handler(remote_resource)
+
+                    elif operation_name == 'delete':
+                        ctx.logger.info(
+                            'not deleting resource {0}'
+                            ' since an external resource is being used'
+                            ''.format(remote_resource.name))
+                    return
             try:
                 kwargs['openstack_resource'] = resource
                 func(**kwargs)
