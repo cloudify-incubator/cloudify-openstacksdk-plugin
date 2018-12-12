@@ -585,10 +585,12 @@ node_types:
       cloudify.interfaces.lifecycle:
         create:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.router.create
+        start:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.start
+        stop:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.stop
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.router.delete
-        update:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.update
 
   cloudify.nodes.openstack.FloatingIP:
     derived_from: cloudify.nodes.VirtualIP
