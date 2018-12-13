@@ -18,11 +18,6 @@ import os
 from integration_tests.tests.test_cases import PluginsTest
 from integration_tests.tests import utils as test_utils
 
-# TODO: Add Plugin Build Functionality
-# It should live in cloudify-manager/integration_tests.
-# It will build a wagon on a Docker Container from Dockerfile in plugin root directory.
-# It will override the build _create_test_wagon method of AgentTestWithPlugins.
-
 PLUGIN_NAME = 'cloudify-openstacksdk-plugin'
 
 
@@ -45,7 +40,7 @@ class OpenstackPluginTestCase(PluginsTest):
         }
 
     def check_main_blueprint(self):
-        blueprint_id = 'examples_manager_blueprint'
+        blueprint_id = 'manager_blueprint'
         self.inputs = dict(self.client_config)
         self.inputs.update(
             {
@@ -62,6 +57,7 @@ class OpenstackPluginTestCase(PluginsTest):
                 os.path.join(
                     self.plugin_root_directory,
                     'examples/manager/blueprint.yaml')),
+            timeout_seconds=200,
             blueprint_id=blueprint_id,
             deployment_id=blueprint_id,
             inputs=self.inputs)
