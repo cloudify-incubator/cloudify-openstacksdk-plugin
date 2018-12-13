@@ -14,21 +14,25 @@
 #    * limitations under the License.
 
 import os
-import uuid
-from integration_tests.tests.test_cases import AgentTestWithPlugins
+
+from integration_tests.tests.test_cases import PluginsTest
 from integration_tests.tests import utils as test_utils
 
+# TODO: Add Plugin Build Functionality
+# It should live in cloudify-manager/integration_tests.
+# It will build a wagon on a Docker Container from Dockerfile in plugin root directory.
+# It will override the build _create_test_wagon method of AgentTestWithPlugins.
 
-class PluginWagonBuilderMixin(object):
-
-    # TODO: Building Wagon on a Docker Container.
-    # TODO: It will override the build _create_test_wagon method of AgentTestWithPlugins.
-    pass
+PLUGIN_NAME = 'cloudify-openstacksdk-plugin'
 
 
-class OpenstackAgentlessTestCase(AgentTestWithPlugins, PluginWagonBuilderMixin):
+class OpenstackPluginTestCase(PluginsTest):
 
     base_path = os.path.dirname(os.path.realpath(__file__))
+
+    @property
+    def plugin_root_directory(self):
+        return os.path.abspath(os.path.join(self.base_path, '..'))
 
     @property
     def client_config(self):
@@ -41,23 +45,28 @@ class OpenstackAgentlessTestCase(AgentTestWithPlugins, PluginWagonBuilderMixin):
         }
 
     def check_main_blueprint(self):
-        blueprint_id = uuid.uuid4()
+        blueprint_id = 'examples_manager_blueprint'
         self.inputs = dict(self.client_config)
         self.inputs.update(
             {
+                'external_network_id': 'dda079ce-12cf-4309-879a-8e67aec94de4',
                 'example_subnet_cidr': '10.10.0.0/24',
-                'example_fixed_ip': '10.10.0.11',
-                'name_prefix': 'manager_'
+                'name_prefix': 'blueprint_',
+                'image_id': 'e41430f7-9131-495b-927f-e7dc4b8994c8',
+                'flavor_id': '3',
+                'agent_user': 'ubuntu'
             }
         )
-        self.deploy_application(
-            test_utils.get_resource(os.path.join(
-                self.base_path, 'examples/local/blueprint.yaml')),
+        dep, ex_id = self.deploy_application(
+            test_utils.get_resource(
+                os.path.join(
+                    self.plugin_root_directory,
+                    'examples/manager/blueprint.yaml')),
             blueprint_id=blueprint_id,
             deployment_id=blueprint_id,
             inputs=self.inputs)
+        self.undeploy_application(dep.id)
 
     def test_blueprints(self):
-        package_dir = os.path.abspath(os.path.join(self.base_path, '..'))
-        self.upload_mock_plugin('cloudify-openstacksdk-plugin', package_dir)
+        self.upload_mock_plugin(PLUGIN_NAME, self.plugin_root_directory)
         self.check_main_blueprint()
