@@ -90,3 +90,19 @@ class VolumeType(InterfaceBase):
     client_name = 'block_storage'
     get_method_name = 'get_type'
     delete_method_name = 'delete_type'
+
+
+class Server(InterfaceBase):
+
+    type_name = 'cloudify.nodes.openstack.Server'
+    client_name = 'compute'
+    get_method_name = 'get_server'
+    delete_method_name = 'delete_server'
+
+
+class FloatingIP(InterfaceBase):
+
+    type_name = 'cloudify.nodes.openstack.FloatingIP'
+    client_name = 'compute'
+    get_method_name = 'get_ip'
+    delete_method_name = 'delete_ip'
