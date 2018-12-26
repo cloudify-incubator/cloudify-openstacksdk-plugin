@@ -16,15 +16,20 @@
 from openstack_sdk.resources.networks import OpenstackPort
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import RESOURCE_ID
-
-from cloudify import ctx
+from openstacksdk_plugin.utils import update_runtime_properties
 
 
 @with_openstack_resource(OpenstackPort)
 def create(openstack_resource):
     created_resource = openstack_resource.create()
-    ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
-    ctx.instance.runtime_properties['fixed_ips'] = created_resource.fixed_ips
+    update_runtime_properties(
+        {
+            RESOURCE_ID: created_resource.id,
+            'fixed_ips': created_resource.fixed_ips,
+            'mac_address': created_resource.mac_address,
+            'allowed_address_pairs': created_resource.allowed_address_pairs,
+        }
+    )
 
 
 @with_openstack_resource(OpenstackPort)
