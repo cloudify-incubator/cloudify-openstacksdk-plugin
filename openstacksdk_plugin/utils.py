@@ -142,3 +142,9 @@ def extract_powershell_content(string_with_powershell):
 
     # Return everything between Powershell back as a string.
     return '\n'.join(split_string[script_start + 1:script_end])
+
+
+def update_runtime_properties(keys=None):
+    keys = keys or {}
+    for key, value in keys.items():
+        ctx.instance.runtime_properties[key] = value
