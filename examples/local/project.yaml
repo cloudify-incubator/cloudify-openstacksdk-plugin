@@ -21,10 +21,6 @@ inputs:
   project_name:
     type: string
 
-  user_domain_id:
-    type: string
-    default: default
-
   project_config:
     default:
       name: 'test_project'
@@ -39,7 +35,6 @@ dsl_definitions:
     password: { get_input: password }
     region_name: { get_input: region_name }
     project_name: { get_input: project_name }
-    user_domain_id: { get_input: user_domain_id }
 
 node_templates:
 
