@@ -20,6 +20,7 @@ import base64
 # Third part imports
 from cloudify import compute
 from cloudify import ctx
+from cloudify.exceptions import NonRecoverableError
 
 try:
     from cloudify.constants import NODE_INSTANCE, RELATIONSHIP_INSTANCE
@@ -30,6 +31,15 @@ except ImportError:
 
 PS_OPEN = '<powershell>'
 PS_CLOSE = '</powershell>'
+
+QUOTA_VALID_MSG = \
+    'OK: {0} (node {1}) can be created. provisioned {2}: {3}, quota: {4}'
+
+QUOTA_INVALID_MSG = \
+    '{0} (node {1}) cannot be created due to quota limitations. ' \
+    'provisioned {2}: {3}, quota: {4}'
+
+INFINITE_RESOURCE_QUOTA = -1
 
 
 def set_ctx(_ctx):
@@ -148,3 +158,52 @@ def update_runtime_properties(keys=None):
     keys = keys or {}
     for key, value in keys.items():
         ctx.instance.runtime_properties[key] = value
+
+
+def add_resource_list_to_runtime_properties(openstack_type_name, object_list):
+    objects = []
+    for obj in object_list:
+        if type(obj) not in [str, dict]:
+            obj = obj.to_dict()
+        objects.append(obj)
+
+    key_list = '{0}_list'.format(openstack_type_name)
+    ctx.instance.runtime_properties[key_list] = objects
+
+
+def validate_resource(resource, openstack_type):
+    ctx.logger.debug(
+        'validating resource {0} (node {1})'
+        ''.format(openstack_type, ctx.node.id)
+    )
+    openstack_type_plural = resource.resource_plural(openstack_type)
+
+    resource_list = list(resource.list())
+
+    # This is the available quota for provisioning the resource
+    resource_amount = len(resource_list)
+
+    # This represent the qouta for the provided resource openstack type
+    resource_quota = getattr(resource.get_quota_sets(), openstack_type_plural)
+
+    if resource_amount < resource_quota \
+            or resource_quota == INFINITE_RESOURCE_QUOTA:
+        ctx.logger.debug(
+            QUOTA_VALID_MSG.format(
+                openstack_type,
+                ctx.node.id,
+                openstack_type_plural,
+                resource_amount,
+                resource_quota)
+        )
+    else:
+        err_message = \
+            QUOTA_INVALID_MSG.format(
+                openstack_type,
+                ctx.node.id,
+                openstack_type_plural,
+                resource_amount,
+                resource_quota
+            )
+        ctx.logger.error('VALIDATION ERROR: {0}'.format(err_message))
+        raise NonRecoverableError(err_message)
