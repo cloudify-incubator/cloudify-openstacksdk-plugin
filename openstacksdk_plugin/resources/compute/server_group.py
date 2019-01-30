@@ -15,12 +15,12 @@
 
 # Third party imports
 from cloudify import ctx
+from cloudify.exceptions import NonRecoverableError
 
 # Local imports
 from openstack_sdk.resources.compute import OpenstackServerGroup
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import RESOURCE_ID
-from openstacksdk_plugin.exception import UnSupportedOperation
 from openstacksdk_plugin.utils import (validate_resource,
                                        add_resource_list_to_runtime_properties
                                        )
@@ -44,7 +44,7 @@ def delete(openstack_resource):
 @with_openstack_resource(OpenstackServerGroup)
 def update(openstack_resource):
     # Update server group not support right now with openstacksdk
-    raise UnSupportedOperation(
+    raise NonRecoverableError(
         'Openstacksdk library does not support update server group')
 
 

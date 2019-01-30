@@ -89,8 +89,7 @@ class OpenstackServerGroup(OpenstackResource):
     resource_type = 'compute'
 
     def list(self, query=None):
-        if not query:
-            query = {}
+        query = query or {}
         return self.connection.compute.server_groups(**query)
 
     def get(self):
