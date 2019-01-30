@@ -21,6 +21,7 @@ from openstack_sdk.common import OpenstackResource
 
 
 class OpenstackServer(OpenstackResource):
+    resource_type = 'compute'
 
     def list(self):
         return self.connection.compute.servers()
@@ -85,9 +86,11 @@ class OpenstackServer(OpenstackResource):
 
 
 class OpenstackServerGroup(OpenstackResource):
+    resource_type = 'compute'
 
-    def list(self):
-        return self.connection.compute.server_groups()
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.compute.server_groups(**query)
 
     def get(self):
         self.logger.debug(
@@ -124,6 +127,7 @@ class OpenstackServerGroup(OpenstackResource):
 
 
 class OpenstackKeyPair(OpenstackResource):
+    resource_type = 'compute'
 
     def list(self):
         return self.connection.compute.keypairs()
@@ -161,6 +165,7 @@ class OpenstackKeyPair(OpenstackResource):
 
 
 class OpenstackFlavor(OpenstackResource):
+    resource_type = 'compute'
 
     def list(self):
         return self.connection.compute.flavors()

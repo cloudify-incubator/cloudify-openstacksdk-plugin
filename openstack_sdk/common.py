@@ -20,9 +20,15 @@ import uuid
 import openstack
 
 
+class QuotaException(Exception):
+    pass
+
+
 class OpenstackResource(object):
+    resource_type = None
 
     def __init__(self, client_config, resource_config=None, logger=None):
+        self.client_config = client_config
         self.connection = openstack.connect(**client_config)
         self.config = resource_config or {}
         self.name = self.config.get('name')
@@ -55,6 +61,21 @@ class OpenstackResource(object):
                                 'this should be a string'.format(self.name)
 
         return error_message
+
+    def get_quota_sets(self):
+        project_name = self.client_config.get('project_name')
+        quota = getattr(
+            self.connection,
+            'get_{0}_quotas'.format(self.resource_type))(project_name)
+
+        if not quota:
+            raise QuotaException(
+                'Invalid {0} quota response'.format(self.resource_type))
+
+        return quota
+
+    def resource_plural(self, openstack_type):
+        return '{0}s'.format(openstack_type)
 
     def list(self):
         raise NotImplementedError()
