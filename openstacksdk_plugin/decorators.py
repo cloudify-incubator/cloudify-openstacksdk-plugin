@@ -41,7 +41,7 @@ def with_openstack_resource(class_decl, existing_resource_handler=None):
     def wrapper_outer(func):
         def wrapper_inner(**kwargs):
             ctx = kwargs.pop('ctx', CloudifyContext)
-            node_instance = utils.set_ctx(ctx)
+            node_instance = utils.resolve_ctx(ctx)
             _, _, _, operation_name = ctx.operation.name.split('.')
 
             def get_property_by_name(property_name):

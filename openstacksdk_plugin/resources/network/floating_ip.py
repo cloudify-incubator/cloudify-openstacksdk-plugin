@@ -21,6 +21,7 @@ from cloudify.exceptions import RecoverableError
 from openstack_sdk.resources.networks import OpenstackFloatingIP
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import RESOURCE_ID
+from openstacksdk_plugin.utils import reset_dict_empty_keys
 
 
 def use_external_floating_ip(openstack_resource):
@@ -55,8 +56,5 @@ def update(openstack_resource, **new_config):
     # At some case like remove ip from port, openstack API refuse to to set
     # port_id to '' empty string in order to delete the port, it should be
     # set to None in order to set it, so it is required to change '' to None
-    for key, item in new_config.iteritems():
-        if not item:
-            new_config[key] = None
-
+    new_config = reset_dict_empty_keys(new_config)
     openstack_resource.update(new_config)
