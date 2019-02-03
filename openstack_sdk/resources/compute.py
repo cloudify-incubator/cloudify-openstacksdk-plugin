@@ -23,8 +23,8 @@ from openstack_sdk.common import OpenstackResource
 class OpenstackServer(OpenstackResource):
     resource_type = 'compute'
 
-    def list(self):
-        return self.connection.compute.servers()
+    def list(self, details=True, all_projects=False, **query):
+        return self.connection.compute.servers(details, all_projects, **query)
 
     def get(self):
         self.logger.debug(
@@ -55,12 +55,59 @@ class OpenstackServer(OpenstackResource):
             'Deleted server with this result: {0}'.format(result))
         return result
 
+    def reboot(self, reboot_type):
+        server = self.get()
+        self.logger.debug(
+            'Attempting to reboot this server: {0}'.format(server))
+        self.connection.compute.reboot_server(server, reboot_type)
+
+    def resume(self):
+        server = self.get()
+        self.logger.debug(
+            'Attempting to resume this server: {0}'.format(server))
+        self.connection.compute.resume_server(server)
+
+    def suspend(self):
+        server = self.get()
+        self.logger.debug(
+            'Attempting to suspend this server: {0}'.format(server))
+        self.connection.compute.suspend_server(server)
+
+    def backup(self, name, backup_type, rotation):
+        server = self.get()
+        self.logger.debug(
+            'Attempting to backup this server: {0}'.format(server))
+        self.connection.compute.backup_server(server,
+                                              name,
+                                              backup_type,
+                                              rotation)
+
+    def rebuild(self, image, name=None, admin_password='', **attr):
+        server = self.get()
+        name = name or server.name
+        attr['image'] = image
+        self.logger.debug(
+            'Attempting to rebuild this server: {0}'.format(server))
+
+        self.connection.compute.rebuild_server(server,
+                                               name,
+                                               admin_password,
+                                               **attr)
+
+    def create_image(self, name, metadata=None):
+        server = self.get()
+        self.logger.debug(
+            'Attempting to create image for this server: {0}'.format(server))
+        self.connection.compute.create_server_image(
+            server, name, metadata=metadata
+        )
+
     def update(self, new_config=None):
         server = self.get()
         self.logger.debug(
             'Attempting to update this server: {0} with args {1}'.format(
                 server, new_config))
-        result = self.connection.compute.update_server(server, new_config)
+        result = self.connection.compute.update_server(server, **new_config)
         self.logger.debug(
             'Updated server with this result: {0}'.format(result))
         return result

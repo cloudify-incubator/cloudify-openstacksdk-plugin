@@ -22,8 +22,9 @@ from openstack_sdk.common import OpenstackResource
 
 class OpenstackImage(OpenstackResource):
 
-    def list(self):
-        return self.connection.image.images()
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.image.images(**query)
 
     def get(self):
         self.logger.debug(

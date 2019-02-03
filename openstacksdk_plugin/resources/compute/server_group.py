@@ -20,13 +20,11 @@ from cloudify.exceptions import NonRecoverableError
 # Local imports
 from openstack_sdk.resources.compute import OpenstackServerGroup
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import RESOURCE_ID
+from openstacksdk_plugin.constants import (RESOURCE_ID,
+                                           SERVER_GROUP_OPENSTACK_TYPE)
+
 from openstacksdk_plugin.utils import (validate_resource,
-                                       add_resource_list_to_runtime_properties
-                                       )
-
-
-SERVER_GROUP_OPENSTACK_TYPE = 'server_group'
+                                       add_resource_list_to_runtime_properties)
 
 
 @with_openstack_resource(OpenstackServerGroup)

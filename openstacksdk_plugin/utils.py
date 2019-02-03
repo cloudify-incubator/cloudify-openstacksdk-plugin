@@ -28,29 +28,85 @@ except ImportError:
     NODE_INSTANCE = 'node-instance'
     RELATIONSHIP_INSTANCE = 'relationship-instance'
 
-
-PS_OPEN = '<powershell>'
-PS_CLOSE = '</powershell>'
-
-QUOTA_VALID_MSG = \
-    'OK: {0} (node {1}) can be created. provisioned {2}: {3}, quota: {4}'
-
-QUOTA_INVALID_MSG = \
-    '{0} (node {1}) cannot be created due to quota limitations. ' \
-    'provisioned {2}: {3}, quota: {4}'
-
-INFINITE_RESOURCE_QUOTA = -1
+# Local imports
+from openstacksdk_plugin.constants import (PS_OPEN,
+                                           PS_CLOSE,
+                                           QUOTA_VALID_MSG,
+                                           QUOTA_INVALID_MSG,
+                                           INFINITE_RESOURCE_QUOTA,
+                                           RESOURCE_ID)
 
 
-def set_ctx(_ctx):
-    if _ctx.type == RELATIONSHIP_INSTANCE:
-        if _ctx._context.get('is_target', True):
-            return _ctx.target
+def find_relationships_by_node_type(node_ctx, node_type):
+    """
+    Finds all specified relationships of the Cloudify
+    instance where the related node type is of a specified type.
+    :param node_ctx: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    :param node_type: Cloudify node type to search node_ctx.relationships for
+    :return: List of Cloudify relationships
+    """
+    return [target_rel for target_rel in node_ctx.relationships
+            if node_type in target_rel.target.node.type_hierarchy]
+
+
+def find_relationship_by_node_type(node_ctx, node_type):
+    """
+    Finds a single relationship of the Cloudify
+    instance where the related node type is of a specified type.
+    :param node_ctx: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    :param node_type: Cloudify node type to search node_ctx.relationships for
+    :return: A Cloudify relationship or None
+    """
+    relationships = find_relationships_by_node_type(node_ctx, node_type)
+    return relationships[0] if len(relationships) > 0 else None
+
+
+def get_resource_id_from_runtime_properties(node_ctx):
+    return node_ctx.instance.runtime_properties.get(RESOURCE_ID)
+
+
+def resolve_node_ctx_from_relationship(_ctx):
+    """
+    This method is to decide where to get node from relationship context
+    since this is not exposed correctly from cloudify
+    :param _ctx: current cloudify context object
+    :return: RelationshipSubjectContext instance
+    """
+    # Get the node_id for the current node in order to decide if that node
+    # is source | target
+    node_id = _ctx._context.get('node_id')
+
+    source_node_id = _ctx.source._context.get('node_id')
+    target_node_id = _ctx.target._context.get('node_id')
+
+    if node_id == source_node_id:
         return _ctx.source
+    elif node_id == target_node_id:
+        return _ctx.target
+    else:
+        raise NonRecoverableError(
+            'Unable to decide if current node is source or target')
+
+
+def resolve_ctx(_ctx):
+    """
+    This method is to lookup right context instance which could be one of
+    the following:
+     1- Context for source relationship instance
+     2- Context for target relationship instance
+     3- Context for current node
+    :param _ctx: current cloudify context object
+    :return: This could be RelationshipSubjectContext or CloudifyContext
+    instance
+    """
+    if _ctx.type == RELATIONSHIP_INSTANCE:
+        return resolve_node_ctx_from_relationship(_ctx)
     if _ctx.type != NODE_INSTANCE:
         _ctx.logger.warn(
             'CloudifyContext is neither {0} nor {1} type. '
-            'Falling back to {0}. Tthis indicates a problem.'.format(
+            'Falling back to {0}. This indicates a problem.'.format(
                 NODE_INSTANCE, RELATIONSHIP_INSTANCE))
     return _ctx
 
@@ -154,13 +210,36 @@ def extract_powershell_content(string_with_powershell):
     return '\n'.join(split_string[script_start + 1:script_end])
 
 
-def update_runtime_properties(keys=None):
-    keys = keys or {}
-    for key, value in keys.items():
+def reset_dict_empty_keys(dict_object):
+    """
+    Reset empty values for object and convert it to None object so that we
+    can us them when initiate API request
+    :param dict_object: dict of properties need to be reset
+    :return dict_object: Updated dict_object
+    """
+    for key, value in dict_object.iteritems():
+        if not key:
+            dict_object[key] = None
+    return dict_object
+
+
+def update_runtime_properties(properties=None):
+    """
+    Update runtime properties for node instance
+    :param properties: dict of properties need to be set for node instance
+    """
+    properties = properties or {}
+    for key, value in properties.items():
         ctx.instance.runtime_properties[key] = value
 
 
 def add_resource_list_to_runtime_properties(openstack_type_name, object_list):
+    """
+    Update runtime properties for node instance with list of available
+    resources on openstack for certain openstack type
+    :param openstack_type_name: openstack resource name type
+    :param object_list: list of all available resources on openstack
+    """
     objects = []
     for obj in object_list:
         if type(obj) not in [str, dict]:
@@ -172,6 +251,12 @@ def add_resource_list_to_runtime_properties(openstack_type_name, object_list):
 
 
 def validate_resource(resource, openstack_type):
+    """
+    Do a validation for openstack resource to make sure it is allowed to
+    create resource based on available resources created and maximum quota
+    :param resource: openstack resource instance
+    :param openstack_type: openstack resource type
+    """
     ctx.logger.debug(
         'validating resource {0} (node {1})'
         ''.format(openstack_type, ctx.node.id)
@@ -207,3 +292,26 @@ def validate_resource(resource, openstack_type):
             )
         ctx.logger.error('VALIDATION ERROR: {0}'.format(err_message))
         raise NonRecoverableError(err_message)
+
+
+def get_openstack_id():
+    """
+    Get the openstack resource id
+    :return str: return openstack resource id
+    """
+    return ctx.instance.runtime_properties[RESOURCE_ID]
+
+
+def get_snapshot_name(object_type, snapshot_name, snapshot_incremental):
+    """
+    Generate snapshot name
+    :param str object_type: Object type that snapshot is generated for (vm,
+    disk, ..etc)
+    :param str snapshot_name: Snapshot name
+    :param bool snapshot_incremental: Flag to create an incremental snapshots
+     or full backup
+    :return: snapshot name
+    """
+    return "{0}-{1}-{2}-{3}".format(
+        object_type, get_openstack_id(), snapshot_name,
+        "increment" if snapshot_incremental else "backup")

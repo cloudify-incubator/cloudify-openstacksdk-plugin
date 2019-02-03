@@ -57,8 +57,8 @@ class OpenstackResource(object):
                                 ''.format(self.resource_id)
 
         elif self.name and not isinstance(self.name, basestring):
-                error_message = 'Invalid resource name: {0} ' \
-                                'this should be a string'.format(self.name)
+            error_message = 'Invalid resource name: {0} ' \
+                            'this should be a string'.format(self.name)
 
         return error_message
 
