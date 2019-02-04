@@ -21,8 +21,7 @@ from cloudify.exceptions import NonRecoverableError
 from openstack_sdk.resources.compute import OpenstackHostAggregate
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID, HOST_AGGREGATE)
-from openstacksdk_plugin.utils import (reset_dict_empty_keys,
-                                       add_resource_list_to_runtime_properties)
+from openstacksdk_plugin.utils import add_resource_list_to_runtime_properties
 
 
 @with_openstack_resource(OpenstackHostAggregate)
@@ -64,8 +63,13 @@ def update(openstack_resource, args):
     :param openstack_resource: Instance of openstack host aggregate resource
     :param dict args: dict of information need to be updated
     """
-    args = reset_dict_empty_keys(args)
-    openstack_resource.update(args)
+    # TODO This need to be uncomment whenever openstack allow for update
+    #  operation since the following actions are only supported
+    #  https://git.io/fhSFH
+    # args = reset_dict_empty_keys(args)
+    # openstack_resource.update(args)
+    raise NonRecoverableError(
+        'Openstack SDK does not support host aggregate  update operation')
 
 
 @with_openstack_resource(OpenstackHostAggregate)
