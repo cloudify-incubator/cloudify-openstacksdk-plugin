@@ -24,6 +24,7 @@ class OpenstackServer(OpenstackResource):
     resource_type = 'compute'
 
     def list(self, details=True, all_projects=False, **query):
+        self.logger.debug('Attempting to list servers')
         return self.connection.compute.servers(details, all_projects, **query)
 
     def get(self):
@@ -130,6 +131,86 @@ class OpenstackServer(OpenstackResource):
             'Attempting to get server'
             ' password for this server: {0}'.format(server))
         return self.connection.compute.get_server_password(server)
+
+
+class OpenstackHostAggregate(OpenstackResource):
+    resource_type = 'compute'
+
+    def list(self):
+        self.logger.debug('Attempting to list aggregates')
+        return self.connection.compute.aggregates()
+
+    def get(self):
+        self.logger.debug(
+            'Attempting to find this aggregate: {0}'.format(
+                self.name if not self.resource_id else self.resource_id))
+        aggregate = self.connection.compute.get_aggregate(
+            self.name if not self.resource_id else self.resource_id
+        )
+        self.logger.debug(
+            'Found aggregate with this result: {0}'.format(aggregate))
+        return aggregate
+
+    def create(self):
+        self.logger.debug(
+            'Attempting to create aggregate with these args: {0}'.format(
+                self.config))
+        aggregate = self.connection.compute.create_aggregate(**self.config)
+        self.logger.debug(
+            'Created aggregate with this result: {0}'.format(aggregate))
+        return aggregate
+
+    def update(self, new_config=None):
+        aggregate = self.get()
+        self.logger.debug(
+            'Attempting to update this aggregate: {0} with args {1}'.format(
+                aggregate, new_config))
+        result =\
+            self.connection.compute.update_aggregate(aggregate, **new_config)
+        self.logger.debug(
+            'Updated aggregate with this result: {0}'.format(result))
+        return result
+
+    def delete(self):
+        aggregate = self.get()
+        self.logger.debug(
+            'Attempting to delete this aggregate: {0}'.format(aggregate))
+        result = self.connection.compute.delete_aggregate(aggregate)
+        self.logger.debug(
+            'Deleted aggregate with this result: {0}'.format(result))
+        return result
+
+    def set_metadata(self, metadata):
+        aggregate = self.get()
+        self.logger.debug(
+            'Attempting to set metadata to this aggregate: {0}'
+            ''.format(aggregate))
+        result = \
+            self.connection.compute.set_aggregate_metadata(aggregate, metadata)
+        self.logger.debug(
+            'Set metadata to aggregate with this result: {0}'.format(
+                result))
+        return result
+
+    def add_host(self, host):
+        aggregate = self.get()
+        self.logger.debug(
+            'Attempting to add host to this aggregate: {0}'
+            ''.format(aggregate))
+        result = self.connection.compute.add_host_to_aggregate(aggregate, host)
+        self.logger.debug(
+            'Added host to aggregate with this result: {0}'.format(result))
+        return result
+
+    def remove_host(self, host):
+        aggregate = self.get()
+        self.logger.debug(
+            'Attempting to delete this aggregate: {0}'.format(aggregate))
+        result = \
+            self.connection.compute.remove_host_from_aggregate(aggregate, host)
+        self.logger.debug(
+            'Deleted host to aggregate with this result: {0}'.format(result))
+        return result
 
 
 class OpenstackServerGroup(OpenstackResource):

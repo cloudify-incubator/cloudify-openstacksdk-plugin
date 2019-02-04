@@ -190,7 +190,6 @@ data_types:
         required: false
         default: []
 
-
   cloudify.types.openstack.Router:
     properties:
       <<: *data_type_kwargs
@@ -343,6 +342,14 @@ data_types:
           Key pair name.
         required: false
         type: string
+
+  cloudify.types.openstack.HostAggregate:
+    properties:
+      <<: *data_type_name
+      availability_zone:
+        required: false
+        type: string
+        description: The name of the host aggregate.
 
   cloudify.types.openstack.ServerGroup:
     properties:
@@ -514,7 +521,6 @@ data_types:
 
 
 node_types:
-
 
   cloudify.nodes.openstack.NetworkBase:
     derived_from: cloudify.nodes.Network
@@ -722,7 +728,7 @@ node_types:
             args:
               default: {}
         list:
-          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.list
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.list_servers
           inputs:
             query:
               default: {}
@@ -751,6 +757,7 @@ node_types:
           port: 5985
         description: >
           updates the defaults for the agent_config for Windows)
+
 
   cloudify.nodes.openstack.ServerGroup:
     derived_from: cloudify.nodes.Root
@@ -794,6 +801,54 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.keypair.delete
         update:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.keypair.update
+
+  cloudify.nodes.openstack.HostAggregate:
+    derived_from: cloudify.nodes.Root
+    properties:
+      <<: *external_resource
+      <<: *client_config
+      metadata:
+        required: false
+        default: {}
+        description: >
+          Metadata key and value pairs. The maximum size for each metadata key and value pair is 255 bytes
+          All keys values should be provided as string
+          Example
+          metadata:
+            ssd: 'True'
+            max_number: '1233'
+
+      resource_config:
+        type: cloudify.types.openstack.HostAggregate
+        description: https://developer.openstack.org/api-ref/compute/?expanded=create-aggregate-detail
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.create
+        configure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.set_metadata
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.delete
+      cloudify.interfaces.operations:
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.update
+          inputs:
+            args:
+              default: {}
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.list_aggregates
+          inputs: {}
+        add_hosts:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.add_hosts
+          inputs:
+            hosts:
+              default: []
+        remove_hosts:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.remove_hosts
+          inputs:
+            hosts:
+              default: []
 
   cloudify.nodes.openstack.Image:
     derived_from: cloudify.nodes.Root

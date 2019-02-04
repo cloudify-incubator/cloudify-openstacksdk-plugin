@@ -35,6 +35,7 @@ class OpenStackSDKTestBase(unittest.TestCase):
         return {
             'server': self._fake_compute_server,
             'server_group': self._fake_compute_server_group,
+            'host_aggregate': self._fake_compute_host_aggregate,
             'key_pair': self._fake_compute_key_pair,
             'image': self._fake_image,
             'flavor': self._fake_compute_flavor,
@@ -79,6 +80,17 @@ class OpenStackSDKTestBase(unittest.TestCase):
         server_conn.update_server = self._gen_openstack_sdk_error()
 
         self.connection.compute = server_conn
+        return self.connection.compute
+
+    def _fake_compute_host_aggregate(self):
+        host_aggregate_conn = mock.MagicMock()
+        host_aggregate_conn.aggregates = self._gen_openstack_sdk_error()
+        host_aggregate_conn.get_aggregate = self._gen_openstack_sdk_error()
+        host_aggregate_conn.create_aggregate = self._gen_openstack_sdk_error()
+        host_aggregate_conn.delete_aggregate = self._gen_openstack_sdk_error()
+        host_aggregate_conn.update_aggregate = self._gen_openstack_sdk_error()
+
+        self.connection.compute = host_aggregate_conn
         return self.connection.compute
 
     def _fake_compute_server_group(self):

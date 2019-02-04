@@ -36,6 +36,9 @@ class OpenstackResource(object):
             None if 'id' not in self.config else self.config['id']
         self.logger = logger
 
+    def __str__(self):
+        return self.name if not self.resource_id else self.resource_id
+
     def validate_resource_identifier(self):
         """
         This method will validate the resource identifier whenever the

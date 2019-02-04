@@ -450,12 +450,13 @@ def delete(openstack_resource):
     Delete current openstack server
     :param openstack_resource: instance of openstack server resource
     """
-    # Get the details for the created servers instance
+    # Get the details for the created server instance
     try:
         server = openstack_resource.get()
     except exceptions.ResourceNotFound:
-        ctx.logger.info('Server is deleted')
-        return
+        msg = 'Server {0} is not found'.format(openstack_resource.resource_id)
+        ctx.logger.info(msg)
+        raise NonRecoverableError(msg)
 
     # Check if delete operation triggered or not before
     if SERVER_TASK_DELETE not in ctx.instance.runtime_properties:
@@ -687,7 +688,7 @@ def snapshot_delete(openstack_resource, **kwargs):
 
 
 @with_openstack_resource(OpenstackServer)
-def update(openstack_resource, **args):
+def update(openstack_resource, args):
     """
     Update openstack server by passing args dict that contains the info that
     need to be updated
@@ -699,9 +700,9 @@ def update(openstack_resource, **args):
 
 
 @with_openstack_resource(OpenstackServer)
-def list(openstack_resource, query, all_projects=False, details=True):
+def list_servers(openstack_resource, query, all_projects=False, details=True):
     """
-    List openstack serves based on filters applied
+    List openstack servers based on filters applied
     :param openstack_resource: Instance of current openstack server
     :param kwargs query: Optional query parameters to be sent to limit
             the servers being returned.
@@ -720,7 +721,7 @@ def list(openstack_resource, query, all_projects=False, details=True):
 @with_openstack_resource(OpenstackServer)
 def creation_validation(openstack_resource):
     """
-    This method is to check if we can create server resource oin openstack
+    This method is to check if we can create server resource in openstack
     :param openstack_resource: Instance of current openstack server
     """
     validate_resource(openstack_resource, INSTANCE_OPENSTACK_TYPE)
