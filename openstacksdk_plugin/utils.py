@@ -269,7 +269,7 @@ def validate_resource(resource, openstack_type):
     resource_amount = len(resource_list)
 
     # This represent the qouta for the provided resource openstack type
-    resource_quota = getattr(resource.get_quota_sets(), openstack_type_plural)
+    resource_quota = resource.get_quota_sets(openstack_type_plural)
 
     if resource_amount < resource_quota \
             or resource_quota == INFINITE_RESOURCE_QUOTA:

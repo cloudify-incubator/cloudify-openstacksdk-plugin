@@ -20,7 +20,7 @@ from cloudify.exceptions import NonRecoverableError
 # Local imports
 from openstack_sdk.resources.compute import OpenstackHostAggregate
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import (RESOURCE_ID, HOST_AGGREGATE)
+from openstacksdk_plugin.constants import (RESOURCE_ID, HOST_AGGREGATE_TYPE)
 from openstacksdk_plugin.utils import add_resource_list_to_runtime_properties
 
 
@@ -79,7 +79,7 @@ def list_aggregates(openstack_resource):
     :param openstack_resource: Instance of openstack host aggregate resource.
     """
     aggregates = openstack_resource.list_aggregates()
-    add_resource_list_to_runtime_properties(HOST_AGGREGATE, aggregates)
+    add_resource_list_to_runtime_properties(HOST_AGGREGATE_TYPE, aggregates)
 
 
 @with_openstack_resource(OpenstackHostAggregate)

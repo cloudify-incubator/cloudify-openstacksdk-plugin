@@ -27,7 +27,7 @@ inputs:
 
   image:
     type: string
-    description: The UUID of an Ubuntu Trusty 14.04 image in your Openstack account.
+    description: The UUID of an Windows image in your Openstack account.
 
   flavor:
     type: string

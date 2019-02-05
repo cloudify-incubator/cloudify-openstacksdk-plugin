@@ -21,10 +21,15 @@ from openstack_sdk.common import OpenstackResource
 
 
 class OpenstackImage(OpenstackResource):
+    resource_type = 'compute'
+    infinite_resource_quota = 10 ** 9
 
     def list(self, query=None):
         query = query or {}
         return self.connection.image.images(**query)
+
+    def get_quota_sets(self, quota_type=None):
+        return self.infinite_resource_quota
 
     def get(self):
         self.logger.debug(
@@ -60,7 +65,7 @@ class OpenstackImage(OpenstackResource):
         self.logger.debug(
             'Attempting to update this image: {0} with args {1}'.format(
                 image, new_config))
-        result = self.connection.image.update_image(image, new_config)
+        result = self.connection.image.update_image(image, **new_config)
         self.logger.debug(
             'Updated image with this result: {0}'.format(result))
         return result

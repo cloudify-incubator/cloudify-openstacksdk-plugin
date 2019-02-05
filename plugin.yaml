@@ -391,11 +391,6 @@ data_types:
           The format of the disk.
         required: false
         type: string
-      url:
-        description: >
-          The URL to access the image file kept in external storea.
-        required: false
-        type: string
       tags:
         description: >
           List of tags for this image. Each tag is a string of at most 255 chars.
@@ -817,7 +812,6 @@ node_types:
           metadata:
             ssd: 'True'
             max_number: '1233'
-
       resource_config:
         type: cloudify.types.openstack.HostAggregate
         description: https://developer.openstack.org/api-ref/compute/?expanded=create-aggregate-detail
@@ -855,6 +849,11 @@ node_types:
     properties:
       <<: *external_resource
       <<: *client_config
+      image_url:
+        type: string
+        default: ''
+        description: >
+          The openstack resource URL for the image.
       resource_config:
         type: cloudify.types.openstack.Image
         description: https://developer.openstack.org/api-ref/image/v2/index.html?expanded=show-image-detail,create-image-detail#create-image
@@ -863,10 +862,21 @@ node_types:
       cloudify.interfaces.lifecycle:
         create:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.image.create
+        start:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.image.start
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.image.delete
+      cloudify.interfaces.validation:
+        creation:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.image.creation_validation
+      cloudify.interfaces.operations:
         update:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.image.update
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.image.list_images
+          inputs:
+            query:
+              default: {}
 
   cloudify.nodes.openstack.Flavor:
     derived_from: cloudify.nodes.Root

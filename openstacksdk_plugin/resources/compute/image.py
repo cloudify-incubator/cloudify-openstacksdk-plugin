@@ -19,13 +19,26 @@ from cloudify import ctx
 # Local imports
 from openstack_sdk.resources.images import OpenstackImage
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import RESOURCE_ID
+from openstacksdk_plugin.constants import (RESOURCE_ID, IMAGE_TYPE)
+from openstacksdk_plugin.utils import (validate_resource,
+                                       reset_dict_empty_keys,
+                                       add_resource_list_to_runtime_properties)
 
 
 @with_openstack_resource(OpenstackImage)
 def create(openstack_resource):
+    # TODO Need to handle image upload to openstack when image_url is
+    #  specified even if it is local url or remote url
+    # image_url = ctx.node.properties.get('image_url')
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
+
+
+@with_openstack_resource(OpenstackImage)
+def start(openstack_resource):
+    # TODO This should be implemented in order to check if uploading image
+    #  is done or not
+    pass
 
 
 @with_openstack_resource(OpenstackImage)
@@ -35,5 +48,34 @@ def delete(openstack_resource):
 
 
 @with_openstack_resource(OpenstackImage)
-def update(openstack_resource):
-    pass
+def update(openstack_resource, args):
+    """
+    Update openstack image by passing args dict that contains the info that
+    need to be updated
+    :param openstack_resource: instance of openstack image resource
+    :param args: dict of information need to be updated
+    """
+    args = reset_dict_empty_keys(args)
+    openstack_resource.update(args)
+
+
+@with_openstack_resource(OpenstackImage)
+def list_images(openstack_resource, query):
+    """
+    List openstack images based on filters applied
+    :param openstack_resource: Instance of current openstack image
+    :param kwargs query: Optional query parameters to be sent to limit
+                                 the resources being returned.
+    """
+    images = openstack_resource.list(**query)
+    add_resource_list_to_runtime_properties(IMAGE_TYPE, images)
+
+
+@with_openstack_resource(OpenstackImage)
+def creation_validation(openstack_resource):
+    """
+    This method is to check if we can create image resource in openstack
+    :param openstack_resource: Instance of current openstack image
+    """
+    validate_resource(openstack_resource, IMAGE_TYPE)
+    ctx.logger.debug('OK: image configuration is valid')

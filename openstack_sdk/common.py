@@ -65,7 +65,7 @@ class OpenstackResource(object):
 
         return error_message
 
-    def get_quota_sets(self):
+    def get_quota_sets(self, quota_type):
         project_name = self.client_config.get('project_name')
         quota = getattr(
             self.connection,
@@ -75,7 +75,7 @@ class OpenstackResource(object):
             raise QuotaException(
                 'Invalid {0} quota response'.format(self.resource_type))
 
-        return quota
+        return getattr(quota, quota_type)
 
     def resource_plural(self, openstack_type):
         return '{0}s'.format(openstack_type)
