@@ -77,7 +77,6 @@ class OpenStackSDKTestBase(unittest.TestCase):
         server_conn.get_server = self._gen_openstack_sdk_error()
         server_conn.create_server = self._gen_openstack_sdk_error()
         server_conn.delete_server = self._gen_openstack_sdk_error()
-        server_conn.update_server = self._gen_openstack_sdk_error()
 
         self.connection.compute = server_conn
         return self.connection.compute

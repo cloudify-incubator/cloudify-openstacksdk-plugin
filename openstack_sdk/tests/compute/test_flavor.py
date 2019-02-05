@@ -103,51 +103,6 @@ class FlavorTestCase(base.OpenStackSDKTestBase):
         self.assertEqual(response.id, flavor['id'])
         self.assertEqual(response.name, flavor['name'])
 
-    def test_update_flavor(self):
-        old_flavor = openstack.compute.v2.flavor.Flavor(**{
-            'id': '1',
-            'name': 'test_flavor',
-            'links': '2',
-            'description': 'Testing flavor',
-            'os-flavor-access:is_public': True,
-            'ram': 6,
-            'vcpus': 8,
-            'swap': 8
-
-        })
-
-        new_config = {
-            'description': 'Updated Flavor Description',
-            'ram': 4,
-            'vcpus': 2,
-            'swap': 2
-        }
-
-        new_flavor = openstack.compute.v2.flavor.Flavor(**{
-            'id': '1',
-            'name': 'test_flavor',
-            'links': '2',
-            'description': 'Updated Flavor Description',
-            'os-flavor-access:is_public': True,
-            'ram': 4,
-            'vcpus': 2,
-            'swap': 2
-
-        })
-
-        self.flavor_instance.resource_id = '1'
-
-        self.fake_client.get_flavor = mock.MagicMock(return_value=old_flavor)
-
-        self.fake_client.update_flavor =\
-            mock.MagicMock(return_value=new_flavor)
-
-        response = self.flavor_instance.update(new_config=new_config)
-        self.assertNotEqual(response.description, old_flavor.description)
-        self.assertNotEqual(response.ram, old_flavor.ram)
-        self.assertNotEqual(response.vcpus, old_flavor.vcpus)
-        self.assertNotEqual(response.swap, old_flavor.swap)
-
     def test_delete_flavor(self):
         flavor = openstack.compute.v2.flavor.Flavor(**{
             'id': '1',
