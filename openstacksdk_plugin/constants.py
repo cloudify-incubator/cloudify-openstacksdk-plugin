@@ -45,6 +45,7 @@ SERVER_GROUP_OPENSTACK_TYPE = 'server_group'
 INSTANCE_OPENSTACK_TYPE = 'instance'
 HOST_AGGREGATE_TYPE = 'aggregate'
 IMAGE_TYPE = 'image'
+FLAVOR_TYPE = 'flavor'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'

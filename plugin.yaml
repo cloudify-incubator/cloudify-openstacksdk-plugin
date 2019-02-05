@@ -872,6 +872,9 @@ node_types:
       cloudify.interfaces.operations:
         update:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.image.update
+          inputs:
+            args:
+              default: {}
         list:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.image.list_images
           inputs:
@@ -893,8 +896,14 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.flavor.create
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.flavor.delete
+      cloudify.interfaces.operations:
         update:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.flavor.update
+          inputs:
+            args:
+              default: {}
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.flavor.list_flavors
 
   cloudify.nodes.openstack.User:
     derived_from: cloudify.nodes.Root

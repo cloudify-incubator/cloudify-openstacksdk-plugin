@@ -78,7 +78,7 @@ def list_aggregates(openstack_resource):
     List openstack host aggregate
     :param openstack_resource: Instance of openstack host aggregate resource.
     """
-    aggregates = openstack_resource.list_aggregates()
+    aggregates = openstack_resource.list()
     add_resource_list_to_runtime_properties(HOST_AGGREGATE_TYPE, aggregates)
 
 

@@ -315,7 +315,7 @@ class OpenstackFlavor(OpenstackResource):
                 self.config))
         flavor = self.connection.compute.create_flavor(**self.config)
         self.logger.debug(
-            'Created server image with this result: {0}'.format(flavor))
+            'Created flavor image with this result: {0}'.format(flavor))
         return flavor
 
     def delete(self):
@@ -328,11 +328,4 @@ class OpenstackFlavor(OpenstackResource):
         return result
 
     def update(self, new_config=None):
-        flavor = self.get()
-        self.logger.debug(
-            'Attempting to update this flavor:'
-            ' {0} with args {1}'.format(flavor, new_config))
-        result = self.connection.compute.update_server(flavor, new_config)
-        self.logger.debug(
-            'Updated flavor with this result: {0}'.format(result))
-        return result
+        pass

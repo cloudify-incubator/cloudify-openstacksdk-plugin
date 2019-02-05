@@ -16,24 +16,56 @@
 
 # Third party imports
 from cloudify import ctx
+from cloudify.exceptions import NonRecoverableError
 
 # Local imports
 from openstack_sdk.resources.compute import OpenstackFlavor
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import RESOURCE_ID
+from openstacksdk_plugin.constants import (RESOURCE_ID, FLAVOR_TYPE)
+from openstacksdk_plugin.utils import add_resource_list_to_runtime_properties
 
 
 @with_openstack_resource(OpenstackFlavor)
 def create(openstack_resource):
+    """
+    Create openstack flavor
+    :param openstack_resource: Instance of openstack flavor resource
+    """
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
 
 
 @with_openstack_resource(OpenstackFlavor)
+def list_flavors(openstack_resource):
+    """
+    List openstack flavors
+    :param openstack_resource: Instance of openstack flavor.
+    """
+    flavors = openstack_resource.list()
+    add_resource_list_to_runtime_properties(FLAVOR_TYPE, flavors)
+
+
+@with_openstack_resource(OpenstackFlavor)
 def delete(openstack_resource):
+    """
+    Delete flavor resource
+    :param openstack_resource: Instance of openstack flavor resource.
+    """
     openstack_resource.delete()
 
 
 @with_openstack_resource(OpenstackFlavor)
-def update(openstack_resource):
-    openstack_resource.update()
+def update(openstack_resource, args):
+    """
+    Update openstack flavor by passing args dict that contains the info that
+    need to be updated
+    :param openstack_resource: instance of openstack flavor resource
+    :param args: dict of information need to be updated
+    """
+    # TODO This need to be uncomment whenever openstack allow for update
+    #  operation since the following actions are only supported
+    #  https://git.io/fh93b
+    # args = reset_dict_empty_keys(args)
+    # openstack_resource.update(args)
+    raise NonRecoverableError(
+        'Openstack SDK does not support flavor update operation')

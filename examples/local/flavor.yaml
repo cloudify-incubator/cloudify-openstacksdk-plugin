@@ -44,7 +44,6 @@ dsl_definitions:
     password: { get_input: password }
     region_name: { get_input: region_name }
     project_name: { get_input: project_name }
-    user_domain_id: { get_input: project_name }
 
 node_templates:
 
