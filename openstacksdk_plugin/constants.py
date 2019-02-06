@@ -47,6 +47,7 @@ HOST_AGGREGATE_OPENSTACK_TYPE = 'aggregate'
 IMAGE_OPENSTACK_TYPE = 'image'
 FLAVOR_OPENSTACK_TYPE = 'flavor'
 KEYPAIR_OPENSTACK_TYPE = 'key_pair'
+USER_OPENSTACK_TYPE = 'user'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'

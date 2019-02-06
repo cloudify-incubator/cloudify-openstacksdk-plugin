@@ -61,7 +61,7 @@ class OpenstackNetwork(OpenstackResource):
         self.logger.debug(
             'Attempting to update this network: {0} with args {1}'.format(
                 network, new_config))
-        result = self.connection.network.update_network(network, new_config)
+        result = self.connection.network.update_network(network, **new_config)
         self.logger.debug(
             'Updated network with this result: {0}'.format(result))
         return result
@@ -318,7 +318,7 @@ class OpenstackSecurityGroup(OpenstackResource):
                           'security_group: {0} with args {1}'.format(
                               security_group, new_config))
         result = self.connection.network.update_security_group(
-            security_group, new_config)
+            security_group, **new_config)
         self.logger.debug(
             'Updated security_group with this result: {0}'.format(result))
         return result
