@@ -21,7 +21,7 @@ from cloudify.exceptions import NonRecoverableError
 # Local imports
 from openstack_sdk.resources.compute import OpenstackFlavor
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import (RESOURCE_ID, FLAVOR_TYPE)
+from openstacksdk_plugin.constants import (RESOURCE_ID, FLAVOR_OPENSTACK_TYPE)
 from openstacksdk_plugin.utils import add_resource_list_to_runtime_properties
 
 
@@ -36,13 +36,16 @@ def create(openstack_resource):
 
 
 @with_openstack_resource(OpenstackFlavor)
-def list_flavors(openstack_resource):
+def list_flavors(openstack_resource, query=None, details=True):
     """
-    List openstack flavors
-    :param openstack_resource: Instance of openstack flavor.
+
+    :param openstack_resource:
+    :param query:
+    :param details:
+    :return:
     """
-    flavors = openstack_resource.list()
-    add_resource_list_to_runtime_properties(FLAVOR_TYPE, flavors)
+    flavors = openstack_resource.list(details=details, query=query)
+    add_resource_list_to_runtime_properties(FLAVOR_OPENSTACK_TYPE, flavors)
 
 
 @with_openstack_resource(OpenstackFlavor)

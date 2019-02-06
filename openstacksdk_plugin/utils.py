@@ -247,6 +247,12 @@ def add_resource_list_to_runtime_properties(openstack_type_name, object_list):
         objects.append(obj)
 
     key_list = '{0}_list'.format(openstack_type_name)
+
+    # if the key already exists then we need to re-generate new data and
+    # omits the old one if the list command multiple times
+    if ctx.instance.runtime_properties.get(key_list):
+        del ctx.instance.runtime_properties[key_list]
+
     ctx.instance.runtime_properties[key_list] = objects
 
 

@@ -23,7 +23,8 @@ from openstack_sdk.common import OpenstackResource
 class OpenstackServer(OpenstackResource):
     resource_type = 'compute'
 
-    def list(self, details=True, all_projects=False, **query):
+    def list(self, details=True, all_projects=False, query=None):
+        query = query or {}
         self.logger.debug('Attempting to list servers')
         return self.connection.compute.servers(details, all_projects, **query)
 
@@ -295,8 +296,9 @@ class OpenstackKeyPair(OpenstackResource):
 class OpenstackFlavor(OpenstackResource):
     resource_type = 'compute'
 
-    def list(self):
-        return self.connection.compute.flavors()
+    def list(self, details=True, query=None):
+        query = query or {}
+        return self.connection.compute.flavors(details, **query)
 
     def get(self):
         self.logger.debug(
