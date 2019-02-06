@@ -21,9 +21,11 @@ from openstack_sdk.common import OpenstackResource
 
 
 class OpenstackUser(OpenstackResource):
+    resource_type = 'identity'
 
-    def list(self):
-        return self.connection.identity.users()
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.identity.users(**query)
 
     def get(self):
         self.logger.debug(
@@ -55,7 +57,7 @@ class OpenstackUser(OpenstackResource):
         self.logger.debug(
             'Attempting to update this user: {0} with args {1}'.format(
                 user, new_config))
-        result = self.connection.identity.update_user(user, new_config)
+        result = self.connection.identity.update_user(user, **new_config)
         self.logger.debug('Updated user with this result: {0}'.format(result))
         return result
 
@@ -99,7 +101,7 @@ class OpenstackProject(OpenstackResource):
         self.logger.debug(
             'Attempting to update this project: {0} with args {1}'.format(
                 project, new_config))
-        result = self.connection.identity.update_project(project, new_config)
+        result = self.connection.identity.update_project(project, **new_config)
         self.logger.debug(
             'Updated project with this result: {0}'.format(result))
         return result
