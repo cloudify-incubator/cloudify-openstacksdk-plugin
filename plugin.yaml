@@ -774,7 +774,7 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.server_group.creation_validation
       cloudify.interfaces.operations:
         list:
-          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server_group.list
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server_group.list_server_groups
           inputs:
             query:
               default: {}
@@ -794,8 +794,12 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.keypair.create
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.keypair.delete
-        update:
-          implementation: openstacksdk.openstacksdk_plugin.resources.compute.keypair.update
+      cloudify.interfaces.validation:
+        creation:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.keypair.creation_validation
+      cloudify.interfaces.operations:
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.keypair.list_keypairs
 
   cloudify.nodes.openstack.HostAggregate:
     derived_from: cloudify.nodes.Root
@@ -832,7 +836,6 @@ node_types:
               default: {}
         list:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.list_aggregates
-          inputs: {}
         add_hosts:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.host_aggregate.add_hosts
           inputs:
@@ -904,6 +907,12 @@ node_types:
               default: {}
         list:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.flavor.list_flavors
+          inputs:
+            query:
+              default: {}
+            details:
+              default: True
+
 
   cloudify.nodes.openstack.User:
     derived_from: cloudify.nodes.Root

@@ -43,9 +43,10 @@ SERVER_REBOOT_HARD = 'HARD'
 SERVER_OPENSTACK_TYPE = 'server'
 SERVER_GROUP_OPENSTACK_TYPE = 'server_group'
 INSTANCE_OPENSTACK_TYPE = 'instance'
-HOST_AGGREGATE_TYPE = 'aggregate'
-IMAGE_TYPE = 'image'
-FLAVOR_TYPE = 'flavor'
+HOST_AGGREGATE_OPENSTACK_TYPE = 'aggregate'
+IMAGE_OPENSTACK_TYPE = 'image'
+FLAVOR_OPENSTACK_TYPE = 'flavor'
+KEYPAIR_OPENSTACK_TYPE = 'key_pair'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'

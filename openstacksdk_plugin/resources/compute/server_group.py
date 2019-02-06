@@ -29,25 +29,43 @@ from openstacksdk_plugin.utils import (validate_resource,
 
 @with_openstack_resource(OpenstackServerGroup)
 def create(openstack_resource):
+    """
+    Create openstack server group resource
+    :param openstack_resource: Instance of openstack server group resource
+    """
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
 
 
 @with_openstack_resource(OpenstackServerGroup)
 def delete(openstack_resource):
+    """
+    Delete current openstack server group
+    :param openstack_resource: instance of openstack server group resource
+    """
     # Delete the server group resource after lookup the resource_id values
     openstack_resource.delete()
 
 
 @with_openstack_resource(OpenstackServerGroup)
-def update(openstack_resource):
+def update(openstack_resource, args):
+    """
+    Update openstack server group by passing args dict that contains the info
+    that need to be updated
+    :param openstack_resource: instance of openstack server group resource
+    :param args: dict of information need to be updated
+    """
     # Update server group not support right now with openstacksdk
     raise NonRecoverableError(
         'Openstacksdk library does not support update server group')
 
 
 @with_openstack_resource(OpenstackServerGroup)
-def list(openstack_resource, query):
+def list_server_groups(openstack_resource, query=None):
+    """
+    List openstack server groups
+    :param openstack_resource: Instance of openstack sever group.
+    """
     server_groups = openstack_resource.list(query)
     add_resource_list_to_runtime_properties(SERVER_GROUP_OPENSTACK_TYPE,
                                             server_groups)
@@ -55,5 +73,9 @@ def list(openstack_resource, query):
 
 @with_openstack_resource(OpenstackServerGroup)
 def creation_validation(openstack_resource):
+    """
+    This method is to check if we can create server group resource in openstack
+    :param openstack_resource: Instance of current openstack server group
+    """
     validate_resource(openstack_resource, SERVER_GROUP_OPENSTACK_TYPE)
     ctx.logger.debug('OK: server group configuration is valid')
