@@ -217,4 +217,3 @@ def update_project_quota(openstack_resource):
     #  get update
     raise NonRecoverableError('Openstack SDK does not support updating '
                               'quota for project')
-
