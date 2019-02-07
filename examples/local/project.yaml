@@ -43,3 +43,10 @@ node_templates:
     properties:
       client_config: *client_config
       resource_config: { get_input: project_config }
+      # Users & roles must be exist, otherwise the install workflow will fail
+      users:
+        - name: test_user
+          roles:
+            - test_role_1
+            - test_role_2
+            - test_role_3

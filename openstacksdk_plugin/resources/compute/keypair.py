@@ -65,4 +65,4 @@ def creation_validation(openstack_resource):
     :param openstack_resource: Instance of current openstack keypair
     """
     validate_resource(openstack_resource, KEYPAIR_OPENSTACK_TYPE)
-    ctx.logger.debug('OK: server group configuration is valid')
+    ctx.logger.debug('OK: key pair configuration is valid')
