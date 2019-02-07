@@ -13,25 +13,66 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Third party imports
+from cloudify import ctx
+
 # Local imports
 from openstack_sdk.resources.networks import OpenstackSubnet
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import RESOURCE_ID
-
-from cloudify import ctx
+from openstacksdk_plugin.constants import (RESOURCE_ID, SUBNET_OPENSTACK_TYPE)
+from openstacksdk_plugin.utils import (reset_dict_empty_keys,
+                                       validate_resource,
+                                       add_resource_list_to_runtime_properties)
 
 
 @with_openstack_resource(OpenstackSubnet)
 def create(openstack_resource):
+    """
+    Create openstack subnet instance
+    :param openstack_resource: instance of openstack subnet resource
+    """
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
 
 
 @with_openstack_resource(OpenstackSubnet)
 def delete(openstack_resource):
+    """
+    Delete current openstack subnet
+    :param openstack_resource: instance of openstack subnet resource
+    """
     openstack_resource.delete()
 
 
 @with_openstack_resource(OpenstackSubnet)
-def update(openstack_resource, **new_config):
-    openstack_resource.update(new_config)
+def update(openstack_resource, args):
+    """
+    Update openstack subnet by passing args dict that contains the info that
+    need to be updated
+    :param openstack_resource: instance of openstack subnet resource
+    :param args: dict of information need to be updated
+    """
+    args = reset_dict_empty_keys(args)
+    openstack_resource.update(args)
+
+
+@with_openstack_resource(OpenstackSubnet)
+def list_subnets(openstack_resource, query=None):
+    """
+    List openstack subnets based on filters applied
+    :param openstack_resource: Instance of current openstack network
+    :param kwargs query: Optional query parameters to be sent to limit
+            the networks being returned.
+    """
+    subnets = openstack_resource.list(query)
+    add_resource_list_to_runtime_properties(SUBNET_OPENSTACK_TYPE, subnets)
+
+
+@with_openstack_resource(OpenstackSubnet)
+def creation_validation(openstack_resource):
+    """
+    This method is to check if we can create subnet resource in openstack
+    :param openstack_resource: Instance of current openstack subnet
+    """
+    validate_resource(openstack_resource, SUBNET_OPENSTACK_TYPE)
+    ctx.logger.debug('OK: network configuration is valid')
