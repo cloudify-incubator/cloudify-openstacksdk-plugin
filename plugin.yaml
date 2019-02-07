@@ -946,6 +946,22 @@ node_types:
     properties:
       <<: *external_resource
       <<: *client_config
+      users:
+        default: []
+        description: >
+          List of users assigned to this project in the following format:
+            { name: string, roles: [string] }
+#      quota:
+#        default: {}
+#        description: |
+#          A dictionary mapping service names to quota definitions for a project
+#
+#          e.g::
+#
+#            quota:
+#              compute: <quota>
+#              network: <quota>
+#              volume: <quota>
       resource_config:
         type: cloudify.types.openstack.Project
         description: https://developer.openstack.org/api-ref/identity/v3/?expanded=update-user.yaml-detail,create-user.yaml-detail,update-project-detail#projects
@@ -954,10 +970,30 @@ node_types:
       cloudify.interfaces.lifecycle:
         create:
           implementation: openstacksdk.openstacksdk_plugin.resources.identity.project.create
+        start:
+          implementation: openstacksdk.openstacksdk_plugin.resources.identity.project.start
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.identity.project.delete
-        update:
+      cloudify.interfaces.operations:
+        update_project:
           implementation: openstacksdk.openstacksdk_plugin.resources.identity.project.update
+          inputs:
+            args:
+              default: {}
+        get_quota:
+          implementation: openstacksdk.openstacksdk_plugin.resources.identity.project.get_project_quota
+        update_quota:
+          implementation: openstacksdk.openstacksdk_plugin.resources.identity.project.update_project_quota
+          inputs:
+            quota:
+              default: {}
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.identity.project.list_projects
+          inputs:
+            query:
+              default: {}
+      cloudify.interfaces.validation:
+        creation: openstacksdk.openstacksdk_plugin.resources.identity.project.creation_validation
 
   cloudify.nodes.openstack.VolumeType:
     derived_from: cloudify.nodes.Root
