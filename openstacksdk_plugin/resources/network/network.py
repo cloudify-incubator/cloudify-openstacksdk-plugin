@@ -77,4 +77,3 @@ def creation_validation(openstack_resource):
     """
     validate_resource(openstack_resource, NETWORK_OPENSTACK_TYPE)
     ctx.logger.debug('OK: network configuration is valid')
-
