@@ -49,6 +49,7 @@ FLAVOR_OPENSTACK_TYPE = 'flavor'
 KEYPAIR_OPENSTACK_TYPE = 'key_pair'
 USER_OPENSTACK_TYPE = 'user'
 PROJECT_OPENSTACK_TYPE = 'project'
+NETWORK_OPENSTACK_TYPE = 'network'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'
