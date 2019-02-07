@@ -24,9 +24,14 @@ from openstack_sdk.common import OpenstackResource
 class OpenstackNetwork(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2D2S1xw.
+    resource_type = 'network'
 
-    def list(self):
-        return self.connection.network.networks()
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.networks(**query)
 
     def get(self):
         self.logger.debug(
