@@ -75,4 +75,4 @@ def creation_validation(openstack_resource):
     :param openstack_resource: Instance of current openstack subnet
     """
     validate_resource(openstack_resource, SUBNET_OPENSTACK_TYPE)
-    ctx.logger.debug('OK: network configuration is valid')
+    ctx.logger.debug('OK: port configuration is valid')

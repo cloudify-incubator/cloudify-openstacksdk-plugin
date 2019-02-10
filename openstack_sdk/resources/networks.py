@@ -129,8 +129,12 @@ class OpenstackPort(OpenstackResource):
     # https://bit.ly/2DlPnUj
     resource_type = 'network'
 
-    def list(self):
-        return self.connection.network.ports()
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.ports(**query)
 
     def get(self):
         self.logger.debug(
@@ -245,8 +249,12 @@ class OpenstackFloatingIP(OpenstackResource):
     # https://bit.ly/2JGHqcQ
     resource_type = 'network'
 
-    def list(self):
-        return self.connection.network.ips()
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.ips(**query)
 
     def get(self):
         self.logger.debug(
