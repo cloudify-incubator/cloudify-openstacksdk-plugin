@@ -52,6 +52,7 @@ PROJECT_OPENSTACK_TYPE = 'project'
 NETWORK_OPENSTACK_TYPE = 'network'
 SUBNET_OPENSTACK_TYPE = 'subnet'
 PORT_OPENSTACK_TYPE = 'port'
+FLOATING_IP_OPENSTACK_TYPE = 'floatingip'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'

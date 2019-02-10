@@ -16,6 +16,7 @@
 # Third party imports
 from cloudify import ctx
 
+# Local imports
 from openstack_sdk.resources.networks import OpenstackPort
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID, PORT_OPENSTACK_TYPE)
@@ -66,10 +67,10 @@ def update(openstack_resource, args):
 @with_openstack_resource(OpenstackPort)
 def list_ports(openstack_resource, query=None):
     """
-    List openstack networks based on filters applied
-    :param openstack_resource: Instance of current openstack network
+    List openstack ports based on filters applied
+    :param openstack_resource: Instance of current openstack port
     :param kwargs query: Optional query parameters to be sent to limit
-            the networks being returned.
+            the ports being returned.
     """
     ports = openstack_resource.list(query)
     add_resource_list_to_runtime_properties(PORT_OPENSTACK_TYPE, ports)
@@ -78,8 +79,8 @@ def list_ports(openstack_resource, query=None):
 @with_openstack_resource(OpenstackPort)
 def creation_validation(openstack_resource):
     """
-    This method is to check if we can create network resource in openstack
-    :param openstack_resource: Instance of current openstack network
+    This method is to check if we can create port resource in openstack
+    :param openstack_resource: Instance of current openstack port
     """
     validate_resource(openstack_resource, PORT_OPENSTACK_TYPE)
     ctx.logger.debug('OK: port configuration is valid')
