@@ -20,8 +20,11 @@ from cloudify.exceptions import RecoverableError
 # Local imports
 from openstack_sdk.resources.networks import OpenstackFloatingIP
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import RESOURCE_ID
-from openstacksdk_plugin.utils import reset_dict_empty_keys
+from openstacksdk_plugin.constants import (RESOURCE_ID,
+                                           FLOATING_IP_OPENSTACK_TYPE)
+from openstacksdk_plugin.utils import (reset_dict_empty_keys,
+                                       validate_resource,
+                                       add_resource_list_to_runtime_properties)
 
 
 def use_external_floating_ip(openstack_resource):
@@ -39,6 +42,10 @@ def use_external_floating_ip(openstack_resource):
 @with_openstack_resource(class_decl=OpenstackFloatingIP,
                          existing_resource_handler=use_external_floating_ip)
 def create(openstack_resource):
+    """
+    Create openstack floating ip instance
+    :param openstack_resource: instance of openstack floating ip  resource
+    """
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = \
         created_resource.id
@@ -48,13 +55,46 @@ def create(openstack_resource):
 
 @with_openstack_resource(OpenstackFloatingIP)
 def delete(openstack_resource):
+    """
+    Delete current openstack floating ip
+    :param openstack_resource: instance of openstack floating ip resource
+    """
     openstack_resource.delete()
 
 
 @with_openstack_resource(OpenstackFloatingIP)
-def update(openstack_resource, **new_config):
+def update(openstack_resource, args):
+    """
+    Update openstack floating ip by passing args dict that contains the info
+    that need to be updated
+    :param openstack_resource: instance of openstack floating ip resource
+    :param args: dict of information need to be updated
+    """
     # At some case like remove ip from port, openstack API refuse to to set
     # port_id to '' empty string in order to delete the port, it should be
     # set to None in order to set it, so it is required to change '' to None
-    new_config = reset_dict_empty_keys(new_config)
+    new_config = reset_dict_empty_keys(args)
     openstack_resource.update(new_config)
+
+
+@with_openstack_resource(OpenstackFloatingIP)
+def list_floating_ips(openstack_resource, query=None):
+    """
+    List openstack floating ips based on filters applied
+    :param openstack_resource: Instance of current openstack floating ip
+    :param kwargs query: Optional query parameters to be sent to limit
+            the floating ips being returned.
+    """
+    floating_ips = openstack_resource.list(query)
+    add_resource_list_to_runtime_properties(
+        FLOATING_IP_OPENSTACK_TYPE, floating_ips)
+
+
+@with_openstack_resource(OpenstackFloatingIP)
+def creation_validation(openstack_resource):
+    """
+    This method is to check if we can create floating ip resource in openstack
+    :param openstack_resource: Instance of current openstack floating ip
+    """
+    validate_resource(openstack_resource, FLOATING_IP_OPENSTACK_TYPE)
+    ctx.logger.debug('OK: floating ip configuration is valid')

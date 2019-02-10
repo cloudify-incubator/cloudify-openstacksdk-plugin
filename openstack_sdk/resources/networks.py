@@ -76,8 +76,14 @@ class OpenstackSubnet(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2SMLuvY
 
-    def list(self):
-        return self.connection.network.subnets()
+    resource_type = 'network'
+
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.subnets(**query)
 
     def get(self):
         self.logger.debug(
@@ -121,9 +127,14 @@ class OpenstackSubnet(OpenstackResource):
 class OpenstackPort(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2DlPnUj
+    resource_type = 'network'
 
-    def list(self):
-        return self.connection.network.ports()
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.ports(**query)
 
     def get(self):
         self.logger.debug(
@@ -167,6 +178,7 @@ class OpenstackPort(OpenstackResource):
 class OpenstackRouter(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2QioQdg
+    resource_type = 'network'
 
     def list(self):
         return self.connection.network.routers()
@@ -235,9 +247,14 @@ class OpenstackRouter(OpenstackResource):
 class OpenstackFloatingIP(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2JGHqcQ
+    resource_type = 'network'
 
-    def list(self):
-        return self.connection.network.ips()
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.ips(**query)
 
     def get(self):
         self.logger.debug(
@@ -281,6 +298,7 @@ class OpenstackFloatingIP(OpenstackResource):
 class OpenstackSecurityGroup(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2PCsWA0
+    resource_type = 'network'
 
     def list(self):
         return self.connection.network.security_groups()
@@ -332,6 +350,7 @@ class OpenstackSecurityGroup(OpenstackResource):
 class OpenstackSecurityGroupRule(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2PCsWA0
+    resource_type = 'network'
 
     def list(self):
         return self.connection.network.security_group_rules()
