@@ -263,7 +263,7 @@ def validate_resource(resource, openstack_type):
     :param resource: openstack resource instance
     :param openstack_type: openstack resource type
     """
-    ctx.logger.debug(
+    ctx.logger.info(
         'validating resource {0} (node {1})'
         ''.format(openstack_type, ctx.node.id)
     )
@@ -274,7 +274,14 @@ def validate_resource(resource, openstack_type):
     # This is the available quota for provisioning the resource
     resource_amount = len(resource_list)
 
-    # This represent the qouta for the provided resource openstack type
+    # Log message to give an indication to the caller that there will be a
+    # call trigger to fetch the quota for current resource
+    ctx.logger.info(
+        'Fetching quota for resource {0} (node {1})'
+        ''.format(openstack_type, ctx.node.id)
+    )
+
+    # This represent the quota for the provided resource openstack type
     resource_quota = resource.get_quota_sets(openstack_type_plural)
 
     if resource_amount < resource_quota \

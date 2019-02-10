@@ -627,8 +627,20 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.router.start
         stop:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.router.stop
-        delete:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.delete
+      cloudify.interfaces.validation:
+        creation:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.creation_validation
+      cloudify.interfaces.operations:
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.update
+          inputs:
+            args:
+              default: {}
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.list_routers
+          inputs:
+            query:
+              default: {}
 
   cloudify.nodes.openstack.FloatingIP:
     derived_from: cloudify.nodes.VirtualIP
@@ -692,8 +704,20 @@ node_types:
               default: { get_property: [ SELF, security_group_rules ] }
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.delete
+      cloudify.interfaces.validation:
+        creation:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.creation_validation
+      cloudify.interfaces.operations:
         update:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.update
+          inputs:
+            args:
+              default: {}
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group.list_security_groups
+          inputs:
+            query:
+              default: {}
 
   cloudify.nodes.openstack.SecurityGroupRule:
     derived_from: cloudify.nodes.SecurityGroup
@@ -710,6 +734,15 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group_rule.create
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group_rule.delete
+      cloudify.interfaces.validation:
+        creation:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group_rule.creation_validation
+      cloudify.interfaces.operations:
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.security_group_rule.list_security_group_rules
+          inputs:
+            query:
+              default: {}
 
   cloudify.nodes.openstack.Server:
     derived_from: cloudify.nodes.Compute
