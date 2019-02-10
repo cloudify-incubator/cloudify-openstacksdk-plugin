@@ -13,22 +13,38 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Third party imports
+from cloudify import ctx
+
+# Local imports
 from openstack_sdk.resources.networks import OpenstackSecurityGroup
 from openstack_sdk.resources.networks import OpenstackSecurityGroupRule
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import RESOURCE_ID
-
-from cloudify import ctx
+from openstacksdk_plugin.constants import (RESOURCE_ID,
+                                           SECURITY_GROUP_OPENSTACK_TYPE)
+from openstacksdk_plugin.utils import (reset_dict_empty_keys,
+                                       validate_resource,
+                                       add_resource_list_to_runtime_properties)
 
 
 @with_openstack_resource(OpenstackSecurityGroup)
 def create(openstack_resource):
+    """
+    Create openstack security group instance
+    :param openstack_resource: instance of openstack security group resource
+    """
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
 
 
 @with_openstack_resource(OpenstackSecurityGroup)
 def configure(openstack_resource, security_group_rules=None):
+    """
+    This task will allow to add security group rules and attach them to
+    created security group if they provided on the node configuration
+    :param openstack_resource: security group instance
+    :param security_group_rules: List of security group rules
+    """
     # Get the security group id
 
     client_config = ctx.node.properties.get('client_config')
@@ -52,8 +68,45 @@ def configure(openstack_resource, security_group_rules=None):
 
 @with_openstack_resource(OpenstackSecurityGroup)
 def delete(openstack_resource):
+    """
+    Delete current openstack security group instance
+    :param openstack_resource: instance of openstack security group  resource
+    """
     openstack_resource.delete()
 
 
-def update():
-    pass
+@with_openstack_resource(OpenstackSecurityGroup)
+def update(openstack_resource, args):
+    """
+    Update openstack security group by passing args dict that contains
+    the info that need to be updated
+    :param openstack_resource: instance of openstack security group resource
+    :param args: dict of information need to be updated
+    """
+    args = reset_dict_empty_keys(args)
+    openstack_resource.update(args)
+
+
+@with_openstack_resource(OpenstackSecurityGroup)
+def list_security_groups(openstack_resource, query=None):
+    """
+    List openstack security groups based on filters applied
+    :param openstack_resource: Instance of current openstack security group
+    :param kwargs query: Optional query parameters to be sent to limit
+            the security groups being returned.
+    """
+
+    security_groups = openstack_resource.list(query)
+    add_resource_list_to_runtime_properties(SECURITY_GROUP_OPENSTACK_TYPE,
+                                            security_groups)
+
+
+@with_openstack_resource(OpenstackSecurityGroup)
+def creation_validation(openstack_resource):
+    """
+    This method is to check if we can create security group resource
+    in openstack
+    :param openstack_resource: Instance of current openstack security group
+    """
+    validate_resource(openstack_resource, SECURITY_GROUP_OPENSTACK_TYPE)
+    ctx.logger.debug('OK: security group configuration is valid')

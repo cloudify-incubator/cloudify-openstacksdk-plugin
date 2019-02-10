@@ -75,7 +75,7 @@ def creation_validation(openstack_resource):
     :param openstack_resource: Instance of current openstack router
     """
     validate_resource(openstack_resource, ROUTER_OPENSTACK_TYPE)
-    ctx.logger.debug('OK: port configuration is valid')
+    ctx.logger.debug('OK: router configuration is valid')
 
 
 @with_openstack_resource(OpenstackRouter)
