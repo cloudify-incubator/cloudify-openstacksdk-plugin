@@ -180,8 +180,12 @@ class OpenstackRouter(OpenstackResource):
     # https://bit.ly/2QioQdg
     resource_type = 'network'
 
-    def list(self):
-        return self.connection.network.routers()
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.routers(**query)
 
     def get(self):
         self.logger.debug(
