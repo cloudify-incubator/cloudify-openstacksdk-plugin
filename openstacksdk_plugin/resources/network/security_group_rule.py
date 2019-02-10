@@ -13,23 +13,61 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Third pary imports
+from cloudify import ctx
+
+# Local imports
 from openstack_sdk.resources.networks import OpenstackSecurityGroupRule
 from openstacksdk_plugin.decorators import with_openstack_resource
-from openstacksdk_plugin.constants import RESOURCE_ID
-
-from cloudify import ctx
+from openstacksdk_plugin.constants import (RESOURCE_ID,
+                                           SECURITY_GROUP_RULE_OPENSTACK_TYPE)
+from openstacksdk_plugin.utils import (validate_resource,
+                                       add_resource_list_to_runtime_properties)
 
 
 @with_openstack_resource(OpenstackSecurityGroupRule)
 def create(openstack_resource):
+    """
+    Create openstack security group rule instance
+    :param openstack_resource: instance of openstack security group rule
+    resource
+    """
     created_resource = openstack_resource.create()
     ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
 
 
 @with_openstack_resource(OpenstackSecurityGroupRule)
 def delete(openstack_resource):
+    """
+    Delete current openstack security group rule instance
+    :param openstack_resource: instance of openstack security group rule
+    resource
+    """
     openstack_resource.delete()
 
 
-def update():
-    pass
+@with_openstack_resource(OpenstackSecurityGroupRule)
+def list_security_group_rules(openstack_resource, query=None):
+    """
+    List openstack security group rules based on filters applied
+    :param openstack_resource: Instance of current openstack security group
+    rule
+    :param kwargs query: Optional query parameters to be sent to limit
+            the security groups being returned.
+    """
+
+    security_group_rules = openstack_resource.list(query)
+    add_resource_list_to_runtime_properties(SECURITY_GROUP_RULE_OPENSTACK_TYPE,
+                                            security_group_rules)
+
+
+@with_openstack_resource(OpenstackSecurityGroupRule)
+def creation_validation(openstack_resource):
+    """
+    This method is to check if we can create security group rule resource
+    in openstack
+    :param openstack_resource: Instance of current openstack security rule
+    group
+    """
+    validate_resource(openstack_resource, SECURITY_GROUP_RULE_OPENSTACK_TYPE)
+    ctx.logger.debug('OK: security group rule configuration is valid')

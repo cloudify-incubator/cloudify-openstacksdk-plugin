@@ -54,6 +54,8 @@ SUBNET_OPENSTACK_TYPE = 'subnet'
 ROUTER_OPENSTACK_TYPE = 'router'
 PORT_OPENSTACK_TYPE = 'port'
 FLOATING_IP_OPENSTACK_TYPE = 'floatingip'
+SECURITY_GROUP_OPENSTACK_TYPE = 'security_group'
+SECURITY_GROUP_RULE_OPENSTACK_TYPE = 'security_group_rule'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'

@@ -304,8 +304,12 @@ class OpenstackSecurityGroup(OpenstackResource):
     # https://bit.ly/2PCsWA0
     resource_type = 'network'
 
-    def list(self):
-        return self.connection.network.security_groups()
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.security_groups(**query)
 
     def get(self):
         self.logger.debug(
@@ -356,8 +360,12 @@ class OpenstackSecurityGroupRule(OpenstackResource):
     # https://bit.ly/2PCsWA0
     resource_type = 'network'
 
-    def list(self):
-        return self.connection.network.security_group_rules()
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.security_group_rules(**query)
 
     def get(self):
         self.logger.debug(
@@ -390,3 +398,6 @@ class OpenstackSecurityGroupRule(OpenstackResource):
         self.logger.debug(
             'Deleted security_group with this result: {0}'.format(result))
         return result
+
+    def update(self, new_config=None):
+        pass
