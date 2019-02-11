@@ -23,9 +23,12 @@ from cloudify.exceptions import NonRecoverableError
 from cloudify.utils import exception_to_error_cause
 
 # Local imports
-from openstacksdk_plugin.constants import RESOURCE_ID
 from openstacksdk_plugin.constants import USE_EXTERNAL_RESOURCE_PROPERTY
-from openstacksdk_plugin import utils
+from openstacksdk_plugin.utils import (resolve_ctx,
+                                       get_current_operation,
+                                       prepare_resource_instance,
+                                       handle_external_resource,
+                                       set_runtime_properties_from_resource)
 
 
 def with_openstack_resource(class_decl, existing_resource_handler=None):
@@ -40,98 +43,33 @@ def with_openstack_resource(class_decl, existing_resource_handler=None):
 
     def wrapper_outer(func):
         def wrapper_inner(**kwargs):
+            # Get the context for the current task operation
             ctx = kwargs.pop('ctx', CloudifyContext)
-            node_instance = utils.resolve_ctx(ctx)
-            _, _, _, operation_name = ctx.operation.name.split('.')
 
-            def get_property_by_name(property_name):
-                property_value = None
-                # TODO: Improve this to be more thorough.
-                if property_name in node_instance.node.properties:
-                    property_value = \
-                        node_instance.node.properties.get(property_name)
-                if property_name in node_instance.instance.runtime_properties:
-                    if isinstance(property_value, dict):
-                        property_value.update(
-                            node_instance.instance.runtime_properties.get(
-                                property_name))
-                    else:
-                        property_value = \
-                            node_instance.instance.runtime_properties.get(
-                                property_name)
-                if property_name in kwargs:
-                    kwargs_value = kwargs.pop(property_name)
-                    if isinstance(property_value, dict):
-                        property_value.update(kwargs_value)
-                    else:
-                        return kwargs_value
-                return property_value
+            # Resolve the actual context which need to run operation,
+            # the context could be belongs to relationship context or actual
+            # node context
+            ctx_node = resolve_ctx(ctx)
 
-            client_config = get_property_by_name('client_config')
-            resource_config = get_property_by_name('resource_config')
+            # Get the current operation name
+            operation_name = get_current_operation()
 
-            # If this arg is exist, that means user
-            # provide extra/optional configuration for the defined node
-            if resource_config.get('kwargs'):
-                extra_config = resource_config.pop('kwargs')
-                resource_config.update(extra_config)
+            # Prepare the openstack resource that need to execute the
+            # current task operation
+            resource = \
+                prepare_resource_instance(class_decl, ctx_node, kwargs)
 
-            # Check if resource_id is part of runtime properties so that we
-            # can add it to the resource_config
-            if RESOURCE_ID in node_instance.instance.runtime_properties:
-                resource_config['id'] = \
-                    node_instance.instance.runtime_properties[RESOURCE_ID]
+            # Set runtime properties for "name" & "type" when current
+            # operation is create, so that they can be used later on
+            if operation_name == 'create':
+                set_runtime_properties_from_resource(ctx_node, resource)
 
-            resource = class_decl(client_config=client_config,
-                                  resource_config=resource_config,
-                                  logger=ctx.logger)
-
-            # # Check if "use_external_resource" is set to True
-            is_external = get_property_by_name(USE_EXTERNAL_RESOURCE_PROPERTY)
-
-            # Validate if the "is_external" is set and the resource
-            # identifier (id|name) for the Openstack is invalid raise error and
-            # abort the operation
-            if is_external:
-                error_message = resource.validate_resource_identifier()
-                if error_message:
-                    raise NonRecoverableError(error_message)
-
-                if operation_name in ['create', 'delete']:
-                    ctx.logger.info(
-                        'Using external resource {0}'.format(RESOURCE_ID))
-
-                    # Get the remote resource
-                    try:
-                        remote_resource = resource.get()
-                    except exceptions.SDKException as error:
-                        _, _, tb = sys.exc_info()
-                        raise NonRecoverableError(
-                            'Failure while trying to request '
-                            'Openstack API: {}'.format(error.message),
-                            causes=[exception_to_error_cause(error, tb)])
-
-                    # Check the operation type and based on that
-                    # decide what to do
-                    if operation_name == 'create':
-                        ctx.logger.info(
-                            'not creating resource {0}'
-                            ' since an external resource is being used'
-                            ''.format(remote_resource.name))
-                        node_instance.instance.runtime_properties[RESOURCE_ID]\
-                            = remote_resource.id
-
-                        # Check if we need to add custom operation
-                        # when resource is already created
-                        if existing_resource_handler:
-                            existing_resource_handler(remote_resource)
-
-                    elif operation_name == 'delete':
-                        ctx.logger.info(
-                            'not deleting resource {0}'
-                            ' since an external resource is being used'
-                            ''.format(remote_resource.name))
-                    return
+            # Handle external resource when it is enabled
+            if ctx_node.node.properties.get(USE_EXTERNAL_RESOURCE_PROPERTY):
+                handle_external_resource(ctx_node,
+                                         resource,
+                                         existing_resource_handler)
+                return
             try:
                 kwargs['openstack_resource'] = resource
                 func(**kwargs)

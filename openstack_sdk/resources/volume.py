@@ -21,6 +21,8 @@ from openstack_sdk.common import OpenstackResource
 
 
 class OpenstackVolumeType(OpenstackResource):
+    service_type = 'volume'
+    resource_type = 'volume_type'
 
     def list(self):
         return self.connection.block_storage.types()

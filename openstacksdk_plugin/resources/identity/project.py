@@ -27,7 +27,7 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            IDENTITY_USERS,
                                            IDENTITY_ROLES,
                                            IDENTITY_QUOTA)
-from openstacksdk_plugin.utils import (validate_resource,
+from openstacksdk_plugin.utils import (validate_resource_quota,
                                        reset_dict_empty_keys,
                                        add_resource_list_to_runtime_properties)
 
@@ -191,7 +191,7 @@ def creation_validation(openstack_resource):
     This method is to check if we can create project resource in openstack
     :param openstack_resource: Instance of current openstack project
     """
-    validate_resource(openstack_resource, PROJECT_OPENSTACK_TYPE)
+    validate_resource_quota(openstack_resource, PROJECT_OPENSTACK_TYPE)
     ctx.logger.debug('OK: project configuration is valid')
 
 

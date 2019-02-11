@@ -21,7 +21,8 @@ from openstack_sdk.common import OpenstackResource
 
 
 class OpenstackUser(OpenstackResource):
-    resource_type = 'identity'
+    service_type = 'identity'
+    resource_type = 'user'
 
     def list(self, query=None):
         query = query or {}
@@ -71,7 +72,8 @@ class OpenstackUser(OpenstackResource):
 
 
 class OpenstackRole(OpenstackResource):
-    resource_type = 'identity'
+    service_type = 'identity'
+    resource_type = 'role'
 
     def list(self, query=None):
         query = query or {}
@@ -136,7 +138,8 @@ class OpenstackRole(OpenstackResource):
 
 
 class OpenstackProject(OpenstackResource):
-    resource_type = 'identity'
+    service_type = 'identity'
+    resource_type = 'project'
     infinite_resource_quota = 10 ** 9
 
     def list(self, query=None):

@@ -14,13 +14,16 @@
 #    * limitations under the License.
 
 # Standard imports
+import sys
 import base64
 
 
 # Third part imports
+import openstack.exceptions
 from cloudify import compute
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
+from cloudify.utils import exception_to_error_cause
 
 try:
     from cloudify.constants import NODE_INSTANCE, RELATIONSHIP_INSTANCE
@@ -34,7 +37,9 @@ from openstacksdk_plugin.constants import (PS_OPEN,
                                            QUOTA_VALID_MSG,
                                            QUOTA_INVALID_MSG,
                                            INFINITE_RESOURCE_QUOTA,
-                                           RESOURCE_ID)
+                                           RESOURCE_ID,
+                                           OPENSTACK_TYPE_PROPERTY,
+                                           OPENSTACK_NAME_PROPERTY)
 
 
 def find_relationships_by_node_type(node_ctx, node_type):
@@ -61,6 +66,21 @@ def find_relationship_by_node_type(node_ctx, node_type):
     """
     relationships = find_relationships_by_node_type(node_ctx, node_type)
     return relationships[0] if len(relationships) > 0 else None
+
+
+def find_relationships_by_relationship_type(node_ctx, type_name):
+    """
+    Find cloudify relationships by relationship type.
+    Follows the inheritance tree.
+    :param node_ctx: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    :param type_name: desired relationship type derived
+    from cloudify.relationships.depends_on.
+    :return: list of RelationshipSubjectContext
+    """
+
+    return [rel for rel in node_ctx.instance.relationships if
+            type_name in rel.type_hierarchy]
 
 
 def get_resource_id_from_runtime_properties(node_ctx):
@@ -256,7 +276,7 @@ def add_resource_list_to_runtime_properties(openstack_type_name, object_list):
     ctx.instance.runtime_properties[key_list] = objects
 
 
-def validate_resource(resource, openstack_type):
+def validate_resource_quota(resource, openstack_type):
     """
     Do a validation for openstack resource to make sure it is allowed to
     create resource based on available resources created and maximum quota
@@ -307,6 +327,113 @@ def validate_resource(resource, openstack_type):
         raise NonRecoverableError(err_message)
 
 
+def set_runtime_properties_from_resource(ctx_node, openstack_resource):
+    if ctx_node and openstack_resource:
+        ctx_node.instance.runtime_properties[
+            OPENSTACK_TYPE_PROPERTY] = openstack_resource.resource_type
+
+        ctx_node.instance.runtime_properties[
+            OPENSTACK_NAME_PROPERTY] = openstack_resource.name
+
+
+def prepare_resource_instance(class_decl, ctx_node, kwargs):
+    def get_property_by_name(property_name):
+        property_value = None
+        # TODO: Improve this to be more thorough.
+        if property_name in ctx_node.node.properties:
+            property_value = ctx_node.node.properties.get(property_name)
+
+        if property_name in ctx_node.instance.runtime_properties:
+            if isinstance(property_value, dict):
+                property_value.update(
+                    ctx_node.instance.runtime_properties.get(property_name))
+            else:
+                property_value = \
+                    ctx_node.instance.runtime_properties.get(property_name)
+
+        if property_name in kwargs:
+            kwargs_value = kwargs.pop(property_name)
+            if isinstance(property_value, dict):
+                property_value.update(kwargs_value)
+            else:
+                return kwargs_value
+        return property_value
+
+    client_config = get_property_by_name('client_config')
+    resource_config = get_property_by_name('resource_config')
+
+    # If this arg is exist, that means user
+    # provide extra/optional configuration for the defined node
+    if resource_config.get('kwargs'):
+        extra_config = resource_config.pop('kwargs')
+        resource_config.update(extra_config)
+
+    # Check if resource_id is part of runtime properties so that we
+    # can add it to the resource_config
+    if RESOURCE_ID in ctx_node.instance.runtime_properties:
+        resource_config['id'] = \
+            ctx_node.instance.runtime_properties[RESOURCE_ID]
+
+    resource = class_decl(client_config=client_config,
+                          resource_config=resource_config,
+                          logger=ctx.logger)
+
+    return resource
+
+
+def handle_external_resource(ctx_node,
+                             openstack_resource,
+                             existing_resource_handler=None):
+
+    # Get the current operation name
+    operation_name = get_current_operation()
+
+    # Validate if the "is_external" is set and the resource
+    # identifier (id|name) for the Openstack is invalid raise error and
+    # abort the operation
+    error_message = openstack_resource.validate_resource_identifier()
+
+    # Raise error when validation failed
+    if error_message:
+        raise NonRecoverableError(error_message)
+
+    # Cannot delete/create resource when it is external
+    if operation_name in ['create', 'delete']:
+        ctx.logger.info(
+            'Using external resource {0}'.format(RESOURCE_ID))
+
+        try:
+            # Get the remote resource
+            remote_resource = openstack_resource.get()
+        except openstack.exceptions.SDKException as error:
+            _, _, tb = sys.exc_info()
+            raise NonRecoverableError(
+                'Failure while trying to request '
+                'Openstack API: {}'.format(error.message),
+                causes=[exception_to_error_cause(error, tb)])
+
+        # Check the operation type and based on that decide what to do
+        if operation_name == 'create':
+            ctx.logger.info(
+                'not creating resource {0}'
+                ' since an external resource is being used'
+                ''.format(remote_resource.name))
+            ctx_node.instance.runtime_properties[RESOURCE_ID] \
+                = remote_resource.id
+
+            # Check if we need to run custom operation for already existed
+            # resource after create operation is done
+            if existing_resource_handler:
+                existing_resource_handler(remote_resource)
+
+        # Just log message that we cannot delete resource
+        elif operation_name == 'delete':
+            ctx.logger.info(
+                'not deleting resource {0}'
+                ' since an external resource is being used'
+                ''.format(remote_resource.name))
+
+
 def get_openstack_id():
     """
     Get the openstack resource id
@@ -328,3 +455,8 @@ def get_snapshot_name(object_type, snapshot_name, snapshot_incremental):
     return "{0}-{1}-{2}-{3}".format(
         object_type, get_openstack_id(), snapshot_name,
         "increment" if snapshot_incremental else "backup")
+
+
+def get_current_operation():
+    _, _, _, operation_name = ctx.operation.name.split('.')
+    return operation_name

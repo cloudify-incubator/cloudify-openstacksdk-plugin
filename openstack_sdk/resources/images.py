@@ -21,7 +21,8 @@ from openstack_sdk.common import OpenstackResource
 
 
 class OpenstackImage(OpenstackResource):
-    resource_type = 'compute'
+    service_type = 'compute'
+    resource_type = 'image'
     infinite_resource_quota = 10 ** 9
 
     def list(self, query=None):

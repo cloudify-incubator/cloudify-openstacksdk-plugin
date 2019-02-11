@@ -20,7 +20,7 @@ from cloudify import ctx
 from openstack_sdk.resources.compute import OpenstackKeyPair
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID, KEYPAIR_OPENSTACK_TYPE)
-from openstacksdk_plugin.utils import (validate_resource,
+from openstacksdk_plugin.utils import (validate_resource_quota,
                                        add_resource_list_to_runtime_properties)
 
 
@@ -64,5 +64,5 @@ def creation_validation(openstack_resource):
     This method is to check if we can create keypair resource in openstack
     :param openstack_resource: Instance of current openstack keypair
     """
-    validate_resource(openstack_resource, KEYPAIR_OPENSTACK_TYPE)
+    validate_resource_quota(openstack_resource, KEYPAIR_OPENSTACK_TYPE)
     ctx.logger.debug('OK: key pair configuration is valid')

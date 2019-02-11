@@ -23,7 +23,7 @@ from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_GROUP_OPENSTACK_TYPE)
 
-from openstacksdk_plugin.utils import (validate_resource,
+from openstacksdk_plugin.utils import (validate_resource_quota,
                                        add_resource_list_to_runtime_properties)
 
 
@@ -77,5 +77,5 @@ def creation_validation(openstack_resource):
     This method is to check if we can create server group resource in openstack
     :param openstack_resource: Instance of current openstack server group
     """
-    validate_resource(openstack_resource, SERVER_GROUP_OPENSTACK_TYPE)
+    validate_resource_quota(openstack_resource, SERVER_GROUP_OPENSTACK_TYPE)
     ctx.logger.debug('OK: server group configuration is valid')

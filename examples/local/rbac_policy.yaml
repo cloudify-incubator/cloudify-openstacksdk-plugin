@@ -1,0 +1,90 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
+  - plugin.yaml
+
+inputs:
+
+  auth_url:
+    type: string
+
+  username:
+    type: string
+
+  password:
+    type: string
+
+  region_name:
+    type: string
+
+  project_name:
+    type: string
+
+  project_id:
+    type: string
+
+  name_prefix:
+    type: string
+    default: 'rbac_policy'
+
+  example_subnet_cidr:
+    type: string
+    default: '10.0.0.0/24'
+
+
+dsl_definitions:
+  client_config: &client_config
+    auth_url: { get_input: auth_url }
+    username: { get_input: username }
+    password: { get_input: password }
+    region_name: { get_input: region_name }
+    project_name: { get_input: project_name }
+
+node_templates:
+
+  example-rbac-policy:
+    type: cloudify.nodes.openstack.RBACPolicy
+    properties:
+      client_config: *client_config
+      resource_config:
+        target_tenant: { get_input: project_id }
+        action: access_as_shared
+    relationships:
+      - type: cloudify.relationships.openstack.rbac_policy_applied_to
+        target: example-network
+
+  example-network:
+    type: cloudify.nodes.openstack.Network
+    properties:
+      client_config: *client_config
+      resource_config:
+        name: { concat: [ { get_input: name_prefix }, 'network' ] }
+
+  example-subnet:
+    type: cloudify.nodes.openstack.Subnet
+    properties:
+      client_config: *client_config
+      resource_config:
+        name: { concat: [ { get_input: name_prefix }, 'subnet' ] }
+        network_id: { get_attribute: [ example-network, id ] }
+        cidr: { get_input: example_subnet_cidr }
+        enable_dhcp: true
+        ip_version: 4
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: example-network
+    # This is only run on local mode. For use with a manager, it can be commented out.
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            resource_config: { get_property: [ SELF, resource_config ] }
+
+outputs:
+  network:
+    value: { get_attribute: [ example-network, id ] }
+  subnet:
+    value: { get_attribute: [ example-subnet, id ] }
+  network_rbac_policy:
+    value: { get_attribute: [ example-rbac-policy, id ] }

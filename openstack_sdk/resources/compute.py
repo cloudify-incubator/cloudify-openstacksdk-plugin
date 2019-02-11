@@ -21,7 +21,8 @@ from openstack_sdk.common import OpenstackResource
 
 
 class OpenstackServer(OpenstackResource):
-    resource_type = 'compute'
+    service_type = 'compute'
+    resource_type = 'server'
 
     def list(self, details=True, all_projects=False, query=None):
         query = query or {}
@@ -135,7 +136,8 @@ class OpenstackServer(OpenstackResource):
 
 
 class OpenstackHostAggregate(OpenstackResource):
-    resource_type = 'compute'
+    service_type = 'compute'
+    resource_type = 'aggregate'
 
     def list(self):
         self.logger.debug('Attempting to list aggregates')
@@ -215,7 +217,8 @@ class OpenstackHostAggregate(OpenstackResource):
 
 
 class OpenstackServerGroup(OpenstackResource):
-    resource_type = 'compute'
+    service_type = 'compute'
+    resource_type = 'server_group'
 
     def list(self, query=None):
         query = query or {}
@@ -256,7 +259,8 @@ class OpenstackServerGroup(OpenstackResource):
 
 
 class OpenstackKeyPair(OpenstackResource):
-    resource_type = 'compute'
+    service_type = 'compute'
+    resource_type = 'keypair'
 
     def list(self):
         return self.connection.compute.keypairs()
@@ -294,7 +298,8 @@ class OpenstackKeyPair(OpenstackResource):
 
 
 class OpenstackFlavor(OpenstackResource):
-    resource_type = 'compute'
+    service_type = 'compute'
+    resource_type = 'flavor'
 
     def list(self, details=True, query=None):
         query = query or {}

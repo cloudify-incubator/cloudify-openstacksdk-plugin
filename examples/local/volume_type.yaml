@@ -42,7 +42,7 @@ dsl_definitions:
 
 node_templates:
 
-  volume_type_node:
+  example-volume-type:
     type: cloudify.nodes.openstack.VolumeType
     properties:
       client_config: *client_config

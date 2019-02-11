@@ -57,7 +57,7 @@ node_templates:
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'network' ] }
 
-  example-security_group:
+  example-security-group:
     type: cloudify.nodes.openstack.SecurityGroup
     properties:
       client_config: *client_config
@@ -85,7 +85,7 @@ node_templates:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
 
-  example-security_group_rule:
+  example-security-group-rule:
     type: cloudify.nodes.openstack.SecurityGroupRule
     properties:
       client_config: *client_config
@@ -94,10 +94,10 @@ node_templates:
         protocol: tcp
         port_range_max: 22
         port_range_min: 22
-        security_group_id: { get_attribute: [ example-security_group, id ] }
+        security_group_id: { get_attribute: [ example-security-group, id ] }
     relationships:
       - type: cloudify.relationships.contained_in
-        target: example-security_group
+        target: example-security-group
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -116,7 +116,7 @@ node_templates:
           - subnet_id: { get_attribute: [ example-subnet, id ] }
             ip_address: { get_input: example_fixed_ip }
         security_groups:
-          - { get_attribute: [ example-security_group, id ] }
+          - { get_attribute: [ example-security-group, id ] }
         device_id: { get_attribute: [ example-router, id ] }
     relationships:
       - type: cloudify.relationships.contained_in
@@ -124,7 +124,7 @@ node_templates:
       - type: cloudify.relationships.connected_to
         target: example-router
       - type: cloudify.relationships.connected_to
-        target: example-security_group
+        target: example-security-group
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:

@@ -23,7 +23,7 @@ from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SECURITY_GROUP_OPENSTACK_TYPE)
 from openstacksdk_plugin.utils import (reset_dict_empty_keys,
-                                       validate_resource,
+                                       validate_resource_quota,
                                        add_resource_list_to_runtime_properties)
 
 
@@ -108,5 +108,5 @@ def creation_validation(openstack_resource):
     in openstack
     :param openstack_resource: Instance of current openstack security group
     """
-    validate_resource(openstack_resource, SECURITY_GROUP_OPENSTACK_TYPE)
+    validate_resource_quota(openstack_resource, SECURITY_GROUP_OPENSTACK_TYPE)
     ctx.logger.debug('OK: security group configuration is valid')

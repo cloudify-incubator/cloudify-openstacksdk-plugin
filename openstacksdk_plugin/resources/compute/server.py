@@ -40,7 +40,7 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_TASK_RESTORE_STATE,
                                            SERVER_TASK_BACKUP_DONE,
                                            SERVER_OPENSTACK_TYPE,
-                                           SERVER_GROUP_TYPE,
+                                           SERVER_GROUP_NODE_TYPE,
                                            SERVER_REBOOT_HARD,
                                            SERVER_REBOOT_SOFT,
                                            SERVER_ACTION_STATUS_PENDING,
@@ -54,7 +54,7 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            INSTANCE_OPENSTACK_TYPE)
 
 from openstacksdk_plugin.utils import (handle_userdata,
-                                       validate_resource,
+                                       validate_resource_quota,
                                        add_resource_list_to_runtime_properties,
                                        find_relationship_by_node_type,
                                        reset_dict_empty_keys,
@@ -234,7 +234,7 @@ def _handle_server_group(openstack_resource):
     :param openstack_resource: instance of openstack resource (OpenstackServer)
     """
     server_group_rel = \
-        find_relationship_by_node_type(ctx.instance, SERVER_GROUP_TYPE)
+        find_relationship_by_node_type(ctx.instance, SERVER_GROUP_NODE_TYPE)
 
     if server_group_rel:
         server_group_id = \
@@ -727,5 +727,5 @@ def creation_validation(openstack_resource):
     This method is to check if we can create server resource in openstack
     :param openstack_resource: Instance of current openstack server
     """
-    validate_resource(openstack_resource, INSTANCE_OPENSTACK_TYPE)
+    validate_resource_quota(openstack_resource, INSTANCE_OPENSTACK_TYPE)
     ctx.logger.debug('OK: server configuration is valid')
