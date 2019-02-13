@@ -52,6 +52,7 @@ class OpenStackSDKTestBase(unittest.TestCase):
             'snapshot': self._fake_block_storage_snapshot,
             'user': self._fake_identity_user,
             'project': self._fake_identity_project,
+            'rbac_policy': self._fake_network_rbac_policy,
         }
 
     @property
@@ -244,6 +245,16 @@ class OpenStackSDKTestBase(unittest.TestCase):
             self._gen_openstack_sdk_error()
 
         self.connection.network = security_group_rule_conn
+        return self.connection.network
+
+    def _fake_network_rbac_policy(self):
+        rbac_policy_conn = mock.MagicMock()
+        rbac_policy_conn.rbac_policies = self._gen_openstack_sdk_error()
+        rbac_policy_conn.get_rbac_policy = self._gen_openstack_sdk_error()
+        rbac_policy_conn.create_rbac_policy = self._gen_openstack_sdk_error()
+        rbac_policy_conn.delete_rbac_policy = self._gen_openstack_sdk_error()
+        rbac_policy_conn.update_rbac_policy = self._gen_openstack_sdk_error()
+        self.connection.network = rbac_policy_conn
         return self.connection.network
 
     def _fake_block_storage_volume(self):
