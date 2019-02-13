@@ -59,6 +59,7 @@ FLOATING_IP_OPENSTACK_TYPE = 'floatingip'
 SECURITY_GROUP_OPENSTACK_TYPE = 'security_group'
 SECURITY_GROUP_RULE_OPENSTACK_TYPE = 'security_group_rule'
 RBAC_POLICY_OPENSTACK_TYPE = 'rbac_policy'
+QOS_POLICY_OPENSTACK_TYPE = 'policy'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'

@@ -68,22 +68,28 @@ def find_relationship_by_node_type(node_ctx, node_type):
     return relationships[0] if len(relationships) > 0 else None
 
 
-def find_relationships_by_relationship_type(node_ctx, type_name):
+def find_relationships_by_relationship_type(_ctx, type_name):
     """
     Find cloudify relationships by relationship type.
     Follows the inheritance tree.
-    :param node_ctx: Cloudify node instance which is an instance of
-     cloudify.context.NodeInstanceContext
+    :param _ctx: Cloudify context instance cloudify.context.CloudifyContext
     :param type_name: desired relationship type derived
     from cloudify.relationships.depends_on.
     :return: list of RelationshipSubjectContext
     """
 
-    return [rel for rel in node_ctx.instance.relationships if
+    return [rel for rel in _ctx.instance.relationships if
             type_name in rel.type_hierarchy]
 
 
 def get_resource_id_from_runtime_properties(node_ctx):
+    """
+    This method will lookup the resource id which is stored as part of
+    runtime properties
+    :param node_ctx: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    :return: Resource id
+    """
     return node_ctx.instance.runtime_properties.get(RESOURCE_ID)
 
 
@@ -328,6 +334,13 @@ def validate_resource_quota(resource, openstack_type):
 
 
 def set_runtime_properties_from_resource(ctx_node, openstack_resource):
+    """
+    Set openstack "type" & "name" as runtime properties for current cloudify
+    node instance
+    :param ctx_node: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    :param openstack_resource: Openstack resource instance
+    """
     if ctx_node and openstack_resource:
         ctx_node.instance.runtime_properties[
             OPENSTACK_TYPE_PROPERTY] = openstack_resource.resource_type
@@ -337,6 +350,16 @@ def set_runtime_properties_from_resource(ctx_node, openstack_resource):
 
 
 def prepare_resource_instance(class_decl, ctx_node, kwargs):
+    """
+    This method used to prepare and instantiate instance of openstack resource
+    So that it can be used to make API request to execute required operations
+    :param class_decl: Class name of the resource instance we need to create
+    :param ctx_node: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    :param kwargs: Some config contains data for openstack resource that
+    could be provided via input task operation
+    :return: Instance of openstack resource
+    """
     def get_property_by_name(property_name):
         property_value = None
         # TODO: Improve this to be more thorough.
@@ -384,6 +407,14 @@ def prepare_resource_instance(class_decl, ctx_node, kwargs):
 def handle_external_resource(ctx_node,
                              openstack_resource,
                              existing_resource_handler=None):
+    """
+    :param ctx_node: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    :param openstack_resource: Openstack resource instance
+    :param existing_resource_handler: Callback handler that used to be
+    called in order to execute custom operation when "use_external_resource" is
+    enabled
+    """
 
     # Get the current operation name
     operation_name = get_current_operation()
@@ -437,7 +468,7 @@ def handle_external_resource(ctx_node,
 def get_openstack_id():
     """
     Get the openstack resource id
-    :return str: return openstack resource id
+    :return str: Return openstack resource id
     """
     return ctx.instance.runtime_properties[RESOURCE_ID]
 
@@ -450,7 +481,7 @@ def get_snapshot_name(object_type, snapshot_name, snapshot_incremental):
     :param str snapshot_name: Snapshot name
     :param bool snapshot_incremental: Flag to create an incremental snapshots
      or full backup
-    :return: snapshot name
+    :return: Snapshot name
     """
     return "{0}-{1}-{2}-{3}".format(
         object_type, get_openstack_id(), snapshot_name,
@@ -458,5 +489,8 @@ def get_snapshot_name(object_type, snapshot_name, snapshot_incremental):
 
 
 def get_current_operation():
+    """ Get the current task operation from current cloudify context
+    :return str: Operation name
+    """
     _, _, _, operation_name = ctx.operation.name.split('.')
     return operation_name

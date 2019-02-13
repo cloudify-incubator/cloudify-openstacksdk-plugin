@@ -1173,6 +1173,17 @@ relationships:
 
   cloudify.relationships.openstack.rbac_policy_applied_to:
     derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.rbac_policy.unlink_target_object
+          inputs:
+            resource_id:
+              default: { get_attribute: [ TARGET, id ] }
+            disable_dhcp:
+              default: false
+            clean_ports:
+              default: false
 
 
   # This is a little confusing, so I will make sure it is clear.

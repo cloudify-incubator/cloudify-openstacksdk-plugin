@@ -458,7 +458,7 @@ class OpenstackRBACPolicy(OpenstackResource):
         self.logger.debug(
             'Attempting to update this rbac_policy: {0} with args {1}'
             ''.format(rbac_policy, new_config))
-        result = self.connection.network.update_security_group(
+        result = self.connection.network.update_rbac_policy(
             rbac_policy, **new_config)
         self.logger.debug(
             'Updated rbac_policy with this result: {0}'.format(result))
