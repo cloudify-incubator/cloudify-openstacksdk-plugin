@@ -59,11 +59,6 @@ def with_openstack_resource(class_decl, existing_resource_handler=None):
             resource = \
                 prepare_resource_instance(class_decl, ctx_node, kwargs)
 
-            # Set runtime properties for "name" & "type" when current
-            # operation is create, so that they can be used later on
-            if operation_name == 'create':
-                set_runtime_properties_from_resource(ctx_node, resource)
-
             # Handle external resource when it is enabled
             if ctx_node.node.properties.get(USE_EXTERNAL_RESOURCE_PROPERTY):
                 handle_external_resource(ctx_node,
@@ -73,6 +68,11 @@ def with_openstack_resource(class_decl, existing_resource_handler=None):
             try:
                 kwargs['openstack_resource'] = resource
                 func(**kwargs)
+                # Set runtime properties for "name" & "type" when current
+                # operation is create, so that they can be used later on
+                if operation_name == 'create':
+                    set_runtime_properties_from_resource(ctx_node, resource)
+
             except exceptions.SDKException as error:
                 _, _, tb = sys.exc_info()
                 raise NonRecoverableError(

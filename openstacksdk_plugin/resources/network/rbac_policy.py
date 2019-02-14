@@ -31,6 +31,7 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            QOS_POLICY_OPENSTACK_TYPE)
 
 from openstacksdk_plugin.utils import (reset_dict_empty_keys,
+                                       merge_resource_config,
                                        validate_resource_quota,
                                        add_resource_list_to_runtime_properties,
                                        find_relationships_by_relationship_type)
@@ -184,12 +185,9 @@ def _prepare_rbac_policy_object(openstack_resource, args):
                 ' to create rbac policy'
             )
 
-    # Merge the config data provided from node properties which represents
-    # "config" of opensstack_resource and args provided via user inputs
-    if args and isinstance(args, dict):
-        config = {}
-        config.update(openstack_resource.config, **args)
-        openstack_resource.config = config
+    # Check to see if there are some configuration provided via operation
+    # input so that we can merge them with volume config
+    merge_resource_config(openstack_resource.config, args)
 
 
 def _disable_dhcp_for_subnets(client_config, resource_id):

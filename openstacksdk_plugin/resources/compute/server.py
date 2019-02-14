@@ -45,7 +45,7 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_REBOOT_SOFT,
                                            SERVER_ACTION_STATUS_PENDING,
                                            SERVER_ACTION_STATUS_DONE,
-                                           SERVER_REBUILD_SPAWNING,
+                                           SERVER_REBUILD_SPAWNING_STATUS,
                                            SERVER_REBUILD_STATUS,
                                            IMAGE_UPLOADING_PENDING,
                                            IMAGE_STATUS_ACTIVE,
@@ -329,8 +329,9 @@ def _handle_snapshot_restore(server, image_id, snapshot_name):
     # Only check this logic if the server is already stopped
     if server_status == SERVER_ACTION_STATUS_DONE:
         # Check if the rebuild task is done or not
-        is_finished = _check_finished_server_task(server,
-                                                  [SERVER_REBUILD_SPAWNING])
+        is_finished = \
+            _check_finished_server_task(server,
+                                        [SERVER_REBUILD_SPAWNING_STATUS])
 
         if is_finished:
             ctx.instance.runtime_properties[SERVER_TASK_RESTORE_STATE]\

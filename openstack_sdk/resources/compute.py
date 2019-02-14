@@ -254,9 +254,6 @@ class OpenstackServerGroup(OpenstackResource):
             'Deleted server group with this result: {0}'.format(result))
         return result
 
-    def update(self, new_config=None):
-        pass
-
 
 class OpenstackKeyPair(OpenstackResource):
     service_type = 'compute'
@@ -292,9 +289,6 @@ class OpenstackKeyPair(OpenstackResource):
         self.logger.debug(
             'Deleted key pair with this result: {0}'.format(result))
         return result
-
-    def update(self, new_config=None):
-        pass
 
 
 class OpenstackFlavor(OpenstackResource):
@@ -334,5 +328,50 @@ class OpenstackFlavor(OpenstackResource):
             'Deleted flavor with this result: {0}'.format(result))
         return result
 
-    def update(self, new_config=None):
-        pass
+
+class OpenstackVolumeAttachment(OpenstackResource):
+    service_type = 'compute'
+    resource_type = 'volume_attachment'
+
+    def __init__(self, *args, **kwargs):
+        self.server_id = kwargs.pop('server_id', None)
+        super(OpenstackVolumeAttachment, self).__init__(*args, **kwargs)
+
+    def list(self, query=None):
+        return self.connection.compute.volume_attachments(self.server_id)
+
+    def get(self):
+        self.logger.debug(
+            'Attempting to find this volume attachment: {0}'.format(
+                self.name if not self.resource_id else self.resource_id))
+        volume_attachment = \
+            self.connection.compute.get_volume_attachment(
+                self.resource_id, self.server_id)
+        self.logger.debug(
+            'Found volume attachment with this result: {0}'
+            ''.format(volume_attachment))
+        return volume_attachment
+
+    def create(self):
+        self.logger.debug(
+            'Attempting to create volume attachment'
+            ' with these args: {0}'.format(self.config))
+        volume_attachment = \
+            self.connection.compute.create_volume_attachment(
+                self.server_id, **self.config)
+        self.logger.debug(
+            'Created volume attachment with this result: {0}'
+            ''.format(volume_attachment))
+        return volume_attachment
+
+    def delete(self):
+        volume_attachment = self.get()
+        self.logger.debug(
+            'Attempting to delete this volume attachment: {0}'
+            ''.format(volume_attachment))
+        result = \
+            self.connection.compute.delete_volume_attachment(volume_attachment,
+                                                             self.server_id)
+        self.logger.debug(
+            'Deleted volume attachment with this result: {0}'.format(result))
+        return result

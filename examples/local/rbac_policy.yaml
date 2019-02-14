@@ -63,6 +63,12 @@ node_templates:
         action: access_as_shared
     relationships:
       - type: cloudify.relationships.openstack.rbac_policy_applied_to
+        target_interfaces:
+          cloudify.interfaces.relationship_lifecycle:
+            unlink:
+              inputs:
+                disable_dhcp:
+                  default: true
         target: example-network
 
   example-network:

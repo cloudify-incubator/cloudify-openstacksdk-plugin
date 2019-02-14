@@ -14,6 +14,7 @@
 #    * limitations under the License.
 
 # Standard imports
+import time
 import sys
 import base64
 
@@ -42,7 +43,7 @@ from openstacksdk_plugin.constants import (PS_OPEN,
                                            OPENSTACK_NAME_PROPERTY)
 
 
-def find_relationships_by_node_type(ctx_node_instance, node_type):
+def find_relationships_by_node_type_hierarchy(ctx_node_instance, node_type):
     """
     Finds all specified relationships of the Cloudify
     instance where the related node type is of a specified type.
@@ -55,6 +56,19 @@ def find_relationships_by_node_type(ctx_node_instance, node_type):
             if node_type in target_rel.target.node.type_hierarchy]
 
 
+def find_relationships_by_openstack_type(_ctx, type_name):
+    """
+    This method will lookup relationships for cloudify node based on the
+    type of the nodes which are connected to that node
+    :param _ctx: Cloudify context instance cloudify.context.CloudifyContext
+    :param str type_name: Node type which is connected to the current node
+    :return: list of RelationshipSubjectContext
+    """
+    return [rel for rel in _ctx.instance.relationships
+            if rel.target.instance.runtime_properties.get(
+                OPENSTACK_TYPE_PROPERTY) == type_name]
+
+
 def find_relationship_by_node_type(ctx_node_instance, node_type):
     """
     Finds a single relationship of the Cloudify
@@ -65,8 +79,20 @@ def find_relationship_by_node_type(ctx_node_instance, node_type):
     :return: A Cloudify relationship or None
     """
     relationships = \
-        find_relationships_by_node_type(ctx_node_instance, node_type)
+        find_relationships_by_node_type_hierarchy(ctx_node_instance, node_type)
     return relationships[0] if len(relationships) > 0 else None
+
+
+def find_openstack_ids_of_connected_nodes_by_openstack_type(_ctx, type_name):
+    """
+    This method will return list of openstack ids for connected nodes
+    associated with the current node instance
+    :param _ctx: Cloudify context instance cloudify.context.CloudifyContext
+    :param str type_name: Node type which is connected to the current node
+    :return: List of openstack resource ids
+    """
+    return [rel.target.instance.runtime_properties[RESOURCE_ID]
+            for rel in find_relationships_by_openstack_type(_ctx, type_name)]
 
 
 def find_relationships_by_relationship_type(_ctx, type_name):
@@ -499,3 +525,104 @@ def get_current_operation():
     """
     _, _, _, operation_name = ctx.operation.name.split('.')
     return operation_name
+
+
+def get_ready_resource_status(resource,
+                              resource_type,
+                              status,
+                              error_statuses):
+    """
+    This method is to check what is the current status of openstack resource
+    when running certain operation on it and need to make sure that the
+    resource's operation is done
+    :param resource: Current instance of openstack resource
+    :param str resource_type: Resource type need to check status for
+    :param str status: desired status need to check the resource on
+    :param list error_statuses: List of error statuses that we should raise
+     error about if the remote openstack resource matches them
+    :return: Instance of the current openstack object contains the updated
+    status and boolean flag to mark it as updated or not
+    """
+    # Get the last updated instance in order to start comparison based
+    # on the remote status with the desired one that resource should be in
+    openstack_resource = resource.get()
+
+    # If the remote status of the current object matches one of error
+    # statuses defined to this method, then a NonRecoverableError must
+    # be raised
+    if openstack_resource.status in error_statuses:
+        raise NonRecoverableError('{0} {1} is in error state'
+                                  ''.format(resource_type,
+                                            openstack_resource.id))
+
+    # Check if the openstack resource match the desired status
+    if openstack_resource.status == status:
+        return openstack_resource, True
+
+    # The object is not ready yet
+    return openstack_resource, False
+
+
+def wait_until_status(resource,
+                      resource_type,
+                      status,
+                      error_statuses,
+                      num_tries,
+                      timeout):
+    """
+    This method is build in order to check the status of the openstack
+    resource and whether is is ready to be used or not
+    :param resource: Current instance of openstack resource
+    :param str resource_type: Resource type need to check status for
+    :param str status: desired status need to check the resource on
+    :param list error_statuses: List of error statuses that we should raise
+     error about if the remote openstack resource matches them
+    :param int num_tries: Number of tries attempts in order to check the
+    current status of resource
+    :param int timeout: Number of seconds must wait before continue another try
+    :return: Instance of the current openstack object contains the updated
+    status
+    """
+    openstack_resource = None
+    for count in range(num_tries):
+        # Check the openstack resource status
+        openstack_resource, ready = get_ready_resource_status(resource,
+                                                              resource_type,
+                                                              status,
+                                                              error_statuses)
+        if ready:
+            return openstack_resource
+
+        # Wait for "timeout" seconds before make another try
+        ctx.logger.warning("{0} {1} current state not ready: '{2}'"
+                           "".format(resource_type,
+                                     openstack_resource.id,
+                                     openstack_resource.status))
+        time.sleep(timeout)
+
+    # If we reach this point that means the resource status is still not in
+    # ready status, which means we can use the resource
+    message = "{0} {1} current state: '{1}'," \
+              " expected state: '{2}'" \
+              "".format(resource_type,
+                        openstack_resource.id,
+                        openstack_resource.status,
+                        status)
+
+    # Log the message
+    ctx.logger.warning(message)
+    raise NonRecoverableError(message)
+
+
+def merge_resource_config(resource_config, config):
+    """
+    This method will merge configuration between resource configuration and
+    any user input configuration
+    :param dict resource_config: Resource configuration required to create
+    resource in openstack
+    :param dict config: User configuration that could merge/override with
+    resource configuration
+    """
+    if all(item and isinstance(item, dict)
+           for item in [resource_config, config]):
+        resource_config.update(**config)

@@ -17,6 +17,7 @@
 RESOURCE_ID = 'id'
 OPENSTACK_TYPE_PROPERTY = 'type'
 OPENSTACK_NAME_PROPERTY = 'name'
+OPENSTACK_AZ_PROPERTY = 'availability_zone'
 USE_EXTERNAL_RESOURCE_PROPERTY = 'use_external_resource'
 SERVER_TASK_CREATE = 'create_server_task'
 SERVER_TASK_STOP = 'stop_server_task'
@@ -25,6 +26,11 @@ SERVER_TASK_START = 'start_server_task'
 SERVER_TASK_STATE = 'task_state'
 SERVER_TASK_BACKUP_DONE = 'backup_done'
 SERVER_TASK_RESTORE_STATE = 'restore_state'
+VOLUME_TASK_DELETE = 'delete_volume_task'
+VOLUME_BACKUP_TASK = 'backup_volume_task'
+VOLUME_SNAPSHOT_TASK = 'snapshot_volume_task'
+VOLUME_SNAPSHOT_ID = 'snapshot_id'
+VOLUME_BACKUP_ID = 'BACKUP_id'
 
 # Openstack Server status constants.
 # Full lists here: https://bit.ly/2UyB5V5 # NOQA
@@ -36,6 +42,15 @@ SERVER_STATUS_ERROR = 'ERROR'
 SERVER_STATUS_REBOOT = 'REBOOT'
 SERVER_STATUS_HARD_REBOOT = 'HARD_REBOOT'
 SERVER_STATUS_UNKNOWN = 'UNKNOWN'
+
+# Openstack volume attachment status constants
+VOLUME_STATUS_CREATING = 'creating'
+VOLUME_STATUS_DELETING = 'deleting'
+VOLUME_STATUS_AVAILABLE = 'available'
+VOLUME_STATUS_IN_USE = 'in-use'
+VOLUME_STATUS_ERROR = 'error'
+VOLUME_STATUS_ERROR_DELETING = 'error_deleting'
+VOLUME_ERROR_STATUSES = (VOLUME_STATUS_ERROR, VOLUME_STATUS_ERROR_DELETING)
 
 # Openstack Server reboot actions
 SERVER_REBOOT_SOFT = 'SOFT'
@@ -60,6 +75,9 @@ SECURITY_GROUP_OPENSTACK_TYPE = 'security_group'
 SECURITY_GROUP_RULE_OPENSTACK_TYPE = 'security_group_rule'
 RBAC_POLICY_OPENSTACK_TYPE = 'rbac_policy'
 QOS_POLICY_OPENSTACK_TYPE = 'policy'
+VOLUME_OPENSTACK_TYPE = 'volume'
+VOLUME_BACKUP_OPENSTACK_TYPE = 'backup'
+VOLUME_SNAPSHOT_OPENSTACK_TYPE = 'snapshot'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'
@@ -89,7 +107,8 @@ INFINITE_RESOURCE_QUOTA = -1
 SERVER_ACTION_STATUS_DONE = 'DONE'
 SERVER_ACTION_STATUS_PENDING = 'PENDING'
 SERVER_REBUILD_STATUS = 'rebuild_done'
-SERVER_REBUILD_SPAWNING = 'rebuild_spawning'
+SERVER_REBUILD_SPAWNING_STATUS = 'rebuild_spawning'
 IDENTITY_USERS = 'users'
 IDENTITY_ROLES = 'roles'
 IDENTITY_QUOTA = 'quota'
+VOLUME_BOOTABLE = 'bootable'

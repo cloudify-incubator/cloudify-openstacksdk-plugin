@@ -92,6 +92,3 @@ class OpenstackResource(object):
 
     def delete(self):
         raise NotImplementedError()
-
-    def update(self, new_config=None):
-        raise NotImplementedError()
