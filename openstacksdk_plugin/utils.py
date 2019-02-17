@@ -42,29 +42,30 @@ from openstacksdk_plugin.constants import (PS_OPEN,
                                            OPENSTACK_NAME_PROPERTY)
 
 
-def find_relationships_by_node_type(node_ctx, node_type):
+def find_relationships_by_node_type(ctx_node_instance, node_type):
     """
     Finds all specified relationships of the Cloudify
     instance where the related node type is of a specified type.
-    :param node_ctx: Cloudify node instance which is an instance of
+    :param ctx_node_instance: Cloudify node instance which is an instance of
      cloudify.context.NodeInstanceContext
     :param node_type: Cloudify node type to search node_ctx.relationships for
     :return: List of Cloudify relationships
     """
-    return [target_rel for target_rel in node_ctx.relationships
+    return [target_rel for target_rel in ctx_node_instance.relationships
             if node_type in target_rel.target.node.type_hierarchy]
 
 
-def find_relationship_by_node_type(node_ctx, node_type):
+def find_relationship_by_node_type(ctx_node_instance, node_type):
     """
     Finds a single relationship of the Cloudify
     instance where the related node type is of a specified type.
-    :param node_ctx: Cloudify node instance which is an instance of
+    :param ctx_node_instance: Cloudify node instance which is an instance of
      cloudify.context.NodeInstanceContext
     :param node_type: Cloudify node type to search node_ctx.relationships for
     :return: A Cloudify relationship or None
     """
-    relationships = find_relationships_by_node_type(node_ctx, node_type)
+    relationships = \
+        find_relationships_by_node_type(ctx_node_instance, node_type)
     return relationships[0] if len(relationships) > 0 else None
 
 
@@ -82,15 +83,15 @@ def find_relationships_by_relationship_type(_ctx, type_name):
             type_name in rel.type_hierarchy]
 
 
-def get_resource_id_from_runtime_properties(node_ctx):
+def get_resource_id_from_runtime_properties(ctx_node_instance):
     """
     This method will lookup the resource id which is stored as part of
     runtime properties
-    :param node_ctx: Cloudify node instance which is an instance of
+    :param ctx_node_instance: Cloudify node instance which is an instance of
      cloudify.context.NodeInstanceContext
     :return: Resource id
     """
-    return node_ctx.instance.runtime_properties.get(RESOURCE_ID)
+    return ctx_node_instance.instance.runtime_properties.get(RESOURCE_ID)
 
 
 def resolve_node_ctx_from_relationship(_ctx):
@@ -333,28 +334,29 @@ def validate_resource_quota(resource, openstack_type):
         raise NonRecoverableError(err_message)
 
 
-def set_runtime_properties_from_resource(ctx_node, openstack_resource):
+def set_runtime_properties_from_resource(ctx_node_instance,
+                                         openstack_resource):
     """
     Set openstack "type" & "name" as runtime properties for current cloudify
     node instance
-    :param ctx_node: Cloudify node instance which is an instance of
+    :param ctx_node_instance: Cloudify node instance which is an instance of
      cloudify.context.NodeInstanceContext
     :param openstack_resource: Openstack resource instance
     """
-    if ctx_node and openstack_resource:
-        ctx_node.instance.runtime_properties[
+    if ctx_node_instance and openstack_resource:
+        ctx_node_instance.instance.runtime_properties[
             OPENSTACK_TYPE_PROPERTY] = openstack_resource.resource_type
 
-        ctx_node.instance.runtime_properties[
+        ctx_node_instance.instance.runtime_properties[
             OPENSTACK_NAME_PROPERTY] = openstack_resource.name
 
 
-def prepare_resource_instance(class_decl, ctx_node, kwargs):
+def prepare_resource_instance(class_decl, ctx_node_instance, kwargs):
     """
     This method used to prepare and instantiate instance of openstack resource
     So that it can be used to make API request to execute required operations
     :param class_decl: Class name of the resource instance we need to create
-    :param ctx_node: Cloudify node instance which is an instance of
+    :param ctx_node_instance: Cloudify node instance which is an instance of
      cloudify.context.NodeInstanceContext
     :param kwargs: Some config contains data for openstack resource that
     could be provided via input task operation
@@ -363,16 +365,19 @@ def prepare_resource_instance(class_decl, ctx_node, kwargs):
     def get_property_by_name(property_name):
         property_value = None
         # TODO: Improve this to be more thorough.
-        if property_name in ctx_node.node.properties:
-            property_value = ctx_node.node.properties.get(property_name)
+        if property_name in ctx_node_instance.node.properties:
+            property_value = \
+                ctx_node_instance.node.properties.get(property_name)
 
-        if property_name in ctx_node.instance.runtime_properties:
+        if property_name in ctx_node_instance.instance.runtime_properties:
             if isinstance(property_value, dict):
                 property_value.update(
-                    ctx_node.instance.runtime_properties.get(property_name))
+                    ctx_node_instance.instance.runtime_properties.get(
+                        property_name))
             else:
                 property_value = \
-                    ctx_node.instance.runtime_properties.get(property_name)
+                    ctx_node_instance.instance.runtime_properties.get(
+                        property_name)
 
         if property_name in kwargs:
             kwargs_value = kwargs.pop(property_name)
@@ -393,9 +398,9 @@ def prepare_resource_instance(class_decl, ctx_node, kwargs):
 
     # Check if resource_id is part of runtime properties so that we
     # can add it to the resource_config
-    if RESOURCE_ID in ctx_node.instance.runtime_properties:
+    if RESOURCE_ID in ctx_node_instance.instance.runtime_properties:
         resource_config['id'] = \
-            ctx_node.instance.runtime_properties[RESOURCE_ID]
+            ctx_node_instance.instance.runtime_properties[RESOURCE_ID]
 
     resource = class_decl(client_config=client_config,
                           resource_config=resource_config,
@@ -404,11 +409,11 @@ def prepare_resource_instance(class_decl, ctx_node, kwargs):
     return resource
 
 
-def handle_external_resource(ctx_node,
+def handle_external_resource(ctx_node_instance,
                              openstack_resource,
                              existing_resource_handler=None):
     """
-    :param ctx_node: Cloudify node instance which is an instance of
+    :param ctx_node_instance: Cloudify node instance which is an instance of
      cloudify.context.NodeInstanceContext
     :param openstack_resource: Openstack resource instance
     :param existing_resource_handler: Callback handler that used to be
@@ -449,7 +454,7 @@ def handle_external_resource(ctx_node,
                 'not creating resource {0}'
                 ' since an external resource is being used'
                 ''.format(remote_resource.name))
-            ctx_node.instance.runtime_properties[RESOURCE_ID] \
+            ctx_node_instance.instance.runtime_properties[RESOURCE_ID] \
                 = remote_resource.id
 
             # Check if we need to run custom operation for already existed
