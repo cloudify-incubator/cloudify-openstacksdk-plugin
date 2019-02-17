@@ -20,7 +20,7 @@ from cloudify import ctx
 from openstack_sdk.resources.networks import OpenstackNetwork
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import RESOURCE_ID
-from openstacksdk_plugin.utils import (validate_resource,
+from openstacksdk_plugin.utils import (validate_resource_quota,
                                        reset_dict_empty_keys,
                                        add_resource_list_to_runtime_properties)
 from openstacksdk_plugin.constants import NETWORK_OPENSTACK_TYPE
@@ -75,5 +75,5 @@ def creation_validation(openstack_resource):
     This method is to check if we can create network resource in openstack
     :param openstack_resource: Instance of current openstack network
     """
-    validate_resource(openstack_resource, NETWORK_OPENSTACK_TYPE)
+    validate_resource_quota(openstack_resource, NETWORK_OPENSTACK_TYPE)
     ctx.logger.debug('OK: network configuration is valid')

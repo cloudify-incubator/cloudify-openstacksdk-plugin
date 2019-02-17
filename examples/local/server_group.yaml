@@ -42,7 +42,7 @@ dsl_definitions:
 
 node_templates:
 
-  example-server_group:
+  example-server-group:
     type: cloudify.nodes.openstack.ServerGroup
     properties:
       client_config: *client_config

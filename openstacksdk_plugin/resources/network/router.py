@@ -21,7 +21,7 @@ from openstack_sdk.resources.networks import OpenstackRouter
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID, ROUTER_OPENSTACK_TYPE)
 from openstacksdk_plugin.utils import (reset_dict_empty_keys,
-                                       validate_resource,
+                                       validate_resource_quota,
                                        add_resource_list_to_runtime_properties)
 
 
@@ -74,7 +74,7 @@ def creation_validation(openstack_resource):
     This method is to check if we can create router resource in openstack
     :param openstack_resource: Instance of current openstack router
     """
-    validate_resource(openstack_resource, ROUTER_OPENSTACK_TYPE)
+    validate_resource_quota(openstack_resource, ROUTER_OPENSTACK_TYPE)
     ctx.logger.debug('OK: router configuration is valid')
 
 

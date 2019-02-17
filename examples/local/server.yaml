@@ -52,7 +52,7 @@ dsl_definitions:
 
 node_templates:
 
-  server_node:
+  example-server:
     type: cloudify.nodes.openstack.Server
     properties:
       client_config: *client_config
@@ -64,12 +64,10 @@ node_templates:
         image_id: { get_input: image }
         flavor_id: { get_input: flavor }
         networks:
-          - port: { get_attribute: [ port, id ] }
+          - port: { get_attribute: [ example-port, id ] }
     relationships:
       - type: cloudify.relationships.openstack.server_connected_to_port
-        target: port
-      - type: cloudify.relationships.openstack.server_connected_to_server_group
-        target: server_group
+        target: example-port
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -77,7 +75,7 @@ node_templates:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
 
-  security_group:
+  example-security-group:
     type: cloudify.nodes.openstack.SecurityGroup
     properties:
       client_config: *client_config
@@ -121,7 +119,7 @@ node_templates:
         name: 'agent_sg'
         description: 'A security group created by Cloudify OpenStack SDK plugin.'
 
-  port:
+  example-port:
     type: cloudify.nodes.openstack.Port
     properties:
       client_config: *client_config
@@ -131,12 +129,12 @@ node_templates:
         fixed_ips:
           - subnet_id: { get_input: subnet_id }
         security_groups:
-          - { get_attribute: [ security_group, id ] }
+          - { get_attribute: [ example-security-group, id ] }
     relationships:
        - type: cloudify.relationships.connected_to
-         target: security_group
+         target: example-security-group
        - type: cloudify.relationships.openstack.port_connected_to_floating_ip
-         target: ip
+         target: example-ip
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -149,7 +147,7 @@ node_templates:
             query:
               all_tenants: false
 
-  ip:
+  example-ip:
     type: cloudify.nodes.openstack.FloatingIP
     properties:
       client_config: *client_config

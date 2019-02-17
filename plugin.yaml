@@ -264,6 +264,35 @@ data_types:
         type: string
         required: false
 
+
+  cloudify.types.openstack.RBACPolicy:
+    properties:
+      <<: *data_type_id
+      target_tenant:
+        description: The ID of the tenant to which the RBAC policy will be enforced.
+        type: string
+        required: true
+      object_type:
+        description: >
+          The type of the object that the RBAC policy affects.
+          Types include qos-policy or network.
+        type: string
+        required: false
+      object_id:
+        description: >
+          The ID of the object_type resource. An object_type of
+          network returns a network ID and an object_type of qos-policy returns a QoS ID.
+        type: string
+        required: false
+      action:
+        description: >
+          The maximum port number in the range that is matched
+          by the security group rule. If the protocol is TCP, UDP, DCCP, SCTP or UDP-Lite
+          this value must be greater than or equal to the port_range_min attribute value.
+          If the protocol is ICMP, this value must be an ICMP type.
+        type: string
+        required: true
+
   cloudify.types.openstack.Server:
     properties:
       <<: *data_type_kwargs
@@ -744,6 +773,44 @@ node_types:
             query:
               default: {}
 
+  cloudify.nodes.openstack.RBACPolicy:
+    derived_from: cloudify.nodes.Root
+    properties:
+      <<: *external_resource
+      <<: *client_config
+      resource_config:
+        type: cloudify.types.openstack.RBACPolicy
+        description: A dictionary that may contain these keys https://developer.openstack.org/api-ref/network/v2/?expanded=create-rbac-policy-detail#create-rbac-policy
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.rbac_policy.create
+          inputs:
+            args:
+              default: {}
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.rbac_policy.delete
+      cloudify.interfaces.validation:
+        creation:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.rbac_policy.creation_validation
+      cloudify.interfaces.operations:
+        update:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.rbac_policy.update
+          inputs:
+            args:
+              default: {}
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.rbac_policy.list_rbac_policies
+          inputs:
+            query:
+              default: {}
+        find_and_delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.rbac_policy.find_and_delete
+          inputs:
+            args:
+              default: {}
+
   cloudify.nodes.openstack.Server:
     derived_from: cloudify.nodes.Compute
     properties:
@@ -1103,6 +1170,20 @@ relationships:
 
   cloudify.relationships.openstack.server_connected_to_server_group:
     derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.openstack.rbac_policy_applied_to:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.rbac_policy.unlink_target_object
+          inputs:
+            resource_id:
+              default: { get_attribute: [ TARGET, id ] }
+            disable_dhcp:
+              default: false
+            clean_ports:
+              default: false
 
 
   # This is a little confusing, so I will make sure it is clear.

@@ -24,6 +24,7 @@ from openstack_sdk.common import OpenstackResource
 class OpenstackNetwork(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2D2S1xw.
+    service_type = 'network'
     resource_type = 'network'
 
     def resource_plural(self, openstack_type):
@@ -76,7 +77,8 @@ class OpenstackSubnet(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2SMLuvY
 
-    resource_type = 'network'
+    service_type = 'network'
+    resource_type = 'subnet'
 
     def resource_plural(self, openstack_type):
         return openstack_type
@@ -127,7 +129,8 @@ class OpenstackSubnet(OpenstackResource):
 class OpenstackPort(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2DlPnUj
-    resource_type = 'network'
+    service_type = 'network'
+    resource_type = 'port'
 
     def resource_plural(self, openstack_type):
         return openstack_type
@@ -178,7 +181,8 @@ class OpenstackPort(OpenstackResource):
 class OpenstackRouter(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2QioQdg
-    resource_type = 'network'
+    service_type = 'network'
+    resource_type = 'router'
 
     def resource_plural(self, openstack_type):
         return openstack_type
@@ -251,7 +255,8 @@ class OpenstackRouter(OpenstackResource):
 class OpenstackFloatingIP(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2JGHqcQ
-    resource_type = 'network'
+    service_type = 'network'
+    resource_type = 'ip'
 
     def resource_plural(self, openstack_type):
         return openstack_type
@@ -302,7 +307,8 @@ class OpenstackFloatingIP(OpenstackResource):
 class OpenstackSecurityGroup(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2PCsWA0
-    resource_type = 'network'
+    service_type = 'network'
+    resource_type = 'security_group'
 
     def resource_plural(self, openstack_type):
         return openstack_type
@@ -358,7 +364,8 @@ class OpenstackSecurityGroup(OpenstackResource):
 class OpenstackSecurityGroupRule(OpenstackResource):
     # SDK documentation link:
     # https://bit.ly/2PCsWA0
-    resource_type = 'network'
+    service_type = 'network'
+    resource_type = 'security_group_rule'
 
     def resource_plural(self, openstack_type):
         return openstack_type
@@ -401,3 +408,58 @@ class OpenstackSecurityGroupRule(OpenstackResource):
 
     def update(self, new_config=None):
         pass
+
+
+class OpenstackRBACPolicy(OpenstackResource):
+    # SDK documentation link:
+    # https://bit.ly/2DvKSnI
+    service_type = 'network'
+    resource_type = 'rbac_policy'
+
+    def resource_plural(self, openstack_type):
+        return openstack_type
+
+    def list(self, query=None):
+        query = query or {}
+        return self.connection.network.rbac_policies(**query)
+
+    def get(self):
+        self.logger.debug(
+            'Attempting to find this rbac policy: {0}'.format(
+                self.name if not self.resource_id else self.resource_id))
+        rbac_policy = self.connection.network.get_rbac_policy(
+            self.name if not self.resource_id else self.resource_id)
+        self.logger.debug(
+            'Found rbac policy with this result: {0}'.format(
+                rbac_policy))
+        return rbac_policy
+
+    def create(self):
+        self.logger.debug('Attempting to create rbac policy '
+                          'with these args: {0}'.format(self.config))
+        rbac_policy = \
+            self.connection.network.create_rbac_policy(**self.config)
+        self.logger.debug(
+            'Created rbac policy with this result: {0}'.format(rbac_policy))
+        return rbac_policy
+
+    def delete(self):
+        rbac_policy = self.get()
+        self.logger.debug(
+            'Attempting to delete this rbac_policy: {0}'.format(
+                rbac_policy))
+        result = self.connection.network.delete_rbac_policy(rbac_policy)
+        self.logger.debug(
+            'Deleted rbac_policy with this result: {0}'.format(result))
+        return result
+
+    def update(self, new_config=None):
+        rbac_policy = self.get()
+        self.logger.debug(
+            'Attempting to update this rbac_policy: {0} with args {1}'
+            ''.format(rbac_policy, new_config))
+        result = self.connection.network.update_rbac_policy(
+            rbac_policy, **new_config)
+        self.logger.debug(
+            'Updated rbac_policy with this result: {0}'.format(result))
+        return result

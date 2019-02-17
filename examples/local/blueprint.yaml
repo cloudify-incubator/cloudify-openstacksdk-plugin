@@ -50,7 +50,7 @@ dsl_definitions:
 
 node_templates:
 
-  example-external_network:
+  example-external-network:
     type: cloudify.nodes.openstack.Network
     properties:
       client_config: *client_config
@@ -69,10 +69,10 @@ node_templates:
         name: { concat: [ { get_input: name_prefix }, 'router' ] }
         kwargs:
           external_gateway_info:
-            network_id: { get_attribute: [ example-external_network, id ] }
+            network_id: { get_attribute: [ example-external-network, id ] }
     relationships:
       - type: cloudify.relationships.connected_to
-        target: example-external_network
+        target: example-external-network
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -108,7 +108,7 @@ node_templates:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
 
-  example-security_group:
+  example-security-group:
     type: cloudify.nodes.openstack.SecurityGroup
     properties:
       client_config: *client_config
@@ -116,7 +116,7 @@ node_templates:
         name: { concat: [ { get_input: name_prefix }, 'security_group' ] }
         description: 'A security group created by Cloudify OpenStack SDK plugin.'
 
-  example-security_group_rule:
+  example-security-group-rule:
     type: cloudify.nodes.openstack.SecurityGroupRule
     properties:
       client_config: *client_config
@@ -125,10 +125,10 @@ node_templates:
         protocol: tcp
         port_range_max: 22
         port_range_min: 22
-        security_group_id: { get_attribute: [ example-security_group, id ] }
+        security_group_id: { get_attribute: [ example-security-group, id ] }
     relationships:
       - type: cloudify.relationships.contained_in
-        target: example-security_group
+        target: example-security-group
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -145,28 +145,28 @@ node_templates:
         fixed_ips:
           - subnet_id: { get_attribute: [ example-subnet, id ] }
         security_groups:
-          - { get_attribute: [ example-security_group, id ] }
+          - { get_attribute: [ example-security-group, id ] }
     relationships:
       - type: cloudify.relationships.connected_to
         target: example-subnet
       - type: cloudify.relationships.connected_to
-        target: example-security_group
+        target: example-security-group
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
 
-  example-floating_ip_address:
+  example-floating-ip-address:
     type: cloudify.nodes.openstack.FloatingIP
     properties:
       client_config: *client_config
       resource_config:
-        floating_network_id: { get_attribute: [ example-external_network, id ] }
+        floating_network_id: { get_attribute: [ example-external-network, id ] }
         port_id: { get_attribute: [ example-server-port, id ] }
     relationships:
       - type: cloudify.relationships.connected_to
-        target: example-external_network
+        target: example-external-network
       - type: cloudify.relationships.openstack.server_connected_to_port
         target: example-server-port
     interfaces:

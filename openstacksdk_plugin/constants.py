@@ -15,6 +15,8 @@
 
 # Runtime properties keys
 RESOURCE_ID = 'id'
+OPENSTACK_TYPE_PROPERTY = 'type'
+OPENSTACK_NAME_PROPERTY = 'name'
 USE_EXTERNAL_RESOURCE_PROPERTY = 'use_external_resource'
 SERVER_TASK_CREATE = 'create_server_task'
 SERVER_TASK_STOP = 'stop_server_task'
@@ -56,6 +58,8 @@ PORT_OPENSTACK_TYPE = 'port'
 FLOATING_IP_OPENSTACK_TYPE = 'floatingip'
 SECURITY_GROUP_OPENSTACK_TYPE = 'security_group'
 SECURITY_GROUP_RULE_OPENSTACK_TYPE = 'security_group_rule'
+RBAC_POLICY_OPENSTACK_TYPE = 'rbac_policy'
+QOS_POLICY_OPENSTACK_TYPE = 'policy'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'
@@ -63,7 +67,11 @@ IMAGE_UPLOADING_PENDING = 'image_pending_upload'
 IMAGE_STATUS_ACTIVE = 'active'
 
 # Cloudify node types
-SERVER_GROUP_TYPE = 'cloudify.nodes.openstack.ServerGroup'
+SERVER_GROUP_NODE_TYPE = 'cloudify.nodes.openstack.ServerGroup'
+
+# Cloudify relationship types
+RBAC_POLICY_RELATIONSHIP_TYPE = \
+    'cloudify.relationships.openstack.rbac_policy_applied_to'
 
 
 # Message constants

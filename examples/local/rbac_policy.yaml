@@ -2,7 +2,6 @@ tosca_definitions_version: cloudify_dsl_1_3
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
-  # For use with a manager use: plugin:cloudify-openstacksdk-plugin
   - plugin.yaml
 
 inputs:
@@ -22,18 +21,23 @@ inputs:
   project_name:
     type: string
 
+  project_id:
+    type: string
+
   example_subnet_cidr:
     type: string
+    default: '10.0.0.0/24'
 
   example_fixed_ip:
     type: string
+    default: 10.0.0.1
 
   name_prefix:
     type: string
-    default: network_
+    default: 'rbac_policy'
+
 
 dsl_definitions:
-
   client_config: &client_config
     auth_url: { get_input: auth_url }
     username: { get_input: username }
@@ -50,20 +54,23 @@ node_templates:
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'router' ] }
 
+  example-rbac-policy:
+    type: cloudify.nodes.openstack.RBACPolicy
+    properties:
+      client_config: *client_config
+      resource_config:
+        target_tenant: { get_input: project_id }
+        action: access_as_shared
+    relationships:
+      - type: cloudify.relationships.openstack.rbac_policy_applied_to
+        target: example-network
+
   example-network:
     type: cloudify.nodes.openstack.Network
     properties:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'network' ] }
-
-  example-security-group:
-    type: cloudify.nodes.openstack.SecurityGroup
-    properties:
-      client_config: *client_config
-      resource_config:
-        name: { concat: [ { get_input: name_prefix }, 'security_group' ] }
-        description: 'A security group created by Cloudify OpenStack SDK plugin.'
 
   example-subnet:
     type: cloudify.nodes.openstack.Subnet
@@ -84,6 +91,14 @@ node_templates:
         create:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
+
+  example-security-group:
+    type: cloudify.nodes.openstack.SecurityGroup
+    properties:
+      client_config: *client_config
+      resource_config:
+        name: { concat: [ { get_input: name_prefix }, 'security_group' ] }
+        description: 'A security group created by Cloudify OpenStack SDK plugin.'
 
   example-security-group-rule:
     type: cloudify.nodes.openstack.SecurityGroupRule
@@ -131,3 +146,15 @@ node_templates:
         create:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
+
+outputs:
+  network:
+    value: { get_attribute: [ example-network, id ] }
+  subnet:
+    value: { get_attribute: [ example-subnet, id ] }
+  network_rbac_policy:
+    value: { get_attribute: [ example-rbac-policy, id ] }
+  port:
+    value: { get_attribute: [ example-port, id ] }
+  security-group:
+    value: { get_attribute: [ example-security-group, id ] }

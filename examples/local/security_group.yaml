@@ -52,7 +52,7 @@ dsl_definitions:
 
 node_templates:
 
-  security_group_node:
+  example-security-group:
     type: cloudify.nodes.openstack.SecurityGroup
     properties:
       client_config: *client_config

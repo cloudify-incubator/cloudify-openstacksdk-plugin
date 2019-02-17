@@ -38,7 +38,7 @@ dsl_definitions:
 
 node_templates:
 
-  project_node:
+  example-project:
     type: cloudify.nodes.openstack.Project
     properties:
       client_config: *client_config

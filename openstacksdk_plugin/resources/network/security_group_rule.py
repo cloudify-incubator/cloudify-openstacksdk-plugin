@@ -13,7 +13,7 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
-# Third pary imports
+# Third party imports
 from cloudify import ctx
 
 # Local imports
@@ -21,7 +21,7 @@ from openstack_sdk.resources.networks import OpenstackSecurityGroupRule
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SECURITY_GROUP_RULE_OPENSTACK_TYPE)
-from openstacksdk_plugin.utils import (validate_resource,
+from openstacksdk_plugin.utils import (validate_resource_quota,
                                        add_resource_list_to_runtime_properties)
 
 
@@ -53,7 +53,7 @@ def list_security_group_rules(openstack_resource, query=None):
     :param openstack_resource: Instance of current openstack security group
     rule
     :param kwargs query: Optional query parameters to be sent to limit
-            the security groups being returned.
+    the security group rules being returned.
     """
 
     security_group_rules = openstack_resource.list(query)
@@ -69,5 +69,6 @@ def creation_validation(openstack_resource):
     :param openstack_resource: Instance of current openstack security rule
     group
     """
-    validate_resource(openstack_resource, SECURITY_GROUP_RULE_OPENSTACK_TYPE)
+    validate_resource_quota(openstack_resource,
+                            SECURITY_GROUP_RULE_OPENSTACK_TYPE)
     ctx.logger.debug('OK: security group rule configuration is valid')

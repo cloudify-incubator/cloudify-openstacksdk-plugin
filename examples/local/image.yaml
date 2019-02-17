@@ -41,7 +41,7 @@ dsl_definitions:
 
 node_templates:
 
-  image_node:
+  example-image:
     type: cloudify.nodes.openstack.Image
     properties:
       client_config: *client_config

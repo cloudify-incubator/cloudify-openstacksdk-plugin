@@ -25,6 +25,7 @@ class QuotaException(Exception):
 
 
 class OpenstackResource(object):
+    service_type = None
     resource_type = None
 
     def __init__(self, client_config, resource_config=None, logger=None):
@@ -69,11 +70,11 @@ class OpenstackResource(object):
         project_name = self.client_config.get('project_name')
         quota = getattr(
             self.connection,
-            'get_{0}_quotas'.format(self.resource_type))(project_name)
+            'get_{0}_quotas'.format(self.service_type))(project_name)
 
         if not quota:
             raise QuotaException(
-                'Invalid {0} quota response'.format(self.resource_type))
+                'Invalid {0} quota response'.format(self.service_type))
 
         return getattr(quota, quota_type)
 

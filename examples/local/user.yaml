@@ -41,7 +41,7 @@ dsl_definitions:
 
 node_templates:
 
-  user_node:
+  example-user:
     type: cloudify.nodes.openstack.User
     properties:
       client_config: *client_config
