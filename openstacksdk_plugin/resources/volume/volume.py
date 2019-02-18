@@ -9,9 +9,9 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#     See the License for the specific language governing permissions and
-#     limitations under the License.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # Standard imports
 import time
@@ -71,7 +71,7 @@ def _is_volume_backup_matched(backup_instance, volume_id, name):
     # If the name is missing then we can depend on volume just like when we
     # remove remove snapshots for related volume and do not have information
     # about snapshot | backup name so we depend on volume id
-    match_2 = True if volume_id == backup_instance.volume_id else False
+    match_2 = volume_id == backup_instance.volume_id
 
     return match_1 or match_2
 
@@ -382,22 +382,17 @@ def create(openstack_resource, args={}):
 
 
 @with_openstack_resource(OpenstackVolume)
-def start(openstack_resource, status_timeout=15, status_attempts=20,):
+def start(openstack_resource, **kwargs):
     """
     This opeeration task will try to check if the volume created is ready
     to use and available
     :param openstack_resource: current openstack volume instance
-    :param int status_timeout: Number of seconds must wait before continue
-    another try
-    :param int status_attempts: Number of tries attempts in order to check the
-    current status of resource
+    :param kwargs: Extra information provided by operation input
     """
     volume = wait_until_status(openstack_resource,
                                VOLUME_OPENSTACK_TYPE,
                                VOLUME_STATUS_AVAILABLE,
-                               VOLUME_ERROR_STATUSES,
-                               status_attempts,
-                               status_timeout)
+                               VOLUME_ERROR_STATUSES)
 
     # Set volume runtime properties needed when attach bootable volume to
     # server

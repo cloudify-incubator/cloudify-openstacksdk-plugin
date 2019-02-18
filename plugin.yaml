@@ -1222,18 +1222,7 @@ node_types:
               default: {}
         start:
           implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.start
-          inputs:
-            status_attempts:
-              description: >
-                Number of times to check for the creation's status before failing
-              type: integer
-              default: 20
-            status_timeout:
-              description: >
-                Interval (in seconds) between subsequent inquiries of the creation's
-                status
-              type: integer
-              default: 15
+          inputs: {}
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.delete
       # backups related section

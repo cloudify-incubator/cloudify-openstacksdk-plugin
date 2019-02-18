@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2018 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2019 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -9,12 +9,11 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    * See the License for the specific language governing permissions and
-#    * limitations under the License.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # Standard imports
-import time
 import sys
 import base64
 
@@ -23,7 +22,7 @@ import base64
 import openstack.exceptions
 from cloudify import compute
 from cloudify import ctx
-from cloudify.exceptions import NonRecoverableError
+from cloudify.exceptions import (NonRecoverableError, OperationRetry)
 from cloudify.utils import exception_to_error_cause
 
 try:
@@ -566,9 +565,7 @@ def get_ready_resource_status(resource,
 def wait_until_status(resource,
                       resource_type,
                       status,
-                      error_statuses,
-                      num_tries,
-                      timeout):
+                      error_statuses):
     """
     This method is build in order to check the status of the openstack
     resource and whether is is ready to be used or not
@@ -577,41 +574,23 @@ def wait_until_status(resource,
     :param str status: desired status need to check the resource on
     :param list error_statuses: List of error statuses that we should raise
      error about if the remote openstack resource matches them
-    :param int num_tries: Number of tries attempts in order to check the
-    current status of resource
-    :param int timeout: Number of seconds must wait before continue another try
     :return: Instance of the current openstack object contains the updated
     status
     """
-    openstack_resource = None
-    for count in range(num_tries):
-        # Check the openstack resource status
-        openstack_resource, ready = get_ready_resource_status(resource,
-                                                              resource_type,
-                                                              status,
-                                                              error_statuses)
-        if ready:
-            return openstack_resource
-
-        # Wait for "timeout" seconds before make another try
-        ctx.logger.warning("{0} {1} current state not ready: '{2}'"
-                           "".format(resource_type,
-                                     openstack_resource.id,
-                                     openstack_resource.status))
-        time.sleep(timeout)
-
-    # If we reach this point that means the resource status is still not in
-    # ready status, which means we can use the resource
-    message = "{0} {1} current state: '{1}'," \
-              " expected state: '{2}'" \
-              "".format(resource_type,
+    # Check the openstack resource status
+    openstack_resource, ready = get_ready_resource_status(resource,
+                                                          resource_type,
+                                                          status,
+                                                          error_statuses)
+    if ready and openstack_resource:
+        return openstack_resource
+    else:
+        message = '{0} {1} current state not ready: {2}'\
+                .format(resource_type,
                         openstack_resource.id,
-                        openstack_resource.status,
-                        status)
+                        openstack_resource.status)
 
-    # Log the message
-    ctx.logger.warning(message)
-    raise NonRecoverableError(message)
+        raise OperationRetry(message)
 
 
 def merge_resource_config(resource_config, config):
