@@ -276,15 +276,8 @@ def _delete_volume_backup(volume_resource, snapshot_name):
     :param volume_resource: instance of openstack volume resource
     :param str snapshot_name: The name of the snapshot
     """
-    search_opts = {
-        'volume_id': volume_resource.resource_id,
-        'name': snapshot_name
-    }
-
     backup_volume = _prepare_volume_backup_instance(volume_resource)
-    _clean_volume_backups(backup_volume,
-                          VOLUME_BACKUP_OPENSTACK_TYPE,
-                          search_opts)
+    _clean_volume_backups(backup_volume, VOLUME_BACKUP_OPENSTACK_TYPE)
 
 
 def _delete_volume_snapshot(volume_resource, snapshot_name):
