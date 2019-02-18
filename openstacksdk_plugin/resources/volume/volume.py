@@ -9,10 +9,12 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    * See the License for the specific language governing permissions and
-#    * limitations under the License.
+#     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#     See the License for the specific language governing permissions and
+#     limitations under the License.
 
+# Standard imports
+import time
 
 # Third party imports
 from cloudify import ctx
@@ -48,10 +50,38 @@ from openstacksdk_plugin.utils import\
      find_openstack_ids_of_connected_nodes_by_openstack_type)
 
 
+def _is_volume_backup_matched(backup_instance, volume_id, name):
+    """
+    This method is to do try to match between the remote backup volume for
+    volume id and backup name in order to lookup the desired object that
+    should be removed
+    :param backup_instance:
+    :param str volume_id:
+    :param str name:
+    :return:
+    """
+    # Try to do a match for the snapshot | backup for both volume_id and
+    # name in case both name and volume_id are provided and this is mainly
+    # will be available when run snapshot | backup delete with know in
+    # advance the name of the backup | snapshot
+    match_1 = \
+        True if name and volume_id and backup_instance.name == name and \
+        backup_instance.volume_id == volume_id else False
+
+    # If the name is missing then we can depend on volume just like when we
+    # remove remove snapshots for related volume and do not have information
+    # about snapshot | backup name so we depend on volume id
+    match_2 = True if volume_id == backup_instance.volume_id else False
+
+    return match_1 or match_2
+
+
 def _populate_volume_with_image_id_from_relationship(volume_config):
     """
     This method will try to populate image id for volume if there is a
     relationship between volume & image
+    :param volume_config: volume config required in order to create volume
+    in openstack
     """
 
     if volume_config:
@@ -224,7 +254,7 @@ def _create_volume_snapshot(volume_resource, snapshot_name, snapshot_type):
         del ctx.instance.runtime_properties[VOLUME_SNAPSHOT_ID]
 
 
-def _clean_volume_backups(backup_instance, backup_type, search_opts=None):
+def _clean_volume_backups(backup_instance, backup_type, search_opts):
     """
     This method will clean all backups | snapshots volume based on provided
     backup type and on filter criteria
@@ -235,15 +265,24 @@ def _clean_volume_backups(backup_instance, backup_type, search_opts=None):
     :param dict search_opts: Search criteria used in order to lookup the
     backups
     """
-    snapshot_name = search_opts.get('name')
-    volume_id = search_opts.get('volume_id')
-    if all([snapshot_name, volume_id, backup_instance]):
+    if all([search_opts, backup_instance]):
+        name = search_opts.get('name')
+        volume_id = search_opts.get('volume_id')
+        # Since list backups volume does not support query filters for volume
+        # id & name, then we need to take that into consideration since
+        # passing volume_id & name to the backups api will raise
+        # InvalidResourceQuery error
+        search_query = {}
+        if backup_type == VOLUME_SNAPSHOT_OPENSTACK_TYPE:
+            search_query = search_opts
+
         # Right now list volume backup does not support to list backups
         # using backup name and volume id, so that we need to list all
         # volumes backups and then just do a compare to match the one we
         # need to delete
-        for backup in backup_instance.list(query=search_opts):
-            if backup.name == snapshot_name and backup.volume_id == volume_id:
+        for backup in backup_instance.list(query=search_query):
+
+            if _is_volume_backup_matched(backup, volume_id, name):
                 ctx.logger.debug(
                     'Check {0} before delete: {1}:{2}'
                     ' with state {3}'.format(backup_type, backup.id,
@@ -253,45 +292,43 @@ def _clean_volume_backups(backup_instance, backup_type, search_opts=None):
                 if backup.status == VOLUME_STATUS_AVAILABLE:
                     backup_instance.resource_id = backup.id
                     backup_instance.delete()
-            else:
-                continue
 
-        for backup in backup_instance.list(query=search_opts):
+        # wait 10 seconds before next check
+        time.sleep(10)
+
+        for backup in backup_instance.list(query=search_query):
             ctx.logger.debug('Check {0} after delete: {1}:{2} with state {3}'
                              .format(backup_type, backup.id,
                                      backup.name, backup.status))
-            if backup.name == snapshot_name and backup.volume_id == volume_id:
+            if _is_volume_backup_matched(backup, volume_id, name):
                 return ctx.operation.retry(
                     message='{0} is still alive'.format(backup.name),
                     retry_after=30)
     else:
-        raise NonRecoverableError('Cannot clean volume backups without '
-                                  'having volume_id, name and '
-                                  'backup_instance variables set')
+        raise NonRecoverableError('volume_id, name, backup_instance '
+                                  'variables cannot all set to None')
 
 
-def _delete_volume_backup(volume_resource, snapshot_name):
+def _delete_volume_backup(volume_resource, search_opts):
     """
     This method will delete volume backup
     :param volume_resource: instance of openstack volume resource
-    :param str snapshot_name: The name of the snapshot
+    :param dict search_opts: Search criteria used in order to lookup the
+    backups
     """
     backup_volume = _prepare_volume_backup_instance(volume_resource)
-    _clean_volume_backups(backup_volume, VOLUME_BACKUP_OPENSTACK_TYPE)
+    _clean_volume_backups(backup_volume,
+                          VOLUME_BACKUP_OPENSTACK_TYPE,
+                          search_opts)
 
 
-def _delete_volume_snapshot(volume_resource, snapshot_name):
+def _delete_volume_snapshot(volume_resource, search_opts):
     """
     This method will delete volume snapshot
     :param volume_resource: instance of openstack volume resource
-    :param str snapshot_name: The name of the snapshot
+    :param dict search_opts: Search criteria used in order to lookup the
+    snapshots
     """
-
-    search_opts = {
-        'volume_id': volume_resource.resource_id,
-        'name': snapshot_name
-    }
-
     snapshot_volume = _prepare_volume_snapshot_instance(volume_resource)
     _clean_volume_backups(snapshot_volume,
                           VOLUME_SNAPSHOT_OPENSTACK_TYPE,
@@ -435,13 +472,18 @@ def snapshot_delete(openstack_resource, **kwargs):
     backup_name = \
         get_snapshot_name('volume', snapshot_name, snapshot_incremental)
 
+    search_opts = \
+        {
+            'volume_id': openstack_resource.resource_id,
+            'name': snapshot_name
+        }
+
     # This is a backup stored at object storage must be deleted
     if not snapshot_incremental:
-        _delete_volume_backup(openstack_resource, backup_name)
-
+        _delete_volume_backup(openstack_resource, backup_name, search_opts)
     # This is a snapshot that need to be deleted
     else:
-        _delete_volume_snapshot(openstack_resource, backup_name)
+        _delete_volume_snapshot(openstack_resource, search_opts)
 
 
 @with_openstack_resource(OpenstackVolume)
@@ -450,6 +492,12 @@ def delete(openstack_resource):
     Delete current openstack volume instance
     :param openstack_resource: instance of openstack volume resource
     """
+
+    # Before delete the volume we should check if volume has associated
+    # snapshots that must be cleaned
+    search_opts = {'volume_id': openstack_resource.resource_id, }
+    _delete_volume_snapshot(openstack_resource, search_opts)
+
     # Only trigger delete api when it is the first time we run this task,
     # otherwise we should check the if the volume is really deleted or not
     # by keep calling get volume api
