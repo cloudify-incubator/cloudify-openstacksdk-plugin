@@ -1,5 +1,5 @@
 # #######
-# Copyright (c) 2018 Cloudify Platform Ltd. All rights reserved
+# Copyright (c) 2019 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -9,9 +9,9 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-#    * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    * See the License for the specific language governing permissions and
-#    * limitations under the License.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # Standard imports
 import json
@@ -45,7 +45,7 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_REBOOT_SOFT,
                                            SERVER_ACTION_STATUS_PENDING,
                                            SERVER_ACTION_STATUS_DONE,
-                                           SERVER_REBUILD_SPAWNING,
+                                           SERVER_REBUILD_SPAWNING_STATUS,
                                            SERVER_REBUILD_STATUS,
                                            IMAGE_UPLOADING_PENDING,
                                            IMAGE_STATUS_ACTIVE,
@@ -329,8 +329,9 @@ def _handle_snapshot_restore(server, image_id, snapshot_name):
     # Only check this logic if the server is already stopped
     if server_status == SERVER_ACTION_STATUS_DONE:
         # Check if the rebuild task is done or not
-        is_finished = _check_finished_server_task(server,
-                                                  [SERVER_REBUILD_SPAWNING])
+        is_finished = \
+            _check_finished_server_task(server,
+                                        [SERVER_REBUILD_SPAWNING_STATUS])
 
         if is_finished:
             ctx.instance.runtime_properties[SERVER_TASK_RESTORE_STATE]\

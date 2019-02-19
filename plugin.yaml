@@ -523,6 +523,55 @@ data_types:
         required: false
         default: []
 
+  cloudify.types.openstack.Volume:
+    properties:
+      <<: *data_type_kwargs
+      <<: *data_type_name
+      <<: *data_type_id
+      <<: *data_type_description
+      project_id:
+        description: >
+          The UUID of the project in a multi-tenancy cloud.
+        required: true
+        type: string
+      size:
+        description: >
+          The size of the volume, in gibibytes (GiB).
+        required: true
+        type: integer
+      availability_zone :
+        description: >
+          The name of the availability zone.
+        required: false
+        type: string
+      imageRef:
+        description: >
+          The UUID of the image from which you want to create the volume.
+          Required to create a bootable volume.
+        required: false
+        type: string
+      snapshot_id:
+        description: >
+          To create a volume from an existing snapshot,
+          specify the UUID of the volume snapshot.
+          The volume is created in same availability zone and with same size as the snapshot.
+        required: false
+        type: string
+      volume_type:
+        description: >
+           The volume type (either name or ID).
+           To create an environment with multiple-storage back ends, you
+           must specify a volume type. Block Storage volume back ends are
+           spawned as children to cinder- volume, and they are keyed from a
+           unique queue. They are named cinder- volume.HOST.BACKEND. For
+           example, cinder- volume.ubuntu.lvmdriver. When a volume is
+           created, the scheduler chooses an appropriate back end to handle
+           the request based on the volume type. Default is None. For
+           information about how to use volume types to create multiple-
+           storage back ends,
+        required: false
+        type: string
+
   cloudify.types.openstack.VolumeType:
     properties:
       <<: *data_type_kwargs
@@ -1144,6 +1193,59 @@ node_types:
       cloudify.interfaces.validation:
         creation: openstacksdk.openstacksdk_plugin.resources.identity.project.creation_validation
 
+  cloudify.nodes.openstack.Volume:
+    derived_from: cloudify.nodes.Root
+    properties:
+      <<: *external_resource
+      <<: *client_config
+      device_name:
+        type: string
+        default: auto
+        description: >
+          The device name this volume will be attached to.
+          Default value is *auto*,
+          which means openstack will auto-assign a device.
+          Note that if you do explicitly set a value,
+          this value may not be the actual device name assigned.
+          Sometimes the device requested will not be available and openstack will assign it to a different device,
+          this is why we recommend using *auto*.
+      resource_config:
+        type: cloudify.types.openstack.Volume
+        description: https://developer.openstack.org/api-ref/block-storage/v2/index.html?expanded=create-volume-detail#volumes-volumes
+        required: true
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.create
+          inputs:
+            args:
+              default: {}
+        start:
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.start
+          inputs: {}
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.delete
+      # backups related section
+      cloudify.interfaces.snapshot:
+        create:
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.snapshot_create
+          inputs: {}
+        apply:
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.snapshot_apply
+          inputs: {}
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.snapshot_delete
+          inputs: {}
+      cloudify.interfaces.validation:
+        creation:
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.creation_validation
+      cloudify.interfaces.operations:
+        list:
+          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume.list_volumes
+          inputs:
+            query:
+              default: {}
+
   cloudify.nodes.openstack.VolumeType:
     derived_from: cloudify.nodes.Root
     properties:
@@ -1159,8 +1261,6 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.create
         delete:
           implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.delete
-        update:
-          implementation: openstacksdk.openstacksdk_plugin.resources.volume.volume_type.update
 
 
 relationships:
