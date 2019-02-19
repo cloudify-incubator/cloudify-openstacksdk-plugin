@@ -705,6 +705,8 @@ node_types:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.router.start
         stop:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.router.stop
+        delete:
+          implementation: openstacksdk.openstacksdk_plugin.resources.network.router.delete
       cloudify.interfaces.validation:
         creation:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.router.creation_validation
