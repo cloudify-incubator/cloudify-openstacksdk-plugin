@@ -97,7 +97,7 @@ node_templates:
       - type: cloudify.relationships.openstack.subnet_connected_to_router
         target: example-router
 
-  example-security_group:
+  example-security-group:
     type: cloudify.nodes.openstack.SecurityGroup
     properties:
       client_config: *client_config
@@ -105,7 +105,7 @@ node_templates:
         name: { concat: [ { get_input: name_prefix }, 'security_group' ] }
         description: 'A security group created by Cloudify OpenStack SDK plugin.'
 
-  example-security_group_rule:
+  example-security-group-rule:
     type: cloudify.nodes.openstack.SecurityGroupRule
     properties:
       client_config: *client_config
@@ -114,10 +114,10 @@ node_templates:
         protocol: tcp
         port_range_max: 22
         port_range_min: 22
-        security_group_id: { get_attribute: [ example-security_group, id ] }
+        security_group_id: { get_attribute: [ example-security-group, id ] }
     relationships:
       - type: cloudify.relationships.contained_in
-        target: example-security_group
+        target: example-security-group
 
   example-server-port:
     type: cloudify.nodes.openstack.Port
@@ -129,12 +129,12 @@ node_templates:
         fixed_ips:
           - subnet_id: { get_attribute: [ example-subnet, id ] }
         security_groups:
-          - { get_attribute: [ example-security_group, id ] }
+          - { get_attribute: [ example-security-group, id ] }
     relationships:
       - type: cloudify.relationships.connected_to
         target: example-subnet
       - type: cloudify.relationships.connected_to
-        target: example-security_group
+        target: example-security-group
 
   example-floating_ip_address:
     type: cloudify.nodes.openstack.FloatingIP

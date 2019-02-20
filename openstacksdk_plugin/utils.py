@@ -270,7 +270,7 @@ def reset_dict_empty_keys(dict_object):
     :return dict_object: Updated dict_object
     """
     for key, value in dict_object.iteritems():
-        if not key:
+        if not value:
             dict_object[key] = None
     return dict_object
 
@@ -495,14 +495,6 @@ def handle_external_resource(ctx_node_instance,
                 ''.format(remote_resource.name))
 
 
-def get_openstack_id():
-    """
-    Get the openstack resource id
-    :return str: Return openstack resource id
-    """
-    return ctx.instance.runtime_properties[RESOURCE_ID]
-
-
 def get_snapshot_name(object_type, snapshot_name, snapshot_incremental):
     """
     Generate snapshot name
@@ -514,8 +506,8 @@ def get_snapshot_name(object_type, snapshot_name, snapshot_incremental):
     :return: Snapshot name
     """
     return "{0}-{1}-{2}-{3}".format(
-        object_type, get_openstack_id(), snapshot_name,
-        "increment" if snapshot_incremental else "backup")
+        object_type, get_resource_id_from_runtime_properties(ctx),
+        snapshot_name, "increment" if snapshot_incremental else "backup")
 
 
 def get_current_operation():
@@ -605,3 +597,19 @@ def merge_resource_config(resource_config, config):
     if all(item and isinstance(item, dict)
            for item in [resource_config, config]):
         resource_config.update(**config)
+
+
+def generate_attachment_volume_key(prefix, volume_id, server_id):
+    """
+    This method helps to generate attachment volume key which can be used as
+    runtime property when running attaching/detaching volume from/to server
+    :param str prefix: Any prefix that could be added to the the key
+    :param str volume_id: Unique volume id
+    :param str server_id: Unique server id
+    :return str: attachment volume key
+    """
+    if all([prefix, volume_id, server_id]):
+        return '{0}-{1}-{2}'.format(prefix, volume_id, server_id)
+
+    _ctx = resolve_ctx(ctx)
+    return '{0}-attachment-volume'.format(_ctx.instance.id)

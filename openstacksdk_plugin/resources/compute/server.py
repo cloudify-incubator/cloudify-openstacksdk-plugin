@@ -25,6 +25,7 @@ from cloudify.exceptions import (OperationRetry,
 # Local imports
 from openstack_sdk.resources.compute import OpenstackServer
 from openstack_sdk.resources.images import OpenstackImage
+from openstack_sdk.resources.volume import OpenstackVolume
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_STATUS_ACTIVE,
@@ -47,19 +48,34 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_ACTION_STATUS_DONE,
                                            SERVER_REBUILD_SPAWNING_STATUS,
                                            SERVER_REBUILD_STATUS,
+                                           SERVER_TASK_STATE,
                                            IMAGE_UPLOADING_PENDING,
                                            IMAGE_STATUS_ACTIVE,
                                            IMAGE_UPLOADING,
-                                           SERVER_TASK_STATE,
-                                           INSTANCE_OPENSTACK_TYPE)
+                                           INSTANCE_OPENSTACK_TYPE,
+                                           VOLUME_DEVICE_NAME_PROPERTY,
+                                           VOLUME_OPENSTACK_TYPE,
+                                           VOLUME_STATUS_IN_USE,
+                                           VOLUME_STATUS_AVAILABLE,
+                                           VOLUME_ERROR_STATUSES,
+                                           VOLUME_ATTACHMENT_TASK,
+                                           VOLUME_DETACHMENT_TASK,
+                                           VOLUME_ATTACHMENT_ID,
+                                           VOLUME_BOOTABLE,
+                                           OPENSTACK_TYPE_PROPERTY,
+                                           PORT_OPENSTACK_TYPE)
 
-from openstacksdk_plugin.utils import (handle_userdata,
-                                       validate_resource_quota,
-                                       add_resource_list_to_runtime_properties,
-                                       find_relationship_by_node_type,
-                                       reset_dict_empty_keys,
-                                       get_resource_id_from_runtime_properties,
-                                       get_snapshot_name)
+from openstacksdk_plugin.utils import \
+    (handle_userdata,
+     validate_resource_quota,
+     wait_until_status,
+     add_resource_list_to_runtime_properties,
+     find_relationship_by_node_type,
+     find_openstack_ids_of_connected_nodes_by_openstack_type,
+     reset_dict_empty_keys,
+     get_resource_id_from_runtime_properties,
+     get_snapshot_name,
+     generate_attachment_volume_key)
 
 
 def _stop_server(server):
@@ -79,14 +95,16 @@ def _stop_server(server):
         server_resource = server.get()
         if server_resource.status != SERVER_STATUS_SHUTOFF:
             raise OperationRetry(message='Server has {} state.'.format(
-                server.status), retry_after=30)
+                server_resource.status), retry_after=30)
 
         else:
-            ctx.logger.info('Server is already stopped')
+            ctx.logger.info('Server {0} is already stopped'
+                            ''.format(server.resource_id))
             ctx.instance.runtime_properties[SERVER_TASK_STOP] \
                 = SERVER_ACTION_STATUS_DONE
     else:
-        ctx.logger.info('Server is already stopped')
+        ctx.logger.info('Server {0} is already stopped'
+                        ''.format(server.resource_id))
         ctx.instance.runtime_properties[SERVER_TASK_STOP]\
             = SERVER_ACTION_STATUS_DONE
 
@@ -382,6 +400,187 @@ def _check_finished_server_task(server_resource, waiting_list):
                 ''.format(server.status, state), retry_after=30)
 
 
+def _get_bootable_indexed_volumes(mapping_devices):
+    """
+    This method will retrieve all bootable devices from mapping device list
+    in order to determine which device will be marked as bootable to the server
+    :param list mapping_devices: List of `block_device_mapping_v2` object
+    which is part of server config object
+    :return: List of bootable indexed volumes
+    """
+    bootable_devices = None
+    if mapping_devices:
+        # Get the bootable devices which have boot_index specified
+        bootable_devices = [
+            device for device in mapping_devices if device.get('boot_index')
+        ]
+        # Check if there are bootable indexed volumes
+        if bootable_devices:
+            # Sort them in descending order in order to track the last index
+            # of bootable device
+            bootable_devices = sorted(bootable_devices,
+                                      reverse=True,
+                                      key=lambda x: x.get('boot_index'))
+
+    return bootable_devices
+
+
+def _get_boot_volume_targets():
+    """
+    This method will lookup all volume bootable targets associated with
+    servers
+    :return: This will return list of all target volume nodes associated
+    with server so that we can use them for define bootable devices
+    """
+    targets = []
+    for rel in ctx.instance.relationships:
+        # Get runtime properties for target instance
+        runtime_properties = rel.target.instance.runtime_properties
+        # Check if the target instance openstack type is volume type and it
+        # has bootable runtime property set on the target volume instance
+        if runtime_properties.get(OPENSTACK_TYPE_PROPERTY)\
+                == VOLUME_OPENSTACK_TYPE \
+                and runtime_properties.get(VOLUME_BOOTABLE):
+
+            # Add target to the list
+            targets.append(rel.target)
+
+    return targets
+
+
+def _update_ports_config(server_config):
+    """
+    This method will try to update server config with port configurations
+    using the relationships connected with server node
+    :param dict server_config: The server configuration required in order to
+    create the server instance using Openstack API
+    """
+    # Check to see if the network dict is provided on the server config
+    # properties
+    networks = server_config.get('networks', [])
+    # Check if the server has already ports associated with its config so
+    # that we can merge the different ports together
+    server_ports = \
+        [
+            network[PORT_OPENSTACK_TYPE]
+            for network in networks if network.get(PORT_OPENSTACK_TYPE)
+        ]
+
+    # Get the ports from relationships if they are existed
+    port_ids = find_openstack_ids_of_connected_nodes_by_openstack_type(
+        ctx, PORT_OPENSTACK_TYPE)
+
+    ports_to_add = []
+
+    # if both are empty then server is not providing ports connection
+    # neither via node properties nor via relationships and this will be
+    # valid only one network created for the current tenant, the server will
+    # attach automatically to that network
+    if not (server_ports or port_ids):
+        return
+    # Try to merge them
+    elif port_ids and server_ports:
+        common_ids = set(port_ids) & set(server_ports)
+        if common_ids:
+            raise NonRecoverableError(
+                'Server cannot both have the following ports {0} '
+                'connected via relationships and node properties'
+                ' at the same time'.format(','.join(common_ids)))
+
+    # Prepare the ports that should be added to the server networks
+    for port_id in port_ids:
+        ports_to_add.append({'port': port_id})
+
+    # If server is not associated with any networks then we need to create
+    # new networks object and attach port to it
+    if not networks:
+        server_config['networks'] = ports_to_add
+    # If server already has networks object then we should update it with
+    # the new ports that should be added to the server
+    elif networks and isinstance(networks, list):
+        server_config['networks'].extend(ports_to_add)
+
+
+def _update_bootable_volume_config(server_config):
+    """
+    This method will helps to get volume info from
+    :param server_config: The server configuration required in order to
+    create the server instance using Openstack API
+    """
+    mapping_devices = server_config.get('block_device_mapping_v2', [])
+
+    # Filter and get the uuids volume from block device mapping
+    volume_uuids = [
+        device['uuid'] for device in mapping_devices if device.get('uuid')
+    ]
+    # Get the indexed bootable devices
+    bootable_devices = _get_bootable_indexed_volumes(mapping_devices)
+
+    # Get the highest index from bootable devices
+    boot_index = \
+        bootable_devices[0]['boot_index'] if bootable_devices else None
+
+    bootable_rel_volumes = []
+    bootable_rel_uuids = []
+    # Get the targets volume connected to the server
+    volume_targets = _get_boot_volume_targets()
+    for volume_target in volume_targets:
+        resource_config = volume_target.node.properties.get('resource_config')
+        volume_uuid = volume_target.instance.runtime_properties[RESOURCE_ID]
+
+        # boot_index could be 0 and we do not need to valuate it as false
+        # condition
+        if boot_index is None:
+            boot_index = 0
+        else:
+            boot_index += 1
+        volume_device = {
+            'boot_index': boot_index,
+            'uuid': volume_uuid,
+            'volume_size':  resource_config.get('size'),
+            'device_name': volume_target.node.properties.get('device_name'),
+            'source_type': 'volume',
+            'delete_on_termination': False,
+        }
+        bootable_rel_volumes.append(volume_device)
+        bootable_rel_uuids.append(volume_uuid)
+
+    # if both are empty then server is not providing volumes connection
+    # neither via node properties nor via relationships
+    if not (bootable_rel_uuids or volume_uuids):
+        return
+    # Try to merge them
+    elif bootable_rel_uuids and volume_uuids:
+        common_uuids = set(bootable_rel_uuids) & set(volume_uuids)
+        if common_uuids:
+            raise NonRecoverableError(
+                'Server cannot both have the following volumes {0} '
+                'connected via relationships and node properties'
+                ' at the same time'.format(','.join(common_uuids)))
+        mapping_devices.extend(bootable_rel_volumes)
+
+    elif bootable_rel_uuids and not volume_uuids:
+        mapping_devices = bootable_rel_volumes
+
+    server_config['block_device_mapping_v2'] = mapping_devices
+
+
+def _update_server_config_from_relationships(server_config):
+    """
+    This method will try to resolve if there are any nodes connected to the
+    server node and try to use the configurations from that node in order to
+    help create server using these configurations
+    :param dict server_config: The server configuration required in order to
+    create the server instance using Openstack API
+    """
+    # Check if there are some ports configuration via relationships in order
+    # to update server config
+    _update_ports_config(server_config)
+
+    # Check if there are some bootable volume via relationships in order
+    _update_bootable_volume_config(server_config)
+
+
 @with_openstack_resource(OpenstackServer)
 def create(openstack_resource):
     """
@@ -395,6 +594,9 @@ def create(openstack_resource):
         # Handle user data
         if user_data:
             openstack_resource.config['user_data'] = user_data
+
+        # Update server config by depending on relationships
+        _update_server_config_from_relationships(openstack_resource.config)
 
         # Handle server group
         _handle_server_group(openstack_resource)
@@ -411,17 +613,6 @@ def create(openstack_resource):
         resource_id = ctx.instance.runtime_properties[RESOURCE_ID]
         openstack_resource.resource_id = resource_id
 
-    # Get the details for the created servers instance
-    server = openstack_resource.get()
-
-    # Get the server status
-    status = server.status
-    if server.status != SERVER_STATUS_ACTIVE:
-        ctx.instance.runtime_properties[SERVER_TASK_CREATE] = True
-        raise OperationRetry(
-            message='Waiting for server to be in {0} state but is in {1} '
-                    'state. Retrying...'.format(SERVER_STATUS_ACTIVE, status))
-
 
 @with_openstack_resource(OpenstackServer)
 def start(openstack_resource):
@@ -435,7 +626,7 @@ def start(openstack_resource):
     # Get the server status
     status = server.status
     if status == SERVER_STATUS_ACTIVE:
-        ctx.logger.info('Server is already started')
+        ctx.logger.info('Server {0} is already started'.format(server.id))
         _set_server_ips_runtime_properties(server)
 
         # The password returned from `Win` instances return always empty
@@ -443,6 +634,15 @@ def start(openstack_resource):
         password = json.loads(res.content) if res.content else None
         ctx.instance.runtime_properties['password'] = password
         return
+    elif status == SERVER_STATUS_ERROR:
+        raise NonRecoverableError(
+            'Server {0} cannot be started, '
+            'because it is on error state'.format(server.id))
+    else:
+        ctx.instance.runtime_properties[SERVER_TASK_CREATE] = True
+        raise OperationRetry(
+            message='Waiting for server to be in {0} state but is in {1} '
+                    'state. Retrying...'.format(SERVER_STATUS_ACTIVE, status))
 
 
 @with_openstack_resource(OpenstackServer)
@@ -456,8 +656,13 @@ def delete(openstack_resource):
         server = openstack_resource.get()
     except exceptions.ResourceNotFound:
         msg = 'Server {0} is not found'.format(openstack_resource.resource_id)
-        ctx.logger.info(msg)
-        raise NonRecoverableError(msg)
+        if SERVER_TASK_DELETE not in ctx.instance.runtime_properties:
+            ctx.logger.error(msg)
+            raise NonRecoverableError(msg)
+
+        ctx.logger.info('Server {0} is deleted successfully'
+                        .format(openstack_resource.resource_id))
+        return
 
     # Check if delete operation triggered or not before
     if SERVER_TASK_DELETE not in ctx.instance.runtime_properties:
@@ -467,7 +672,7 @@ def delete(openstack_resource):
     ctx.logger.info('Waiting for server "{0}" to be deleted.'
                     ' current status: {1}'.format(server.id, server.status))
 
-    raise OperationRetry(message='Server has {} state.'.format(server.status))
+    raise OperationRetry(message='Server has {0} state.'.format(server.status))
 
 
 @with_openstack_resource(OpenstackServer)
@@ -476,11 +681,8 @@ def stop(openstack_resource):
     Stop current openstack server
     :param openstack_resource: instance of openstack server resource
     """
-    # Get the details for server instance
-    server = openstack_resource.get()
-
     # Stop server instance
-    _stop_server(server)
+    _stop_server(openstack_resource)
 
 
 @with_openstack_resource(OpenstackServer)
@@ -686,6 +888,124 @@ def snapshot_delete(openstack_resource, **kwargs):
                      SERVER_TASK_START]:
 
             del ctx.instance.runtime_properties[attr]
+
+
+@with_openstack_resource(OpenstackServer)
+def attach_volume(openstack_resource, **kwargs):
+    """
+    This method will attach a volume to server
+    :param openstack_resource: instance of openstack server resource
+    :param kwargs: Additional information that could be provided via
+    operation task inputs
+    """
+    # Get volume id from source instance
+    volume_id = get_resource_id_from_runtime_properties(ctx.source)
+    # Get the device property from volume node
+    device = ctx.source.node.properties[VOLUME_DEVICE_NAME_PROPERTY]
+
+    # Prepare volume attachment config required for adding attaching volume
+    # to certain server
+    attachment_config = {
+        'volume_id': volume_id,
+        'device': device if device != 'auto' else None
+    }
+
+    server_node_id = ctx.target.instance.id
+    volume_node_id = ctx.source.instance.id
+    attachment_task_key = \
+        generate_attachment_volume_key(VOLUME_ATTACHMENT_TASK,
+                                       volume_node_id,
+                                       server_node_id)
+
+    attachment_volume_id_key = \
+        generate_attachment_volume_key(VOLUME_ATTACHMENT_ID,
+                                       volume_node_id,
+                                       server_node_id)
+    # Create volume attachment
+    if attachment_task_key not in ctx.target.instance.runtime_properties:
+        attachment = \
+            openstack_resource.create_volume_attachment(attachment_config)
+        ctx.target.instance.runtime_properties[attachment_task_key] = True
+        ctx.target.instance.runtime_properties[attachment_volume_id_key] = \
+            attachment.id
+
+    # Prepare volume instance in order to check the current status of the
+    # volume being attached to the server
+    volume_instance = OpenstackVolume(
+        client_config=openstack_resource.client_config,
+        logger=ctx.logger)
+    volume_instance.resource_id = volume_id
+
+    # Wait until final status of the attached volume becomes in-use so that
+    # we can tell that the volume attachment is ready to use by the server
+    volume = wait_until_status(volume_instance,
+                               VOLUME_OPENSTACK_TYPE,
+                               VOLUME_STATUS_IN_USE,
+                               VOLUME_ERROR_STATUSES)
+    # If the volume is ready, that means we do not need to keep the task
+    # status anymore
+    if volume:
+        del ctx.target.instance.runtime_properties[attachment_task_key]
+
+
+@with_openstack_resource(OpenstackServer)
+def detach_volume(openstack_resource, **kwargs):
+    """
+    This method will detach a volume to server
+    :param openstack_resource: instance of openstack server resource
+    :param kwargs: Additional information that could be provided via
+    operation task inputs
+    """
+    # Get volume id from source instance
+    volume_id = get_resource_id_from_runtime_properties(ctx.source)
+
+    # Get the ids for node, in order to generate the attachment volume key
+    server_node_id = ctx.target.instance.id
+    volume_node_id = ctx.source.instance.id
+
+    # Attachment volume key
+    attachment_volume_id_key = \
+        generate_attachment_volume_key(VOLUME_ATTACHMENT_ID,
+                                       volume_node_id,
+                                       server_node_id)
+
+    # Try to lookup the attachment volume id
+    attachment_volume_id = \
+        ctx.target.instance.runtime_properties.get(attachment_volume_id_key)
+    if not attachment_volume_id:
+        raise NonRecoverableError(
+            'Attachment volume id {0} is missing'
+            ' from runtime properties '.format(attachment_volume_id_key))
+
+    # Detachment volume task key
+    detachment_task_key = \
+        generate_attachment_volume_key(VOLUME_DETACHMENT_TASK,
+                                       volume_node_id,
+                                       server_node_id)
+
+    # Detach volume from server
+    if detachment_task_key not in ctx.target.instance.runtime_properties:
+        openstack_resource.delete_volume_attachment(attachment_volume_id)
+        ctx.target.instance.runtime_properties[detachment_task_key] = True
+
+    # Prepare volume instance in order to check the current status of the
+    # volume being attached to the server
+    volume_instance = OpenstackVolume(
+        client_config=openstack_resource.client_config,
+        logger=ctx.logger)
+    volume_instance.resource_id = volume_id
+
+    # Wait until final status of the attached volume becomes in-use so that
+    # we can tell that the volume attachment is ready to use by the server
+    volume = wait_until_status(volume_instance,
+                               VOLUME_OPENSTACK_TYPE,
+                               VOLUME_STATUS_AVAILABLE,
+                               VOLUME_ERROR_STATUSES)
+
+    # If the volume is available, that means we do not need to keep the task
+    # status anymore
+    if volume:
+        del ctx.target.instance.runtime_properties[detachment_task_key]
 
 
 @with_openstack_resource(OpenstackServer)

@@ -104,7 +104,7 @@ data_types:
       network_id:
         description: The ID of the network to which the subnet belongs.
         type: string
-        required: true
+        required: false
       dns_nameservers:
         description: List of dns name servers associated with the subnet. Default is an empty list.
         required: false
@@ -117,7 +117,7 @@ data_types:
       ip_version:
         description: The IP protocol version. Value is 4 or 6.
         type: string
-        required: true
+        required: false
       gateway_ip:
         description: Gateway IP of this subnet. If the value is null that implies no gateway is associated with the subnet. If the gateway_ip is not specified, OpenStack Networking allocates an address from the CIDR for the gateway for the subnet by default.
         type: string
@@ -271,7 +271,7 @@ data_types:
       target_tenant:
         description: The ID of the tenant to which the RBAC policy will be enforced.
         type: string
-        required: true
+        required: false
       object_type:
         description: >
           The type of the object that the RBAC policy affects.
@@ -291,7 +291,7 @@ data_types:
           this value must be greater than or equal to the port_range_min attribute value.
           If the protocol is ICMP, this value must be an ICMP type.
         type: string
-        required: true
+        required: false
 
   cloudify.types.openstack.Server:
     properties:
@@ -310,7 +310,7 @@ data_types:
         description: >
          The flavor reference, as an ID (including a UUID) or
          full URL, for the flavor for your server instance.
-        required: true
+        required: false
         type: string
       availability_zone:
         description: >
@@ -392,7 +392,7 @@ data_types:
           affinity - servers in this group must be scheduled to the same host.
           soft-anti-affinity - servers in this group should be scheduled to different hosts if possible, but if not possible then they should still be scheduled instead of resulting in a build failure. This policy was added in microversion 2.15.
           soft-affinity - servers in this group should be scheduled to the same host if possible, but if not possible then they should still be scheduled instead of resulting in a build failure. This policy was added in microversion 2.15.
-        required: true
+        required: false
 
   cloudify.types.openstack.KeyPair:
     properties:
@@ -436,7 +436,7 @@ data_types:
       ram: 
         description: >
               The amount of RAM a flavor has, in MiB
-        required: true
+        required: false
         type: integer
       disk: 
         description: >
@@ -445,12 +445,12 @@ data_types:
           to deploy the instance. However, in this case filter scheduler cannot
           select the compute host based on the virtual image size.
           Therefore, 0 should only be used for volume booted instances or for testing purposes.
-        required: true
+        required: false
         type: integer
       vcpus: 
         description: >
           The number of virtual CPUs that will be allocated to the server.
-        required: true
+        required: false
         type: integer
 
   cloudify.types.openstack.User:
@@ -515,7 +515,7 @@ data_types:
       parent_id:
         description: >
           The ID of the parent of the project..
-        required: true
+        required: false
         type: string
       tags:
         description: >
@@ -532,12 +532,12 @@ data_types:
       project_id:
         description: >
           The UUID of the project in a multi-tenancy cloud.
-        required: true
+        required: false
         type: string
       size:
         description: >
           The size of the volume, in gibibytes (GiB).
-        required: true
+        required: false
         type: integer
       availability_zone :
         description: >
@@ -581,7 +581,7 @@ data_types:
       project_id:
         description: >
           The UUID of the project in a multi-tenancy cloud..
-        required: true
+        required: false
         type: string
       extra_specs:
         description: >
@@ -1273,6 +1273,24 @@ relationships:
   cloudify.relationships.openstack.server_connected_to_server_group:
     derived_from: cloudify.relationships.connected_to
 
+  # This is a little confusing, so I will make sure it is clear.
+  # The relationship is from a cloudify.nodes.openstack.Server to a cloudify.nodes.openstack.Port.
+  # The operation occurs on a Port object. We use target_interfaces to get that resource.
+  # We get the source ID (the server) to set the device_id on the port.
+  cloudify.relationships.openstack.server_connected_to_port:
+    derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.openstack.volume_attached_to_server:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.attach_volume
+          inputs: {}
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.detach_volume
+          inputs: {}
+
   cloudify.relationships.openstack.rbac_policy_applied_to:
     derived_from: cloudify.relationships.connected_to
     target_interfaces:
@@ -1286,26 +1304,6 @@ relationships:
               default: false
             clean_ports:
               default: false
-
-
-  # This is a little confusing, so I will make sure it is clear.
-  # The relationship is from a cloudify.nodes.openstack.Server to a cloudify.nodes.openstack.Port.
-  # The operation occurs on a Port object. We use target_interfaces to get that resource.
-  # We get the source ID (the server) to set the device_id on the port.
-  cloudify.relationships.openstack.server_connected_to_port:
-    derived_from: cloudify.relationships.connected_to
-    target_interfaces:
-      cloudify.interfaces.relationship_lifecycle:
-        postconfigure:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.port.update
-          inputs:
-            device_id:
-              default: { get_attribute: [ SOURCE, id ] }
-        unlink:
-          implementation: openstacksdk.openstacksdk_plugin.resources.network.port.update
-          inputs:
-            device_id:
-              default: ''
 
   cloudify.relationships.openstack.port_connected_to_router:
     derived_from: cloudify.relationships.connected_to
@@ -1344,10 +1342,12 @@ relationships:
         postconfigure:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.floating_ip.update
           inputs:
-            port_id:
-              default: { get_attribute: [ SOURCE, id ] }
+            args:
+              default:
+                port_id: { get_attribute: [ SOURCE, id ] }
         unlink:
           implementation: openstacksdk.openstacksdk_plugin.resources.network.floating_ip.update
           inputs:
-            port_id:
-              default: ''
+            args:
+              default:
+                port_id: ''
