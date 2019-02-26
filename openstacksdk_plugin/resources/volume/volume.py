@@ -52,24 +52,21 @@ from openstacksdk_plugin.utils import\
 
 def _is_volume_backup_matched(backup_instance, volume_id, name):
     """
-    This method is to do try to match between the remote backup volume for
-    volume id and backup name in order to lookup the desired object that
-    should be removed
-    :param backup_instance:
-    :param str volume_id:
-    :param str name:
-    :return:
+    This method is to do try to match the remote backup | snapshot volume based
+    on volume id and backup name so that we can decide the object that should
+    be removed
+    :param backup_instance: Backup
+    :param str volume_id: The volume id
+    :param str name: The name of the backup | snapshot
+    :return bool: Boolean flag if there is a matched backup | snapshot found
     """
-    # Try to do a match for the snapshot | backup for both volume_id and
-    # name in case both name and volume_id are provided and this is mainly
-    # will be available when run snapshot | backup delete with know in
-    # advance the name of the backup | snapshot
-    match_1 = \
-        True if name and volume_id and backup_instance.name == name and \
-        backup_instance.volume_id == volume_id else False
+    # Try to do a match for the snapshot | backup for name
+    # in case name is provided and this is mainly
+    # will be available when run snapshot | backup delete
+    match_1 = True if name and backup_instance.name == name else False
 
     # If the name is missing then we can depend on volume just like when we
-    # remove remove snapshots for related volume and do not have information
+    # remove snapshots for related volume and do not have information
     # about snapshot | backup name so we depend on volume id
     match_2 = volume_id == backup_instance.volume_id
 
@@ -168,7 +165,7 @@ def _create_volume_backup(volume_resource, backup_name):
     # Check if the backup id exists or not, if it exists that means the
     # backup volume created but still checking its status to make sure it
     # is ready to use
-    if VOLUME_SNAPSHOT_ID in ctx.instance.runtime_properties:
+    if VOLUME_BACKUP_ID in ctx.instance.runtime_properties:
         backup.resource_id = \
             ctx.instance.runtime_properties[VOLUME_BACKUP_ID]
 
@@ -180,7 +177,7 @@ def _create_volume_backup(volume_resource, backup_name):
         backup_id = backup_response.id
         backup.resource_id = backup_id
         ctx.instance.runtime_properties[VOLUME_BACKUP_TASK] = True
-        ctx.instance.runtime_properties[VOLUME_SNAPSHOT_ID] = backup_id
+        ctx.instance.runtime_properties[VOLUME_BACKUP_ID] = backup_id
 
     backup_resource, ready = \
         get_ready_resource_status(backup,
@@ -281,17 +278,13 @@ def _clean_volume_backups(backup_instance, backup_type, search_opts):
         # volumes backups and then just do a compare to match the one we
         # need to delete
         for backup in backup_instance.list(query=search_query):
-
             if _is_volume_backup_matched(backup, volume_id, name):
                 ctx.logger.debug(
                     'Check {0} before delete: {1}:{2}'
                     ' with state {3}'.format(backup_type, backup.id,
                                              backup.name, backup.status))
-
-                # Check if the volume is ready to delete
-                if backup.status == VOLUME_STATUS_AVAILABLE:
-                    backup_instance.resource_id = backup.id
-                    backup_instance.delete()
+                backup_instance.resource_id = backup.id
+                backup_instance.delete()
 
         # wait 10 seconds before next check
         time.sleep(10)
@@ -349,11 +342,11 @@ def _restore_volume_from_backup(volume_resource, backup_name):
     # volume id so that we can restore it
     for backup in backup_volume.list():
         # if returned more than one backup, use first
-        if backup.name == backup_name and backup.volume_id == volume_id:
+        if backup.name == backup_name:
             ctx.logger.debug(
                 'Used first with {0} to {1}'.format(backup.id, volume_id))
-            name = 'volume-restore-{0}'.format(backup_volume)
-            backup.restore(backup.id, volume_id, name)
+            name = 'volume-restore-{0}'.format(backup.id)
+            backup_volume.restore(backup.id, volume_id, name)
             break
     else:
         raise NonRecoverableError('No such {0} backup.'.format(backup_name))
@@ -462,9 +455,8 @@ def snapshot_delete(openstack_resource, **kwargs):
     # Get snapshot information provided by workflow parameters
     snapshot_name = kwargs.get('snapshot_name')
     snapshot_incremental = kwargs.get('snapshot_incremental')
-
     # Generate snapshot name
-    backup_name = \
+    snapshot_name = \
         get_snapshot_name('volume', snapshot_name, snapshot_incremental)
 
     search_opts = \
@@ -475,7 +467,7 @@ def snapshot_delete(openstack_resource, **kwargs):
 
     # This is a backup stored at object storage must be deleted
     if not snapshot_incremental:
-        _delete_volume_backup(openstack_resource, backup_name, search_opts)
+        _delete_volume_backup(openstack_resource, search_opts)
     # This is a snapshot that need to be deleted
     else:
         _delete_volume_snapshot(openstack_resource, search_opts)
