@@ -63,8 +63,6 @@ node_templates:
         name: 'server-agent-enabled'
         image_id: { get_input: image }
         flavor_id: { get_input: flavor }
-        networks:
-          - port: { get_attribute: [ example-port, id ] }
     relationships:
       - type: cloudify.relationships.openstack.server_connected_to_port
         target: example-port

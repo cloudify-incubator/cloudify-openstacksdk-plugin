@@ -39,7 +39,9 @@ from openstacksdk_plugin.constants import (PS_OPEN,
                                            INFINITE_RESOURCE_QUOTA,
                                            RESOURCE_ID,
                                            OPENSTACK_TYPE_PROPERTY,
-                                           OPENSTACK_NAME_PROPERTY)
+                                           OPENSTACK_NAME_PROPERTY,
+                                           CLOUDIFY_CREAT_OPERATION,
+                                           CLOUDIFY_DELETE_OPERATION)
 
 
 def find_relationships_by_node_type_hierarchy(ctx_node_instance, node_type):
@@ -376,6 +378,17 @@ def set_runtime_properties_from_resource(ctx_node_instance,
             OPENSTACK_NAME_PROPERTY] = openstack_resource.name
 
 
+def unset_runtime_properties_from_instance(ctx_node_instance):
+    """
+    Unset all runtime properties from node instance when delete operation
+    task if finished
+    :param ctx_node_instance: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    """
+    for key, _ in ctx_node_instance.instance.runtime_properties.items():
+        del ctx_node_instance.instance.runtime_properties[key]
+
+
 def prepare_resource_instance(class_decl, ctx_node_instance, kwargs):
     """
     This method used to prepare and instantiate instance of openstack resource
@@ -432,6 +445,29 @@ def prepare_resource_instance(class_decl, ctx_node_instance, kwargs):
                           logger=ctx.logger)
 
     return resource
+
+
+def update_runtime_properties_for_operation_task(operation_name,
+                                                 ctx_node_instance,
+                                                 openstack_resource):
+    """
+    This method will update runtime properties for node instance based on
+    the operation task being running
+    :param str operation_name:
+    :param ctx_node_instance: Cloudify node instance which is an instance of
+     cloudify.context.NodeInstanceContext
+    :param openstack_resource: Openstack resource instance
+    """
+
+    # Set runtime properties for "name" & "type" when current
+    # operation is "create", so that they can be used later on
+    if operation_name == CLOUDIFY_CREAT_OPERATION:
+        set_runtime_properties_from_resource(ctx_node_instance,
+                                             openstack_resource)
+    # Clean all runtime properties for node instance when current operation
+    # is delete
+    elif operation_name == CLOUDIFY_DELETE_OPERATION:
+        unset_runtime_properties_from_instance(ctx_node_instance)
 
 
 def handle_external_resource(ctx_node_instance,

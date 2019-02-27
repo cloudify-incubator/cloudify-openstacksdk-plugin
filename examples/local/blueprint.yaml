@@ -26,14 +26,12 @@ inputs:
 
   example_subnet_cidr:
     type: string
+    default: 10.0.0.0/16
 
   image_id:
     type: string
 
   flavor_id:
-    type: string
-
-  agent_user:
     type: string
 
   name_prefix:
@@ -73,6 +71,7 @@ node_templates:
     relationships:
       - type: cloudify.relationships.connected_to
         target: example-external-network
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -129,6 +128,7 @@ node_templates:
     relationships:
       - type: cloudify.relationships.contained_in
         target: example-security-group
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -151,6 +151,7 @@ node_templates:
         target: example-subnet
       - type: cloudify.relationships.connected_to
         target: example-security-group
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -167,8 +168,9 @@ node_templates:
     relationships:
       - type: cloudify.relationships.connected_to
         target: example-external-network
-      - type: cloudify.relationships.openstack.server_connected_to_port
+      - type: cloudify.relationships.connected_to
         target: example-server-port
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -193,11 +195,10 @@ node_templates:
         image_id: { get_input: image_id }
         flavor_id: { get_input: flavor_id }
         key_name: { get_property: [ example-keypair, resource_config, name ] }
-        networks:
-           - port: { get_attribute: [ example-server-port, id ] }
     relationships:
       - type: cloudify.relationships.openstack.server_connected_to_port
         target: example-server-port
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
