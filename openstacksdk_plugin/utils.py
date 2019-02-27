@@ -40,7 +40,7 @@ from openstacksdk_plugin.constants import (PS_OPEN,
                                            RESOURCE_ID,
                                            OPENSTACK_TYPE_PROPERTY,
                                            OPENSTACK_NAME_PROPERTY,
-                                           CLOUDIFY_CREAT_OPERATION,
+                                           CLOUDIFY_CREATE_OPERATION,
                                            CLOUDIFY_DELETE_OPERATION)
 
 
@@ -461,7 +461,7 @@ def update_runtime_properties_for_operation_task(operation_name,
 
     # Set runtime properties for "name" & "type" when current
     # operation is "create", so that they can be used later on
-    if operation_name == CLOUDIFY_CREAT_OPERATION:
+    if operation_name == CLOUDIFY_CREATE_OPERATION:
         set_runtime_properties_from_resource(ctx_node_instance,
                                              openstack_resource)
     # Clean all runtime properties for node instance when current operation
