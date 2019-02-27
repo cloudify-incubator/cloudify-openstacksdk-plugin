@@ -231,6 +231,7 @@ node_templates:
     relationships:
       - type: cloudify.relationships.connected_to
         target: example-external-network
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:

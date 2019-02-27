@@ -63,11 +63,10 @@ node_templates:
         name: 'server-agent-enabled'
         image_id: { get_input: image }
         flavor_id: { get_input: flavor }
-        networks:
-           - port: { get_attribute: [ example-port, id ] }
     relationships:
      - type: cloudify.relationships.openstack.server_connected_to_port
        target: example-port
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -136,6 +135,7 @@ node_templates:
          target: example-security-group
        - type: cloudify.relationships.openstack.port_connected_to_floating_ip
          target: example-ip
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:
@@ -148,6 +148,7 @@ node_templates:
       client_config: *client_config
       resource_config:
         floating_network_id: { get_input: external_network_id }
+    # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
         create:

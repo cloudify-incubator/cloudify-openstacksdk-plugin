@@ -24,11 +24,12 @@ from cloudify.utils import exception_to_error_cause
 
 # Local imports
 from openstacksdk_plugin.constants import USE_EXTERNAL_RESOURCE_PROPERTY
-from openstacksdk_plugin.utils import (resolve_ctx,
-                                       get_current_operation,
-                                       prepare_resource_instance,
-                                       handle_external_resource,
-                                       set_runtime_properties_from_resource)
+from openstacksdk_plugin.utils \
+    import (resolve_ctx,
+            get_current_operation,
+            prepare_resource_instance,
+            handle_external_resource,
+            update_runtime_properties_for_operation_task)
 
 
 def with_openstack_resource(class_decl, existing_resource_handler=None):
@@ -68,11 +69,9 @@ def with_openstack_resource(class_decl, existing_resource_handler=None):
             try:
                 kwargs['openstack_resource'] = resource
                 func(**kwargs)
-                # Set runtime properties for "name" & "type" when current
-                # operation is create, so that they can be used later on
-                if operation_name == 'create':
-                    set_runtime_properties_from_resource(ctx_node, resource)
-
+                update_runtime_properties_for_operation_task(operation_name,
+                                                             ctx_node,
+                                                             resource)
             except exceptions.SDKException as error:
                 _, _, tb = sys.exc_info()
                 raise NonRecoverableError(
