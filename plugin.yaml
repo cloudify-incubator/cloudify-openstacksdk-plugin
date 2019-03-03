@@ -398,6 +398,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       public_key:
         description: >
           The public ssh key to import. If you omit this value,

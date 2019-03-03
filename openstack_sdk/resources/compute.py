@@ -167,12 +167,42 @@ class OpenstackServer(OpenstackResource):
         self.logger.debug(
             'Attempting to delete this volume attachment: {0}'
             ''.format(attachment_id))
-        result = \
-            self.connection.compute.delete_volume_attachment(attachment_id,
-                                                             self.resource_id)
+        self.connection.compute.delete_volume_attachment(attachment_id,
+                                                         self.resource_id)
+
+    def create_server_interface(self, interface_config):
         self.logger.debug(
-            'Deleted volume attachment with this result: {0}'.format(result))
+            'Attempting to create server interface with these args:'
+            '{0}'.format(interface_config))
+        result = \
+            self.connection.compute.create_server_interface(
+                self.resource_id, **interface_config)
+        self.logger.debug(
+            'Created server interface with this result: {0}'.format(result))
         return result
+
+    def delete_server_interface(self, interface_id):
+        self.logger.debug(
+            'Attempting to delete server interface with these args:'
+            '{0}'.format(interface_id))
+        self.connection.compute.delete_server_interface(
+            interface_id, server=self.resource_id)
+
+    def get_server_interface(self, interface_id):
+        self.logger.debug(
+            'Attempting to find this server interface: {0}'
+            ''.format(interface_id))
+        server_interface = \
+            self.connection.compute.get_server_interface(
+                interface_id, self.resource_id)
+        self.logger.debug(
+            'Found server interface with this result: {0}'
+            ''.format(server_interface))
+        return server_interface
+
+    def server_interfaces(self):
+        self.logger.debug('Attempting to list server interfaces')
+        return self.connection.compute.server_interfaces(self.resource_id)
 
 
 class OpenstackHostAggregate(OpenstackResource):
@@ -299,15 +329,17 @@ class OpenstackKeyPair(OpenstackResource):
     service_type = 'compute'
     resource_type = 'keypair'
 
+    def validate_resource_identifier(self):
+        return None
+
     def list(self):
         return self.connection.compute.keypairs()
 
     def get(self):
+        name = self.name if not self.resource_id else self.resource_id
         self.logger.debug(
-            'Attempting to find this key pair: {0}'.format(self.name))
-
-        key_pair = self.connection.compute.get_keypair(self.name)
-
+            'Attempting to find this key pair: {0}'.format(name))
+        key_pair = self.connection.compute.get_keypair(name)
         self.logger.debug(
             'Found key pair with this result: {0}'.format(key_pair))
         return key_pair

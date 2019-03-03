@@ -32,13 +32,17 @@ from openstacksdk_plugin.utils \
             update_runtime_properties_for_operation_task)
 
 
-def with_openstack_resource(class_decl, existing_resource_handler=None):
+def with_openstack_resource(class_decl,
+                            existing_resource_handler=None,
+                            **existing_resource_kwargs):
     """
     :param class_decl: This is a class for the openstack resource need to be
     invoked
     :param existing_resource_handler: This is a method that handle any
     custom operation need to be done in case "use_external_resource" is set
     to true
+    :param existing_resource_kwargs: This is an extra param that we may need
+    to pass to the external resource  handler
     :return: a wrapper object encapsulating the invoked function
     """
 
@@ -64,7 +68,8 @@ def with_openstack_resource(class_decl, existing_resource_handler=None):
             if ctx_node.node.properties.get(USE_EXTERNAL_RESOURCE_PROPERTY):
                 handle_external_resource(ctx_node,
                                          resource,
-                                         existing_resource_handler)
+                                         existing_resource_handler,
+                                         **existing_resource_kwargs)
                 return
             try:
                 kwargs['openstack_resource'] = resource

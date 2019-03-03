@@ -24,6 +24,7 @@ from cloudify.exceptions import (OperationRetry,
 
 # Local imports
 from openstack_sdk.resources.compute import OpenstackServer
+from openstack_sdk.resources.compute import OpenstackKeyPair
 from openstack_sdk.resources.images import OpenstackImage
 from openstack_sdk.resources.volume import OpenstackVolume
 from openstacksdk_plugin.decorators import with_openstack_resource
@@ -49,6 +50,7 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_REBUILD_SPAWNING_STATUS,
                                            SERVER_REBUILD_STATUS,
                                            SERVER_TASK_STATE,
+                                           SERVER_INTERFACE_IDS,
                                            IMAGE_UPLOADING_PENDING,
                                            IMAGE_STATUS_ACTIVE,
                                            IMAGE_UPLOADING,
@@ -63,7 +65,12 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            VOLUME_ATTACHMENT_ID,
                                            VOLUME_BOOTABLE,
                                            OPENSTACK_TYPE_PROPERTY,
-                                           PORT_OPENSTACK_TYPE)
+                                           NETWORK_OPENSTACK_TYPE,
+                                           KEYPAIR_NODE_TYPE,
+                                           PORT_OPENSTACK_TYPE,
+                                           OPENSTACK_PORT_ID,
+                                           OPENSTACK_NETWORK_ID,
+                                           USE_EXTERNAL_RESOURCE_PROPERTY)
 
 from openstacksdk_plugin.utils import \
     (handle_userdata,
@@ -581,7 +588,179 @@ def _update_server_config_from_relationships(server_config):
     _update_bootable_volume_config(server_config)
 
 
-@with_openstack_resource(OpenstackServer)
+def _validate_external_server_networks(openstack_resource, ports, networks):
+    """
+    This method will validate if we can attach ports and networks to an
+    external server
+    :param openstack_resource: An instance of OpenstackServer
+    :param ports: List of ports uuid need to validate against them
+    :param networks: List of networks uuid need to validate against them
+    """
+    interfaces = openstack_resource.server_interfaces()
+    attached_ports = \
+        [
+            network[OPENSTACK_PORT_ID]
+            for network in interfaces if network.get(OPENSTACK_PORT_ID)
+        ]
+
+    attached_networks = \
+        [
+            network[OPENSTACK_NETWORK_ID]
+            for network in interfaces if network.get(OPENSTACK_NETWORK_ID)
+        ]
+
+    common_ports = set(attached_ports) & set(ports)
+    common_networks = set(attached_networks) & set(networks)
+    if common_networks or common_ports:
+        raise NonRecoverableError(
+            'Several ports/networks already connected to external server '
+            '{0}: Networks - {1}; Ports - {2}'
+            .format(openstack_resource.resource_id,
+                    common_ports,
+                    common_networks))
+
+
+def _connect_keypair_to_external_server(server):
+    """
+    This method will validate if the connected keypair match the
+    key already associated with the external server
+    :param server: An instance of OpenstackServer
+    """
+
+    # Get list of ports associated with the external server
+    keypair_rel = \
+        find_relationship_by_node_type(ctx.instance, KEYPAIR_NODE_TYPE)
+
+    # Prepare keypair instance
+    keypair_instance = OpenstackKeyPair(client_config=server.client_config,
+                                        logger=ctx.logger)
+
+    if not keypair_rel:
+        return
+    # Get the keypair id from target relationship
+    keypair_id = get_resource_id_from_runtime_properties(keypair_rel.target)
+    # Get the node properties from target node
+    keypair_node_properties = keypair_rel.target.node.properties
+    # Raise NonRecoverableError error if the keypair node is not an external
+    # resource
+    if not keypair_node_properties.get(USE_EXTERNAL_RESOURCE_PROPERTY):
+        raise NonRecoverableError(
+            'Can\'t connect a new keypair node to a server node '
+            'with \'{0}\'=True'.format(USE_EXTERNAL_RESOURCE_PROPERTY))
+
+    keypair_instance.resource_id = keypair_id
+    keypair = keypair_instance.get()
+    if keypair_id != keypair.id:
+        raise NonRecoverableError(
+            'Expected external resources server {0} and keypair {1} to be '
+            'connected'.format(server.id, keypair_id))
+
+
+def _connect_networks_to_external_server(openstack_resource):
+    """
+    This method will try to connect networks to external server
+    :param openstack_resource: Instance Of OpenstackServer in order to
+    use it
+    """
+    # Prepare two lists for connected ports/networks in order to save them
+    # as runtime properties so that we can remove them from server when run
+    # stop operation
+    added_interfaces = []
+
+    # Get list of ports associated with the external server
+    ports = \
+        find_openstack_ids_of_connected_nodes_by_openstack_type(
+            ctx, PORT_OPENSTACK_TYPE)
+
+    # Get list of ports associated with the external server
+    networks = \
+        find_openstack_ids_of_connected_nodes_by_openstack_type(
+            ctx, NETWORK_OPENSTACK_TYPE)
+
+    # Validate if we can connect external server to the "ports" & "networks"
+    _validate_external_server_networks(openstack_resource, ports, networks)
+
+    # If we reach here that means we can connect ports & networks to the
+    # external server and the validation passed successfully
+    for port_id in ports:
+        ctx.logger.info('Attaching port {0}...'.format(port_id))
+        interface = \
+            openstack_resource.create_server_interface({'port_id': port_id})
+        ctx.logger.info(
+            'Successfully attached port {0} to device (server) id {1}.'
+            .format(port_id, openstack_resource.resource_id))
+        added_interfaces.append(interface.id)
+
+    # Check again the server after attaching the ports so that we can do
+    # another check if already checked networks
+    interfaces = openstack_resource.server_interfaces()
+    attached_networks = \
+        [
+            network[OPENSTACK_NETWORK_ID]
+            for network in interfaces if network.get(OPENSTACK_NETWORK_ID)
+        ]
+
+    for net_id in networks:
+        if net_id not in attached_networks:
+            ctx.logger.info('Attaching network {0}...'.format(net_id))
+            interface = \
+                openstack_resource.create_server_interface({'net_id': net_id})
+            ctx.logger.info(
+                'Successfully attached network {0} to device (server) id {1}.'
+                .format(net_id, openstack_resource.resource_id))
+            added_interfaces.append(interface.id)
+        else:
+            ctx.logger.info(
+                'Skipping network {0} attachment, because it is already '
+                'attached to device (server) id {1}.'
+                .format(net_id, openstack_resource.resource_id))
+
+    # Check if there are interfaces added to the external server and add
+    # them as runtime properties
+    if added_interfaces:
+        ctx.instance.runtime_properties[SERVER_INTERFACE_IDS] =\
+            added_interfaces
+
+    # Set runtime properties for external server
+    server = openstack_resource.get()
+    _set_server_ips_runtime_properties(server)
+
+
+def _connect_resources_to_external_server(openstack_resource):
+    """
+    This method will try to connect resources to external server
+    :param openstack_resource: Instance Of OpenstackServer in order to
+    use it
+    """
+
+    # Try to connect networks to external server
+    _connect_networks_to_external_server(openstack_resource)
+
+    # Validate external key pair connected to the external server
+    _connect_keypair_to_external_server(openstack_resource)
+
+
+def _disconnect_resources_from_external_server(openstack_resource):
+    """
+    This method will disconnect networks from external server so that they
+    can be removed without any issue
+    :param openstack_resource: Instance Of OpenstackServer in order to
+    use it
+    """
+    # Delete all interfaces added to the external server
+    if SERVER_INTERFACE_IDS in ctx.instance.runtime_properties:
+        interfaces = ctx.instance.runtime_properties.get(
+            SERVER_INTERFACE_IDS, [])
+        for interface in interfaces:
+            openstack_resource.delete_server_interface(interface)
+            ctx.logger.info(
+                'Successfully detached network {0} to device (server) id {1}.'
+                .format(interface, openstack_resource.resource_id))
+
+
+@with_openstack_resource(
+    OpenstackServer,
+    existing_resource_handler=_connect_resources_to_external_server)
 def create(openstack_resource):
     """
     Create openstack server instance
@@ -675,7 +854,9 @@ def delete(openstack_resource):
     raise OperationRetry(message='Server has {0} state.'.format(server.status))
 
 
-@with_openstack_resource(OpenstackServer)
+@with_openstack_resource(
+    OpenstackServer,
+    existing_resource_handler=_disconnect_resources_from_external_server)
 def stop(openstack_resource):
     """
     Stop current openstack server

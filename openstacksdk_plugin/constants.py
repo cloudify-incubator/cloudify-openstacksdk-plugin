@@ -26,6 +26,7 @@ SERVER_TASK_START = 'start_server_task'
 SERVER_TASK_STATE = 'task_state'
 SERVER_TASK_BACKUP_DONE = 'backup_done'
 SERVER_TASK_RESTORE_STATE = 'restore_state'
+SERVER_INTERFACE_IDS = 'interfaces'
 VOLUME_TASK_DELETE = 'delete_volume_task'
 VOLUME_ATTACHMENT_TASK = 'attach_volume_task'
 VOLUME_DETACHMENT_TASK = 'detach_volume_task'
@@ -89,6 +90,7 @@ IMAGE_STATUS_ACTIVE = 'active'
 
 # Cloudify node types
 SERVER_GROUP_NODE_TYPE = 'cloudify.nodes.openstack.ServerGroup'
+KEYPAIR_NODE_TYPE = 'cloudify.nodes.openstack.KeyPair'
 
 # Cloudify relationship types
 RBAC_POLICY_RELATIONSHIP_TYPE = \
@@ -104,6 +106,9 @@ QUOTA_INVALID_MSG = \
     'provisioned {2}: {3}, quota: {4}'
 
 # General constants
+OPENSTACK_RESOURCE_UUID = 'uuid'
+OPENSTACK_PORT_ID = 'port_id'
+OPENSTACK_NETWORK_ID = 'net_id'
 PS_OPEN = '<powershell>'
 PS_CLOSE = '</powershell>'
 INFINITE_RESOURCE_QUOTA = -1

@@ -16,6 +16,7 @@
 # Standard imports
 import sys
 import base64
+import inspect
 
 
 # Third part imports
@@ -472,7 +473,8 @@ def update_runtime_properties_for_operation_task(operation_name,
 
 def handle_external_resource(ctx_node_instance,
                              openstack_resource,
-                             existing_resource_handler=None):
+                             existing_resource_handler=None,
+                             **kwargs):
     """
     :param ctx_node_instance: Cloudify node instance which is an instance of
      cloudify.context.NodeInstanceContext
@@ -480,6 +482,7 @@ def handle_external_resource(ctx_node_instance,
     :param existing_resource_handler: Callback handler that used to be
     called in order to execute custom operation when "use_external_resource" is
     enabled
+    :param kwargs: Any extra param passed to the existing_resource_handler
     """
 
     # Get the current operation name
@@ -518,17 +521,23 @@ def handle_external_resource(ctx_node_instance,
             ctx_node_instance.instance.runtime_properties[RESOURCE_ID] \
                 = remote_resource.id
 
-            # Check if we need to run custom operation for already existed
-            # resource after create operation is done
-            if existing_resource_handler:
-                existing_resource_handler(remote_resource)
-
         # Just log message that we cannot delete resource
         elif operation_name == 'delete':
             ctx.logger.info(
                 'not deleting resource {0}'
                 ' since an external resource is being used'
                 ''.format(remote_resource.name))
+
+    # Check if we need to run custom operation for already existed
+    # resource for operation task
+    if existing_resource_handler:
+        # We may need to send the "openstack_resource" to the
+        # existing resource handler and in order to do that we may
+        # need to check if the resource is already there or not
+        func_args = inspect.getargspec(existing_resource_handler).args
+        if 'openstack_resource' in func_args:
+            kwargs['openstack_resource'] = openstack_resource
+        existing_resource_handler(**kwargs)
 
 
 def get_snapshot_name(object_type, snapshot_name, snapshot_incremental):

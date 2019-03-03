@@ -28,8 +28,16 @@ from openstacksdk_plugin.utils import (reset_dict_empty_keys,
 
 
 def use_external_floating_ip(openstack_resource):
-    status = openstack_resource.status
-    floating_ip = openstack_resource.floating_ip_address
+    """
+    This method will allow floating ip reallocation whenever
+    use_external_resource is ste to "True" and "allow_reallocation" is enabled
+    :param openstack_resource: Instance Of OpenstackFloatingIP in order to
+    use it
+    """
+
+    remote_resource = openstack_resource.get()
+    status = remote_resource.status
+    floating_ip = remote_resource.floating_ip_address
     if not ctx.node.properties['allow_reallocation'] and status == 'ACTIVE':
         raise RecoverableError(
             'Floating IP address {0} is already associated'.format(floating_ip)
