@@ -327,7 +327,7 @@ class OpenstackServerGroup(OpenstackResource):
 
 class OpenstackKeyPair(OpenstackResource):
     service_type = 'compute'
-    resource_type = 'keypair'
+    resource_type = 'key_pair'
 
     def validate_resource_identifier(self):
         return None

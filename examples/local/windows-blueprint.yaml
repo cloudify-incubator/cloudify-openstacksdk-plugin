@@ -21,6 +21,11 @@ inputs:
   project_name:
     type: string
 
+  name_prefix:
+    type: string
+    default: 'windows-server-blueprint_'
+    description: Prefix string for all resources
+
   external_network_id:
     type: string
     description: A network that provisions floating IPs.
@@ -55,17 +60,20 @@ node_templates:
   example-server-node:
     type: cloudify.nodes.openstack.WindowsServer
     properties:
+      use_password: true
       client_config: *client_config
       agent_config:
         install_method: init_script
         user: Admin
       resource_config:
-        name: 'server-agent-enabled'
+        name: { concat: [ { get_input: name_prefix }, 'server' ] }
         image_id: { get_input: image }
         flavor_id: { get_input: flavor }
     relationships:
      - type: cloudify.relationships.openstack.server_connected_to_port
        target: example-port
+     - type: cloudify.relationships.openstack.server_connected_to_keypair
+       target: example-keypair
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -73,6 +81,13 @@ node_templates:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
 
+
+  example-keypair:
+    type: cloudify.nodes.openstack.KeyPair
+    properties:
+      client_config: *client_config
+      resource_config:
+        name: { concat: [ { get_input: name_prefix }, 'keypair' ] }
 
   example-security-group:
     type: cloudify.nodes.openstack.SecurityGroup
@@ -116,7 +131,7 @@ node_templates:
           protocol: tcp
 
       resource_config:
-        name: 'agent_sg'
+        name: { concat: [ { get_input: name_prefix }, 'security-group' ] }
         description: 'A security group created by Cloudify OpenStack SDK plugin.'
 
   example-port:
@@ -124,7 +139,7 @@ node_templates:
     properties:
       client_config: *client_config
       resource_config:
-        name: 'server_port'
+        name: { concat: [ { get_input: name_prefix }, 'port' ] }
         network_id: { get_input: network_id }
         fixed_ips:
           - subnet_id: { get_input: subnet_id }

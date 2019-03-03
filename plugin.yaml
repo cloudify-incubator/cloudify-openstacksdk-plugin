@@ -887,8 +887,8 @@ node_types:
       cloudify.interfaces.lifecycle:
         create:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.create
-        start:
-          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.start
+        configure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.configure
         stop:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.stop
         delete:

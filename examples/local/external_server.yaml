@@ -23,7 +23,7 @@ inputs:
 
   name_prefix:
     type: string
-    default: server-blueprint
+    default: 'external-server-blueprint_'
     description: Prefix string for all resources
 
   external_network_id:
@@ -41,12 +41,12 @@ inputs:
   example_subnet_cidr_1:
     type: string
     description: Subnet 1 cidr
-    default: 172.16.0.0/16
+    default: '172.16.0.0/16'
 
   example_subnet_cidr_2:
     type: string
     description: Subnet 2 cidr
-    default: 192.168.0.0/16
+    default: '192.168.0.0/16'
 
 dsl_definitions:
   client_config: &client_config
@@ -154,7 +154,7 @@ node_templates:
           direction: egress
           protocol: tcp
       resource_config:
-        name: 'agent_sg'
+        name: { concat: [ { get_input: name_prefix }, 'security-group' ] }
         description: 'A security group created by Cloudify OpenStack SDK plugin.'
 
   example-port:
@@ -162,7 +162,7 @@ node_templates:
     properties:
       client_config: *client_config
       resource_config:
-        name: 'server_port'
+        name: { concat: [ { get_input: name_prefix }, 'port' ] }
         network_id: { get_attribute: [ example-network-1, id ] }
         fixed_ips:
           - subnet_id: { get_attribute: [ example-subnet-1, id ] }
