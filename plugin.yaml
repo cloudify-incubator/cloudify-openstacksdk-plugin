@@ -398,6 +398,7 @@ data_types:
     properties:
       <<: *data_type_kwargs
       <<: *data_type_name
+      <<: *data_type_id
       public_key:
         description: >
           The public ssh key to import. If you omit this value,
@@ -886,8 +887,8 @@ node_types:
       cloudify.interfaces.lifecycle:
         create:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.create
-        start:
-          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.start
+        configure:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.configure
         stop:
           implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.stop
         delete:

@@ -15,6 +15,9 @@
 
 # Standard imports
 import json
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5
+import base64
 
 # Third party imports
 from cloudify import ctx
@@ -24,10 +27,12 @@ from cloudify.exceptions import (OperationRetry,
 
 # Local imports
 from openstack_sdk.resources.compute import OpenstackServer
+from openstack_sdk.resources.compute import OpenstackKeyPair
 from openstack_sdk.resources.images import OpenstackImage
 from openstack_sdk.resources.volume import OpenstackVolume
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID,
+                                           OPENSTACK_RESOURCE_UUID,
                                            SERVER_STATUS_ACTIVE,
                                            SERVER_STATUS_SHUTOFF,
                                            SERVER_STATUS_REBOOT,
@@ -49,6 +54,8 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_REBUILD_SPAWNING_STATUS,
                                            SERVER_REBUILD_STATUS,
                                            SERVER_TASK_STATE,
+                                           SERVER_INTERFACE_IDS,
+                                           SERVER_ADMIN_PASSWORD,
                                            IMAGE_UPLOADING_PENDING,
                                            IMAGE_STATUS_ACTIVE,
                                            IMAGE_UPLOADING,
@@ -62,8 +69,14 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            VOLUME_DETACHMENT_TASK,
                                            VOLUME_ATTACHMENT_ID,
                                            VOLUME_BOOTABLE,
+                                           KEYPAIR_NODE_TYPE,
+                                           PORT_OPENSTACK_TYPE,
+                                           KEYPAIR_OPENSTACK_TYPE,
+                                           NETWORK_OPENSTACK_TYPE,
+                                           OPENSTACK_PORT_ID,
+                                           OPENSTACK_NETWORK_ID,
                                            OPENSTACK_TYPE_PROPERTY,
-                                           PORT_OPENSTACK_TYPE)
+                                           USE_EXTERNAL_RESOURCE_PROPERTY)
 
 from openstacksdk_plugin.utils import \
     (handle_userdata,
@@ -497,13 +510,13 @@ def _update_ports_config(server_config):
         server_config['networks'] = ports_to_add
     # If server already has networks object then we should update it with
     # the new ports that should be added to the server
-    elif networks and isinstance(networks, list):
+    elif networks and isinstance(networks, list) and ports_to_add:
         server_config['networks'].extend(ports_to_add)
 
 
 def _update_bootable_volume_config(server_config):
     """
-    This method will helps to get volume info from
+    This method will help to get volume info from relationship
     :param server_config: The server configuration required in order to
     create the server instance using Openstack API
     """
@@ -565,10 +578,92 @@ def _update_bootable_volume_config(server_config):
     server_config['block_device_mapping_v2'] = mapping_devices
 
 
-def _update_server_config_from_relationships(server_config):
+def _update_keypair_config(server_config):
+    """
+    This method will try to get key pair info connected with server node if
+    there is any relationships
+    :param server_config: The server configuration required in order to
+    create the server instance using Openstack API
+    """
+    # Get the key name from server if it exists
+    server_keyname = server_config.get('key_name')
+
+    # Get the keyname from relationship if any
+    rel_keyname = find_openstack_ids_of_connected_nodes_by_openstack_type(
+        ctx, KEYPAIR_OPENSTACK_TYPE)
+    # If server have two keyname from server node and from relationship then
+    # we should raise error
+    rel_keyname = rel_keyname[0] if rel_keyname else None
+    if server_keyname and rel_keyname:
+        raise NonRecoverableError('Server can\'t both have the '
+                                  '"key_name" property and be '
+                                  'connected to a keypair via a '
+                                  'relationship at the same time')
+
+    # At this point, only one of the keys will be set
+    key_name = server_keyname or rel_keyname
+    if key_name:
+        server_config['key_name'] = key_name
+
+
+def _update_networks_config(server_config):
+    """
+    This method will try to update server config with network configurations
+    using the relationships connected with server node
+    :param dict server_config: The server configuration required in order to
+    create the server instance using Openstack API
+    """
+
+    # Check to see if the network dict is provided on the server config
+    # properties
+    networks = server_config.get('networks', [])
+    # Check if the server has already networks associated with its config so
+    # that we can merge the different networks together
+    server_networks = \
+        [
+            network[OPENSTACK_RESOURCE_UUID]
+            for network in networks if network.get(OPENSTACK_RESOURCE_UUID)
+        ]
+
+    # Get the networks from relationships if they are existed
+    network_ids = find_openstack_ids_of_connected_nodes_by_openstack_type(
+        ctx, NETWORK_OPENSTACK_TYPE)
+
+    networks_to_add = []
+
+    # if both are empty then server is not providing ports connection
+    # neither via node properties nor via relationships and this will be
+    # valid only one network created for the current tenant, the server will
+    # attach automatically to that network
+    if not (server_networks or network_ids):
+        return
+    # Try to merge them
+    elif server_networks and network_ids:
+        common_ids = set(server_networks) & set(network_ids)
+        if common_ids:
+            raise NonRecoverableError(
+                'Server cannot both have the following networks {0} '
+                'connected via relationships and node properties'
+                ' at the same time'.format(','.join(common_ids)))
+
+    # Prepare the network uuids that should be added to the server networks
+    for net_id in network_ids:
+        networks_to_add.append({OPENSTACK_RESOURCE_UUID: net_id})
+
+    # If server is not associated with any networks then we need to create
+    # new networks object and attach network to it
+    if not networks:
+        server_config['networks'] = networks_to_add
+    # If server already has networks object then we should update it with
+    # the new networks that should be added to the server
+    elif networks and isinstance(networks, list) and networks_to_add:
+        server_config['networks'].extend(networks_to_add)
+
+
+def _update_server_config(server_config):
     """
     This method will try to resolve if there are any nodes connected to the
-    server node and try to use the configurations from that node in order to
+    server node and try to use the configurations from nodes in order to
     help create server using these configurations
     :param dict server_config: The server configuration required in order to
     create the server instance using Openstack API
@@ -577,11 +672,297 @@ def _update_server_config_from_relationships(server_config):
     # to update server config
     _update_ports_config(server_config)
 
-    # Check if there are some bootable volume via relationships in order
+    # Check if there are some networks configuration in order to update
+    # server config
+    _update_networks_config(server_config)
+
+    # Check if there are some bootable volumes via relationships in order
+    # update server config
     _update_bootable_volume_config(server_config)
 
+    # Check if there is a key pair connected to the server via relationship
+    # so that we can update server config when create server instance
+    _update_keypair_config(server_config)
 
-@with_openstack_resource(OpenstackServer)
+
+def _validate_external_server_networks(openstack_resource, ports, networks):
+    """
+    This method will validate if we can attach ports and networks to an
+    external server
+    :param openstack_resource: An instance of OpenstackServer
+    :param ports: List of ports uuid need to validate against them
+    :param networks: List of networks uuid need to validate against them
+    """
+    interfaces = openstack_resource.server_interfaces()
+    attached_ports = \
+        [
+            network[OPENSTACK_PORT_ID]
+            for network in interfaces if network.get(OPENSTACK_PORT_ID)
+        ]
+
+    attached_networks = \
+        [
+            network[OPENSTACK_NETWORK_ID]
+            for network in interfaces if network.get(OPENSTACK_NETWORK_ID)
+        ]
+
+    common_ports = set(attached_ports) & set(ports)
+    common_networks = set(attached_networks) & set(networks)
+    if common_networks or common_ports:
+        raise NonRecoverableError(
+            'Several ports/networks already connected to external server '
+            '{0}: Networks - {1}; Ports - {2}'
+            .format(openstack_resource.resource_id,
+                    common_ports,
+                    common_networks))
+
+
+def _connect_keypair_to_external_server(server):
+    """
+    This method will validate if the connected keypair match the
+    key already associated with the external server
+    :param server: An instance of OpenstackServer
+    """
+
+    # Get list of ports associated with the external server
+    keypair_rel = \
+        find_relationship_by_node_type(ctx.instance, KEYPAIR_NODE_TYPE)
+
+    # Prepare keypair instance
+    keypair_instance = OpenstackKeyPair(client_config=server.client_config,
+                                        logger=ctx.logger)
+
+    if not keypair_rel:
+        return
+    # Get the keypair id from target relationship
+    keypair_id = get_resource_id_from_runtime_properties(keypair_rel.target)
+    # Get the node properties from target node
+    keypair_node_properties = keypair_rel.target.node.properties
+    # Raise NonRecoverableError error if the keypair node is not an external
+    # resource
+    if not keypair_node_properties.get(USE_EXTERNAL_RESOURCE_PROPERTY):
+        raise NonRecoverableError(
+            'Can\'t connect a new keypair node to a server node '
+            'with \'{0}\'=True'.format(USE_EXTERNAL_RESOURCE_PROPERTY))
+
+    keypair_instance.resource_id = keypair_id
+    keypair = keypair_instance.get()
+    if keypair_id != keypair.id:
+        raise NonRecoverableError(
+            'Expected external resources server {0} and keypair {1} to be '
+            'connected'.format(server.id, keypair_id))
+
+
+def _connect_networks_to_external_server(openstack_resource):
+    """
+    This method will try to connect networks to external server
+    :param openstack_resource: Instance Of OpenstackServer in order to
+    use it
+    """
+    # Prepare two lists for connected ports/networks in order to save them
+    # as runtime properties so that we can remove them from server when run
+    # stop operation
+    added_interfaces = []
+
+    # Get list of ports associated with the external server
+    ports = \
+        find_openstack_ids_of_connected_nodes_by_openstack_type(
+            ctx, PORT_OPENSTACK_TYPE)
+
+    # Get list of ports associated with the external server
+    networks = \
+        find_openstack_ids_of_connected_nodes_by_openstack_type(
+            ctx, NETWORK_OPENSTACK_TYPE)
+
+    # Validate if we can connect external server to the "ports" & "networks"
+    _validate_external_server_networks(openstack_resource, ports, networks)
+
+    # If we reach here that means we can connect ports & networks to the
+    # external server and the validation passed successfully
+    for port_id in ports:
+        ctx.logger.info('Attaching port {0}...'.format(port_id))
+        interface = \
+            openstack_resource.create_server_interface({'port_id': port_id})
+        ctx.logger.info(
+            'Successfully attached port {0} to device (server) id {1}.'
+            .format(port_id, openstack_resource.resource_id))
+        added_interfaces.append(interface.id)
+
+    # Check again the server after attaching the ports so that we can do
+    # another check if already checked networks
+    interfaces = openstack_resource.server_interfaces()
+    attached_networks = \
+        [
+            network[OPENSTACK_NETWORK_ID]
+            for network in interfaces if network.get(OPENSTACK_NETWORK_ID)
+        ]
+
+    for net_id in networks:
+        if net_id not in attached_networks:
+            ctx.logger.info('Attaching network {0}...'.format(net_id))
+            interface = \
+                openstack_resource.create_server_interface({'net_id': net_id})
+            ctx.logger.info(
+                'Successfully attached network {0} to device (server) id {1}.'
+                .format(net_id, openstack_resource.resource_id))
+            added_interfaces.append(interface.id)
+        else:
+            ctx.logger.info(
+                'Skipping network {0} attachment, because it is already '
+                'attached to device (server) id {1}.'
+                .format(net_id, openstack_resource.resource_id))
+
+    # Check if there are interfaces added to the external server and add
+    # them as runtime properties
+    if added_interfaces:
+        ctx.instance.runtime_properties[SERVER_INTERFACE_IDS] =\
+            added_interfaces
+
+    # Set runtime properties for external server
+    server = openstack_resource.get()
+    _set_server_ips_runtime_properties(server)
+
+
+def _connect_resources_to_external_server(openstack_resource):
+    """
+    This method will try to connect resources to external server
+    :param openstack_resource: Instance Of OpenstackServer in order to
+    use it
+    """
+
+    # Try to connect networks to external server
+    _connect_networks_to_external_server(openstack_resource)
+
+    # Validate external key pair connected to the external server
+    _connect_keypair_to_external_server(openstack_resource)
+
+
+def _disconnect_resources_from_external_server(openstack_resource):
+    """
+    This method will disconnect networks from external server so that they
+    can be removed without any issue
+    :param openstack_resource: Instance Of OpenstackServer in order to
+    use it
+    """
+    # Delete all interfaces added to the external server
+    if SERVER_INTERFACE_IDS in ctx.instance.runtime_properties:
+        interfaces = ctx.instance.runtime_properties.get(
+            SERVER_INTERFACE_IDS, [])
+        for interface in interfaces:
+            openstack_resource.delete_server_interface(interface)
+            ctx.logger.info(
+                'Successfully detached network {0} to device (server) id {1}.'
+                .format(interface, openstack_resource.resource_id))
+
+
+def _assign_server_payload_as_runtime_properties(payload):
+    """
+    Store server configuration in the runtime
+    properties and cleans any potentially sensitive data.
+    :param payload: The payload.
+    """
+    if getattr(ctx, 'instance') and payload:
+        if SERVER_OPENSTACK_TYPE not in ctx.instance.runtime_properties.keys():
+            ctx.instance.runtime_properties[SERVER_OPENSTACK_TYPE] = {}
+        for key, value in payload.items():
+            if key not in ['user_data', 'adminPass']:
+                ctx.instance.runtime_properties[SERVER_OPENSTACK_TYPE][key]\
+                    = value
+
+
+def _get_server_private_key():
+    """
+    This method will check if server has connected to keypair
+    so that we can get the private key content to use it for decryption
+    operation for password generated when create server
+    :return (st) private_key: Private key content
+    """
+    # Get the keyname from relationship if any
+    rel_keyname = \
+        find_relationship_by_node_type(ctx.instance, KEYPAIR_NODE_TYPE)
+    if not rel_keyname:
+        return None
+
+    # Try to get the private key from keypair instance
+    private_key = \
+        rel_keyname.target.instance.runtime_properties.get('private_key')
+    if not private_key:
+        return None
+    return private_key
+
+
+def _decrypt_password(password, private_key):
+    """
+    This method will decrypt user password for server so that it can be used
+    later on
+    :param (str) password: Encrypted password
+    :param (str) private_key: Private key
+    :return (str) password: Return decrypted password
+    """
+    # Check if both password and private ket are provided
+    if not (password or private_key):
+        raise NonRecoverableError('Password and private key must'
+                                  ' be both provided for password decryption')
+
+    # Define variable to hold decrypted password
+    decrypted_password = ''
+
+    # Import the private key so that we can use it to decrypt password
+    rsa_key = RSA.importKey(private_key)
+    rsa_key = PKCS1_v1_5.new(rsa_key)
+
+    # Decode password to base 64
+    encrypted_password = base64.b64decode(password)
+
+    # Do the encryption process
+    chunk_size = 512
+    offset = 0
+
+    # keep loop going as long as we have chunks to decrypt
+    while offset < len(encrypted_password):
+        # The encrypted password chunk
+        chunk_data = encrypted_password[offset: offset + chunk_size]
+
+        # Append the decrypted password chunk to the overall decrypted
+        # decrypted password
+        error_decrypt = 'Error while trying to decrypt password'
+        decrypted_password += rsa_key.decrypt(chunk_data, error_decrypt)
+
+        # Increase the offset by chunk size
+        offset += chunk_size
+
+    return decrypted_password
+
+
+def _get_user_password(openstack_resource):
+    """
+    This method will get the server password as encrypted for the current
+    server
+    :param openstack_resource: Instance Of OpenstackServer in order to
+    use it
+    """
+    if ctx.node.properties['use_password']:
+        # The current openstack sdk does not allow to send private key path
+        # when trying to lookup the password which means the password
+        # generated will be encrypted
+        res = openstack_resource.get_server_password()
+        password = json.loads(res.content) if res.content else None
+        password = password['password'] if password.get('password') else None
+        # If the password is not set then, again
+        if not password:
+            raise OperationRetry(
+                message='Waiting for server to post generated password')
+        else:
+            # Encrypted password, in order to decrypt it, decrypt it manually
+            private_key = _get_server_private_key()
+            password = _decrypt_password(password, private_key)
+            ctx.instance.runtime_properties[SERVER_ADMIN_PASSWORD] = password
+            ctx.logger.info('Server has been set with a password')
+
+
+@with_openstack_resource(
+    OpenstackServer,
+    existing_resource_handler=_connect_resources_to_external_server)
 def create(openstack_resource):
     """
     Create openstack server instance
@@ -596,7 +977,7 @@ def create(openstack_resource):
             openstack_resource.config['user_data'] = user_data
 
         # Update server config by depending on relationships
-        _update_server_config_from_relationships(openstack_resource.config)
+        _update_server_config(openstack_resource.config)
 
         # Handle server group
         _handle_server_group(openstack_resource)
@@ -609,13 +990,16 @@ def create(openstack_resource):
 
         # Update the resource_id with the new "id" returned from API
         openstack_resource.resource_id = created_resource.id
+
+        # Assign runtime properties for server
+        _assign_server_payload_as_runtime_properties(created_resource)
     else:
         resource_id = ctx.instance.runtime_properties[RESOURCE_ID]
         openstack_resource.resource_id = resource_id
 
 
 @with_openstack_resource(OpenstackServer)
-def start(openstack_resource):
+def configure(openstack_resource):
     """
     Populate required runtime properties for server when it is in active status
     :param openstack_resource: instance of openstack server resource
@@ -628,11 +1012,7 @@ def start(openstack_resource):
     if status == SERVER_STATUS_ACTIVE:
         ctx.logger.info('Server {0} is already started'.format(server.id))
         _set_server_ips_runtime_properties(server)
-
-        # The password returned from `Win` instances return always empty
-        res = openstack_resource.get_server_password()
-        password = json.loads(res.content) if res.content else None
-        ctx.instance.runtime_properties['password'] = password
+        _get_user_password(openstack_resource)
         return
     elif status == SERVER_STATUS_ERROR:
         raise NonRecoverableError(
@@ -675,12 +1055,22 @@ def delete(openstack_resource):
     raise OperationRetry(message='Server has {0} state.'.format(server.status))
 
 
-@with_openstack_resource(OpenstackServer)
+@with_openstack_resource(
+    OpenstackServer,
+    existing_resource_handler=_disconnect_resources_from_external_server)
 def stop(openstack_resource):
     """
     Stop current openstack server
     :param openstack_resource: instance of openstack server resource
     """
+
+    # Clean any interfaces connected to the server
+    for interface in openstack_resource.server_interfaces():
+        openstack_resource.delete_server_interface(interface.id)
+        ctx.logger.info('Successfully detached network'
+                        ' {0} to device (server) id {1}.'
+                        .format(interface, openstack_resource.resource_id))
+
     # Stop server instance
     _stop_server(openstack_resource)
 

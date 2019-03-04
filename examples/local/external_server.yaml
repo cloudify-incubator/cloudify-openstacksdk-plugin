@@ -21,22 +21,22 @@ inputs:
   project_name:
     type: string
 
-  image:
-    type: string
-    description: The UUID of an image in your Openstack account.
-
-  flavor:
-    type: string
-    description: The UUID of small flavor in your Openstack account.
-
   name_prefix:
     type: string
-    default: 'server-blueprint_'
+    default: 'external-server-blueprint_'
     description: Prefix string for all resources
 
   external_network_id:
     type: string
     description: A network that provisions floating IPs.
+
+  external_key_pair_id:
+    type: string
+    description: An external keypair already created
+
+  external_server_id:
+    type: string
+    description: An external server already provisioned
 
   example_subnet_cidr_1:
     type: string
@@ -46,7 +46,7 @@ inputs:
   example_subnet_cidr_2:
     type: string
     description: Subnet 2 cidr
-    default: '10.0.0.0/16'
+    default: '192.168.0.0/16'
 
 dsl_definitions:
   client_config: &client_config
@@ -69,36 +69,30 @@ node_templates:
           routing:
             external: true
 
-  example-server:
+  example-external-server:
     type: cloudify.nodes.openstack.Server
     properties:
       client_config: *client_config
+      use_external_resource: true
       agent_config:
         install_method: none
       resource_config:
-        name: { concat: [ { get_input: name_prefix }, 'server' ] }
-        image_id: { get_input: image }
-        flavor_id: { get_input: flavor }
+        id: { get_input: external_server_id }
     relationships:
       - type: cloudify.relationships.openstack.server_connected_to_port
         target: example-port
       - type: cloudify.relationships.connected_to
         target: example-network-2
       - type: cloudify.relationships.openstack.server_connected_to_keypair
-        target: example-keypair
-    # This is only run on local mode. For use with a manager, it can be commented out.
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        create:
-          inputs:
-            resource_config: { get_property: [ SELF, resource_config ] }
+        target: example-external-keypair
 
-  example-keypair:
+  example-external-keypair:
     type: cloudify.nodes.openstack.KeyPair
     properties:
+      use_external_resource: true
       client_config: *client_config
       resource_config:
-        name: { concat: [ { get_input: name_prefix }, 'keypair' ] }
+        id: { get_input: external_key_pair_id }
 
   example-router:
     type: cloudify.nodes.openstack.Router
