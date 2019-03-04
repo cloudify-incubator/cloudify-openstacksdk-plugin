@@ -26,6 +26,15 @@ from openstacksdk_plugin.utils import (update_runtime_properties,
                                        add_resource_list_to_runtime_properties)
 
 
+def _update_port_config(port_config):
+    """
+    This method will try to resolve if there are any nodes connected to the
+    port node and try to update the configurations from nodes in order to
+    help create port from configurations
+    :param port_config:
+    """
+
+
 @with_openstack_resource(OpenstackPort)
 def create(openstack_resource):
     """

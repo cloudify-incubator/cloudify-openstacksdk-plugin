@@ -169,6 +169,9 @@ class OpenstackServer(OpenstackResource):
             ''.format(attachment_id))
         self.connection.compute.delete_volume_attachment(attachment_id,
                                                          self.resource_id)
+        self.logger.debug(
+            'Volume attachment {0} was deleted successfully'
+            ''.format(attachment_id))
 
     def create_server_interface(self, interface_config):
         self.logger.debug(
@@ -187,6 +190,9 @@ class OpenstackServer(OpenstackResource):
             '{0}'.format(interface_id))
         self.connection.compute.delete_server_interface(
             interface_id, server=self.resource_id)
+        self.logger.debug(
+            'Server interface {0} was deleted successfully'
+            ''.format(interface_id))
 
     def get_server_interface(self, interface_id):
         self.logger.debug(

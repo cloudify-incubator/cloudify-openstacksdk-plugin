@@ -15,6 +15,9 @@
 
 # Standard imports
 import json
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5
+import base64
 
 # Third party imports
 from cloudify import ctx
@@ -657,10 +660,10 @@ def _update_networks_config(server_config):
         server_config['networks'].extend(networks_to_add)
 
 
-def _update_server_config_from_relationships(server_config):
+def _update_server_config(server_config):
     """
     This method will try to resolve if there are any nodes connected to the
-    server node and try to use the configurations from that node in order to
+    server node and try to use the configurations from nodes in order to
     help create server using these configurations
     :param dict server_config: The server configuration required in order to
     create the server instance using Openstack API
@@ -867,6 +870,70 @@ def _assign_server_payload_as_runtime_properties(payload):
                     = value
 
 
+def _get_server_private_key():
+    """
+    This method will check if server has connected to keypair
+    so that we can get the private key content to use it for decryption
+    operation for password generated when create server
+    :return (st) private_key: Private key content
+    """
+    # Get the keyname from relationship if any
+    rel_keyname = \
+        find_relationship_by_node_type(ctx.instance, KEYPAIR_NODE_TYPE)
+    if not rel_keyname:
+        return None
+
+    # Try to get the private key from keypair instance
+    private_key = \
+        rel_keyname.target.instance.runtime_properties.get('private_key')
+    if not private_key:
+        return None
+    return private_key
+
+
+def _decrypt_password(password, private_key):
+    """
+    This method will decrypt user password for server so that it can be used
+    later on
+    :param (str) password: Encrypted password
+    :param (str) private_key: Private key
+    :return (str) password: Return decrypted password
+    """
+    # Check if both password and private ket are provided
+    if not (password or private_key):
+        raise NonRecoverableError('Password and private key must'
+                                  ' be both provided for password decryption')
+
+    # Define variable to hold decrypted password
+    decrypted_password = ''
+
+    # Import the private key so that we can use it to decrypt password
+    rsa_key = RSA.importKey(private_key)
+    rsa_key = PKCS1_v1_5.new(rsa_key)
+
+    # Decode password to base 64
+    encrypted_password = base64.b64decode(password)
+
+    # Do the encryption process
+    chunk_size = 512
+    offset = 0
+
+    # keep loop going as long as we have chunks to decrypt
+    while offset < len(encrypted_password):
+        # The encrypted password chunk
+        chunk_data = encrypted_password[offset: offset + chunk_size]
+
+        # Append the decrypted password chunk to the overall decrypted
+        # decrypted password
+        error_decrypt = 'Error while trying to decrypt password'
+        decrypted_password += rsa_key.decrypt(chunk_data, error_decrypt)
+
+        # Increase the offset by chunk size
+        offset += chunk_size
+
+    return decrypted_password
+
+
 def _get_user_password(openstack_resource):
     """
     This method will get the server password as encrypted for the current
@@ -887,6 +954,8 @@ def _get_user_password(openstack_resource):
                 message='Waiting for server to post generated password')
         else:
             # Encrypted password, in order to decrypt it, decrypt it manually
+            private_key = _get_server_private_key()
+            password = _decrypt_password(password, private_key)
             ctx.instance.runtime_properties[SERVER_ADMIN_PASSWORD] = password
             ctx.logger.info('Server has been set with a password')
 
@@ -908,7 +977,7 @@ def create(openstack_resource):
             openstack_resource.config['user_data'] = user_data
 
         # Update server config by depending on relationships
-        _update_server_config_from_relationships(openstack_resource.config)
+        _update_server_config(openstack_resource.config)
 
         # Handle server group
         _handle_server_group(openstack_resource)
