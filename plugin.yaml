@@ -147,6 +147,7 @@ data_types:
       allowed_address_pairs:
         description: A set of zero or more allowed address pair objects each where address pair object contains an ip_address and mac_address. While the ip_address is required, the mac_address will be taken from the port if not specified. The value of ip_address can be an IP Address or a CIDR (if supported by the underlying extension plugin). A server connected to the port can send a packet with source address which matches one of the specified allowed address pairs.
         required: false
+        default: []
       device_id:
         description: The ID of the device that uses this port. For example, a server instance or a logical router.
         type: string

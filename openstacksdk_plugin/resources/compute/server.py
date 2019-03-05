@@ -493,12 +493,10 @@ def _update_ports_config(server_config):
         return
     # Try to merge them
     elif port_ids and server_ports:
-        common_ids = set(port_ids) & set(server_ports)
-        if common_ids:
-            raise NonRecoverableError(
-                'Server cannot both have the following ports {0} '
-                'connected via relationships and node properties'
-                ' at the same time'.format(','.join(common_ids)))
+        raise NonRecoverableError('Server can\'t both have the '
+                                  '"networks" property and be '
+                                  'connected to a network via a '
+                                  'relationship at the same time')
 
     # Prepare the ports that should be added to the server networks
     for port_id in port_ids:
@@ -564,13 +562,10 @@ def _update_bootable_volume_config(server_config):
         return
     # Try to merge them
     elif bootable_rel_uuids and volume_uuids:
-        common_uuids = set(bootable_rel_uuids) & set(volume_uuids)
-        if common_uuids:
-            raise NonRecoverableError(
-                'Server cannot both have the following volumes {0} '
-                'connected via relationships and node properties'
-                ' at the same time'.format(','.join(common_uuids)))
-        mapping_devices.extend(bootable_rel_volumes)
+        raise NonRecoverableError('Server can\'t both have the '
+                                  '"block_device_mapping_v2" property and be '
+                                  'connected to a volume via a '
+                                  'relationship at the same time')
 
     elif bootable_rel_uuids and not volume_uuids:
         mapping_devices = bootable_rel_volumes
@@ -639,12 +634,10 @@ def _update_networks_config(server_config):
         return
     # Try to merge them
     elif server_networks and network_ids:
-        common_ids = set(server_networks) & set(network_ids)
-        if common_ids:
-            raise NonRecoverableError(
-                'Server cannot both have the following networks {0} '
-                'connected via relationships and node properties'
-                ' at the same time'.format(','.join(common_ids)))
+        raise NonRecoverableError('Server can\'t both have the '
+                                  '"networks" property and be '
+                                  'connected to a network via a '
+                                  'relationship at the same time')
 
     # Prepare the network uuids that should be added to the server networks
     for net_id in network_ids:
@@ -941,7 +934,7 @@ def _get_user_password(openstack_resource):
     :param openstack_resource: Instance Of OpenstackServer in order to
     use it
     """
-    if ctx.node.properties['use_password']:
+    if ctx.node.properties.get('use_password'):
         # The current openstack sdk does not allow to send private key path
         # when trying to lookup the password which means the password
         # generated will be encrypted

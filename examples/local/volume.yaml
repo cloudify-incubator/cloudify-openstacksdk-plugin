@@ -2,6 +2,7 @@ tosca_definitions_version: cloudify_dsl_1_3
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
+  # For use with a manager use: plugin:cloudify-openstacksdk-plugin
   - plugin.yaml
 
 inputs:
@@ -96,7 +97,6 @@ node_templates:
         install_method: none
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'server' ] }
-        key_name: { get_property: [ example-keypair, resource_config, name ] }
         image_id: { get_input: image }
         flavor_id: { get_input: flavor }
         availability_zone: nova
@@ -155,11 +155,8 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'public_port' ] }
-        network_id: { get_attribute: [ example-public-network, id ] }
         fixed_ips:
           - subnet_id: { get_attribute: [ example-public-subnet, id ] }
-        security_groups:
-          - { get_attribute: [ example-security-group, id ] }
     relationships:
        - type: cloudify.relationships.contained_in
          target: example-public-network
@@ -182,11 +179,8 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'private_port' ] }
-        network_id: { get_attribute: [ example-private-network, id ] }
         fixed_ips:
           - subnet_id: { get_attribute: [ example-private-subnet, id ] }
-        security_groups:
-          - { get_attribute: [ example-security-group, id ] }
     relationships:
        - type: cloudify.relationships.contained_in
          target: example-private-network

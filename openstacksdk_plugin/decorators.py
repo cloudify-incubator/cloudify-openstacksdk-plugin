@@ -70,6 +70,11 @@ def with_openstack_resource(class_decl,
                                          resource,
                                          existing_resource_handler,
                                          **existing_resource_kwargs)
+
+                # Update runtime properties
+                update_runtime_properties_for_operation_task(operation_name,
+                                                             ctx_node,
+                                                             resource)
                 return
             try:
                 kwargs['openstack_resource'] = resource
