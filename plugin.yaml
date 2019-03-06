@@ -1288,6 +1288,9 @@ relationships:
   cloudify.relationships.openstack.server_connected_to_port:
     derived_from: cloudify.relationships.connected_to
 
+  # The API used in order to connect server to floating IP is deprecated
+  # The API is deprecated and will fail with a 404 starting from microversion 2.44. This is replaced with using the Neutron networking service API.
+  # https://developer.openstack.org/api-ref/compute/?expanded=create-aggregate-detail,add-associate-floating-ip-addfloatingip-action-deprecated-detail
   cloudify.relationships.openstack.server_connected_to_floating_ip:
     derived_from: cloudify.relationships.connected_to
     source_interfaces:

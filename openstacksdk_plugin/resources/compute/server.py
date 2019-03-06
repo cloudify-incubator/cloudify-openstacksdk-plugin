@@ -959,25 +959,27 @@ def _disconnect_security_group_from_server_ports(client_config,
     :param dict server_payload: Server payload configuration from openstack
     :param str security_group_id: Security group ID
     """
-    if server_payload:
-        networks = server_payload.get('networks', [])
-        server_ports = \
-            [
-                network[PORT_OPENSTACK_TYPE]
-                for network in networks if network.get(PORT_OPENSTACK_TYPE)
-            ]
-        for port_id in server_ports:
-            port = OpenstackPort(client_config=client_config,
-                                 logger=ctx.logger)
-            port.resource_id = port_id
-            remote_port = port.get()
-            port_security_groups = remote_port.security_group_ids
-            if security_group_id in remote_port.security_group_ids:
-                port_security_groups.remove(security_group_id)
+    if not server_payload:
+        return
 
-            port.update({
-                'security_groups': port_security_groups
-            })
+    networks = server_payload.get('networks', [])
+    server_ports = \
+        [
+            network[PORT_OPENSTACK_TYPE]
+            for network in networks if network.get(PORT_OPENSTACK_TYPE)
+        ]
+    for port_id in server_ports:
+        port = OpenstackPort(client_config=client_config,
+                             logger=ctx.logger)
+        port.resource_id = port_id
+        remote_port = port.get()
+        port_security_groups = remote_port.security_group_ids
+        if security_group_id in remote_port.security_group_ids:
+            port_security_groups.remove(security_group_id)
+
+        port.update({
+            'security_groups': port_security_groups
+        })
 
 
 @with_openstack_resource(
