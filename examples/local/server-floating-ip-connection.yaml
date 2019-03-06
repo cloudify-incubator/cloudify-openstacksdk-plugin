@@ -44,10 +44,6 @@ inputs:
     description: Subnet 1 cidr
     default: '172.16.0.0/16'
 
-  example_subnet_cidr_2:
-    type: string
-    description: Subnet 2 cidr
-    default: '10.0.0.0/16'
 
 dsl_definitions:
   client_config: &client_config
@@ -81,10 +77,10 @@ node_templates:
         image_id: { get_input: image }
         flavor_id: { get_input: flavor }
     relationships:
+      - type: cloudify.relationships.openstack.server_connected_to_floating_ip
+        target: example-ip
       - type: cloudify.relationships.openstack.server_connected_to_port
         target: example-port
-      - type: cloudify.relationships.connected_to
-        target: example-network-2
       - type: cloudify.relationships.openstack.server_connected_to_keypair
         target: example-keypair
     # This is only run on local mode. For use with a manager, it can be commented out.
@@ -179,8 +175,6 @@ node_templates:
          target: example-network-1
        - type: cloudify.relationships.connected_to
          target: example-subnet-1
-       - type: cloudify.relationships.openstack.port_connected_to_floating_ip
-         target: example-ip
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -213,35 +207,6 @@ node_templates:
     relationships:
       - type: cloudify.relationships.contained_in
         target: example-network-1
-      - type: cloudify.relationships.openstack.subnet_connected_to_router
-        target: example-router
-    # This is only run on local mode. For use with a manager, it can be commented out.
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        create:
-          inputs:
-            resource_config: { get_property: [ SELF, resource_config ] }
-
-  example-network-2:
-    type: cloudify.nodes.openstack.Network
-    properties:
-      client_config: *client_config
-      resource_config:
-        name: { concat: [ { get_input: name_prefix }, 'network-2' ] }
-
-  example-subnet-2:
-    type: cloudify.nodes.openstack.Subnet
-    properties:
-      client_config: *client_config
-      resource_config:
-        name: { concat: [ { get_input: name_prefix }, 'subnet-2' ] }
-        network_id: { get_attribute: [ example-network-2, id ] }
-        cidr: { get_input: example_subnet_cidr_2 }
-        enable_dhcp: true
-        ip_version: 4
-    relationships:
-      - type: cloudify.relationships.contained_in
-        target: example-network-2
       - type: cloudify.relationships.openstack.subnet_connected_to_router
         target: example-router
     # This is only run on local mode. For use with a manager, it can be commented out.

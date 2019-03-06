@@ -147,6 +147,7 @@ data_types:
       allowed_address_pairs:
         description: A set of zero or more allowed address pair objects each where address pair object contains an ip_address and mac_address. While the ip_address is required, the mac_address will be taken from the port if not specified. The value of ip_address can be an IP Address or a CIDR (if supported by the underlying extension plugin). A server connected to the port can send a packet with source address which matches one of the specified allowed address pairs.
         required: false
+        default: []
       device_id:
         description: The ID of the device that uses this port. For example, a server instance or a logical router.
         type: string
@@ -1287,6 +1288,46 @@ relationships:
   cloudify.relationships.openstack.server_connected_to_port:
     derived_from: cloudify.relationships.connected_to
 
+  # The API used in order to connect server to floating IP is deprecated
+  # The API is deprecated and will fail with a 404 starting from microversion 2.44. This is replaced with using the Neutron networking service API.
+  # https://developer.openstack.org/api-ref/compute/?expanded=create-aggregate-detail,add-associate-floating-ip-addfloatingip-action-deprecated-detail
+  cloudify.relationships.openstack.server_connected_to_floating_ip:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.connect_floating_ip
+          inputs:
+            floating_ip:
+              default: { get_attribute: [ TARGET, floating_ip_address ] }
+            fixed_ip:
+              description: >
+                The fixed IP address to be associated with the
+                floating IP address. Used when the server is
+                connected to multiple networks.
+              type: string
+              default: ''
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.disconnect_floating_ip
+          inputs:
+            floating_ip:
+              default: { get_attribute: [ TARGET, floating_ip_address ] }
+
+  cloudify.relationships.openstack.server_connected_to_security_group:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.connect_security_group
+          inputs:
+            security_group_id:
+              default: { get_attribute: [ TARGET, id ] }
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.disconnect_security_group
+          inputs:
+            security_group_id:
+              default: { get_attribute: [ TARGET, id ] }
+
   cloudify.relationships.openstack.volume_attached_to_server:
     derived_from: cloudify.relationships.connected_to
     target_interfaces:
@@ -1326,6 +1367,15 @@ relationships:
           inputs:
             port_id:
               default: { get_attribute: [ SOURCE, id ] }
+
+  cloudify.relationships.openstack.port_connected_to_security_group:
+    derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.openstack.port_connected_to_subnet:
+    derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.openstack.route_connected_to_router:
+    derived_from: cloudify.relationships.connected_to
 
   cloudify.relationships.openstack.subnet_connected_to_router:
     derived_from: cloudify.relationships.connected_to

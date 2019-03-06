@@ -476,8 +476,7 @@ def handle_external_resource(ctx_node_instance,
                              existing_resource_handler=None,
                              **kwargs):
     """
-    :param ctx_node_instance: Cloudify node instance which is an instance of
-     cloudify.context.NodeInstanceContext
+    :param ctx_node_instance: Cloudify context cloudify.context.CloudifyContext
     :param openstack_resource: Openstack resource instance
     :param existing_resource_handler: Callback handler that used to be
     called in order to execute custom operation when "use_external_resource" is
@@ -658,3 +657,21 @@ def generate_attachment_volume_key(prefix, volume_id, server_id):
 
     _ctx = resolve_ctx(ctx)
     return '{0}-attachment-volume'.format(_ctx.instance.id)
+
+
+def assign_resource_payload_as_runtime_properties(_ctx,
+                                                  payload,
+                                                  resource_type):
+    """
+    Store resource configuration in the runtime
+    properties and cleans any potentially sensitive data.
+    :param _ctx: Cloudify context cloudify.context.CloudifyContext
+    :param dict payload: The payload object for resource
+    :param str resource_type: Resource openstack type
+    """
+    if all([getattr(ctx, 'instance'), payload, resource_type]):
+        if resource_type not in ctx.instance.runtime_properties.keys():
+            ctx.instance.runtime_properties[resource_type] = {}
+        for key, value in payload.items():
+            if key not in ['user_data', 'adminPass']:
+                ctx.instance.runtime_properties[resource_type][key] = value

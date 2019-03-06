@@ -2,6 +2,7 @@ tosca_definitions_version: cloudify_dsl_1_3
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
+  # For use with a manager use: plugin:cloudify-openstacksdk-plugin
   - plugin.yaml
 
 inputs:
@@ -53,7 +54,6 @@ inputs:
 
   volume1_external_id:
     type: string
-    default: 23d38371-4791-404d-a6d4-e472b32d6383
 
   volume1_device_name:
     default: vda
@@ -63,7 +63,6 @@ inputs:
 
   volume2_external_id:
     type: string
-    default: fecb210f-44cd-40b0-ad46-99909163f483
 
   volume2_device_name:
     default: vdb
@@ -95,7 +94,6 @@ node_templates:
         install_method: none
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'server' ] }
-        key_name: { get_property: [ example-keypair, resource_config, name ] }
         flavor_id: { get_input: flavor }
         availability_zone: nova
         kwargs:
@@ -137,11 +135,8 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'public_port' ] }
-        network_id: { get_attribute: [ example-public-network, id ] }
         fixed_ips:
           - subnet_id: { get_attribute: [ example-public-subnet, id ] }
-        security_groups:
-          - { get_attribute: [ example-security-group, id ] }
     relationships:
        - type: cloudify.relationships.contained_in
          target: example-public-network
@@ -164,11 +159,8 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'private_port' ] }
-        network_id: { get_attribute: [ example-private-network, id ] }
         fixed_ips:
           - subnet_id: { get_attribute: [ example-private-subnet, id ] }
-        security_groups:
-          - { get_attribute: [ example-security-group, id ] }
     relationships:
        - type: cloudify.relationships.contained_in
          target: example-private-network

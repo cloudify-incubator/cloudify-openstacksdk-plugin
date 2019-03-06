@@ -24,13 +24,15 @@ inputs:
 
   example_subnet_cidr:
     type: string
+    default: '10.0.0.0/24'
 
   example_fixed_ip:
     type: string
+    default: '10.0.0.1'
 
   name_prefix:
     type: string
-    default: network_
+    default: network-blueprint_
 
 dsl_definitions:
 
@@ -115,8 +117,6 @@ node_templates:
         fixed_ips:
           - subnet_id: { get_attribute: [ example-subnet, id ] }
             ip_address: { get_input: example_fixed_ip }
-        security_groups:
-          - { get_attribute: [ example-security-group, id ] }
         device_id: { get_attribute: [ example-router, id ] }
     relationships:
       - type: cloudify.relationships.contained_in

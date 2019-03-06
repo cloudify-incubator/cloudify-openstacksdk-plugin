@@ -2,6 +2,7 @@ tosca_definitions_version: cloudify_dsl_1_3
 
 imports:
   - http://www.getcloudify.org/spec/cloudify/4.5/types.yaml
+  # For use with a manager use: plugin:cloudify-openstacksdk-plugin
   - plugin.yaml
 
 inputs:
@@ -136,8 +137,6 @@ node_templates:
         fixed_ips:
           - subnet_id: { get_attribute: [ example-subnet, id ] }
             ip_address: { get_input: example_fixed_ip }
-        security_groups:
-          - { get_attribute: [ example-security-group, id ] }
         device_id: { get_attribute: [ example-router, id ] }
     relationships:
       - type: cloudify.relationships.contained_in
