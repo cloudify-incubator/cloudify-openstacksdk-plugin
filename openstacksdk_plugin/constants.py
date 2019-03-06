@@ -122,5 +122,13 @@ IDENTITY_ROLES = 'roles'
 IDENTITY_QUOTA = 'quota'
 VOLUME_BOOTABLE = 'bootable'
 VOLUME_DEVICE_NAME_PROPERTY = 'device_name'
-CLOUDIFY_CREATE_OPERATION = 'create'
-CLOUDIFY_DELETE_OPERATION = 'create'
+CLOUDIFY_CREATE_OPERATION = 'cloudify.interfaces.lifecycle.create'
+CLOUDIFY_CONFIGURE_OPERATION = 'cloudify.interfaces.lifecycle.configure'
+CLOUDIFY_START_OPERATION = 'cloudify.interfaces.lifecycle.start'
+CLOUDIFY_STOP_OPERATION = 'cloudify.interfaces.lifecycle.stop'
+CLOUDIFY_DELETE_OPERATION = 'cloudify.interfaces.lifecycle.delete'
+CLOUDIFY_NEW_NODE_OPERATIONS = [CLOUDIFY_CREATE_OPERATION,
+                                CLOUDIFY_CONFIGURE_OPERATION,
+                                CLOUDIFY_START_OPERATION,
+                                CLOUDIFY_STOP_OPERATION,
+                                CLOUDIFY_DELETE_OPERATION]

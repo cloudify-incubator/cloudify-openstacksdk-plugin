@@ -29,7 +29,8 @@ from openstacksdk_plugin.utils \
             get_current_operation,
             prepare_resource_instance,
             handle_external_resource,
-            update_runtime_properties_for_operation_task)
+            update_runtime_properties_for_operation_task,
+            allow_to_run_operation_for_external_node)
 
 
 def with_openstack_resource(class_decl,
@@ -72,10 +73,15 @@ def with_openstack_resource(class_decl,
                                          **existing_resource_kwargs)
 
                 # Update runtime properties
-                update_runtime_properties_for_operation_task(operation_name,
-                                                             ctx_node,
-                                                             resource)
-                return
+                if not allow_to_run_operation_for_external_node(
+                        operation_name):
+                    # Update runtime properties for operation
+                    update_runtime_properties_for_operation_task(
+                        operation_name,
+                        ctx_node,
+                        resource)
+
+                    return
             try:
                 kwargs['openstack_resource'] = resource
                 func(**kwargs)

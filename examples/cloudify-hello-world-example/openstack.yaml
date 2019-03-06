@@ -116,7 +116,6 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { get_input: subnet_name }
-        network_id: { get_attribute: [ network, id ] }
         ip_version: 4
         cidr: 10.10.4.0/24
         dns_nameservers: [8.8.4.4, 8.8.8.8]
