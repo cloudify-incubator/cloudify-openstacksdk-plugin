@@ -267,40 +267,40 @@ class OpenstackFloatingIP(OpenstackResource):
 
     def get(self):
         self.logger.debug(
-            'Attempting to find this floating_ip: {0}'.format(
+            'Attempting to find this floating ip: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
         floating_ip = self.connection.network.get_ip(
             self.name if not self.resource_id else self.resource_id)
         self.logger.debug(
-            'Found floating_ip with this result: {0}'.format(floating_ip))
+            'Found floating ip with this result: {0}'.format(floating_ip))
         return floating_ip
 
     def create(self):
         self.logger.debug(
-            'Attempting to create floating_ip with these args: {0}'.format(
+            'Attempting to create floating ip with these args: {0}'.format(
                 self.config))
         floating_ip = self.connection.network.create_ip(**self.config)
         self.logger.debug(
-            'Created floating_ip with this result: {0}'.format(floating_ip))
+            'Created floating ip with this result: {0}'.format(floating_ip))
         return floating_ip
 
     def delete(self):
         floating_ip = self.get()
         self.logger.debug(
-            'Attempting to delete this floating_ip: {0}'.format(floating_ip))
+            'Attempting to delete this floating ip: {0}'.format(floating_ip))
         result = self.connection.network.delete_ip(floating_ip)
         self.logger.debug(
-            'Deleted floating_ip with this result: {0}'.format(result))
+            'Deleted floating ip with this result: {0}'.format(result))
         return result
 
     def update(self, new_config=None):
         floating_ip = self.get()
         self.logger.debug(
-            'Attempting to update this floating_ip: {0} with args {1}'.format(
+            'Attempting to update this floating ip: {0} with args {1}'.format(
                 floating_ip, new_config))
         result = self.connection.network.update_ip(floating_ip, **new_config)
         self.logger.debug(
-            'Updated floating_ip with this result: {0}'.format(result))
+            'Updated floating ip with this result: {0}'.format(result))
         return result
 
 
@@ -319,23 +319,23 @@ class OpenstackSecurityGroup(OpenstackResource):
 
     def get(self):
         self.logger.debug(
-            'Attempting to find this security_group: {0}'.format(
+            'Attempting to find this security group: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
         security_group = self.connection.network.get_security_group(
             self.name if not self.resource_id else self.resource_id)
         self.logger.debug(
-            'Found security_group with this result: {0}'.format(
+            'Found security group with this result: {0}'.format(
                 security_group))
         return security_group
 
     def create(self):
         self.logger.debug(
-            'Attempting to create security_group with these args: {0}'.format(
+            'Attempting to create security group with these args: {0}'.format(
                 self.config))
         security_group = self.connection.network.create_security_group(
             **self.config)
         self.logger.debug(
-            'Created security_group with this result: {0}'.format(
+            'Created security group with this result: {0}'.format(
                 security_group))
         return security_group
 
@@ -346,18 +346,18 @@ class OpenstackSecurityGroup(OpenstackResource):
                 security_group))
         result = self.connection.network.delete_security_group(security_group)
         self.logger.debug(
-            'Deleted security_group with this result: {0}'.format(result))
+            'Deleted security group with this result: {0}'.format(result))
         return result
 
     def update(self, new_config=None):
         security_group = self.get()
         self.logger.debug('Attempting to update this '
-                          'security_group: {0} with args {1}'.format(
+                          'security group: {0} with args {1}'.format(
                               security_group, new_config))
         result = self.connection.network.update_security_group(
             security_group, **new_config)
         self.logger.debug(
-            'Updated security_group with this result: {0}'.format(result))
+            'Updated security group with this result: {0}'.format(result))
         return result
 
 
@@ -376,38 +376,35 @@ class OpenstackSecurityGroupRule(OpenstackResource):
 
     def get(self):
         self.logger.debug(
-            'Attempting to find this security_group_rule: {0}'.format(
+            'Attempting to find this security group rule: {0}'.format(
                 self.name if not self.resource_id else self.resource_id))
         security_group_rule = self.connection.network.get_security_group_rule(
             self.name if not self.resource_id else self.resource_id)
         self.logger.debug(
-            'Found security_group with this result: {0}'.format(
+            'Found security group with this result: {0}'.format(
                 security_group_rule))
         return security_group_rule
 
     def create(self):
-        self.logger.debug('Attempting to create security_group_rule '
+        self.logger.debug('Attempting to create security group rule '
                           'with these args: {0}'.format(self.config))
         security_group_rule = \
             self.connection.network.create_security_group_rule(**self.config)
         self.logger.debug(
-            'Created security_group_rule with this result: {0}'.format(
+            'Created security group rule with this result: {0}'.format(
                 security_group_rule))
         return security_group_rule
 
     def delete(self):
         security_group_rule = self.get()
         self.logger.debug(
-            'Attempting to delete this security_group_rule: {0}'.format(
+            'Attempting to delete this security group rule: {0}'.format(
                 security_group_rule))
         result = self.connection.network.delete_security_group_rule(
             security_group_rule)
         self.logger.debug(
-            'Deleted security_group with this result: {0}'.format(result))
+            'Deleted security group with this result: {0}'.format(result))
         return result
-
-    def update(self, new_config=None):
-        pass
 
 
 class OpenstackRBACPolicy(OpenstackResource):
@@ -446,20 +443,20 @@ class OpenstackRBACPolicy(OpenstackResource):
     def delete(self):
         rbac_policy = self.get()
         self.logger.debug(
-            'Attempting to delete this rbac_policy: {0}'.format(
+            'Attempting to delete this rbac policy: {0}'.format(
                 rbac_policy))
         result = self.connection.network.delete_rbac_policy(rbac_policy)
         self.logger.debug(
-            'Deleted rbac_policy with this result: {0}'.format(result))
+            'Deleted rbac policy with this result: {0}'.format(result))
         return result
 
     def update(self, new_config=None):
         rbac_policy = self.get()
         self.logger.debug(
-            'Attempting to update this rbac_policy: {0} with args {1}'
+            'Attempting to update this rbac policy: {0} with args {1}'
             ''.format(rbac_policy, new_config))
         result = self.connection.network.update_rbac_policy(
             rbac_policy, **new_config)
         self.logger.debug(
-            'Updated rbac_policy with this result: {0}'.format(result))
+            'Updated rbac policy with this result: {0}'.format(result))
         return result

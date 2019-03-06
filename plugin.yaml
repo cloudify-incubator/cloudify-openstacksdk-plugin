@@ -766,6 +766,12 @@ node_types:
     properties:
       <<: *external_resource
       <<: *client_config
+      disable_default_egress_rules:
+        description: >
+          a flag for removing the default rules. If not set to `true`,
+          these rules will remain, and exist alongside any additional rules passed using the `rules` property.
+        type: boolean
+        default: false
       security_group_rules:
         description: List of security groups rule.
         required: false

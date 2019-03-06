@@ -45,10 +45,24 @@ def configure(openstack_resource, security_group_rules=None):
     :param openstack_resource: security group instance
     :param security_group_rules: List of security group rules
     """
-    # Get the security group id
-
     client_config = ctx.node.properties.get('client_config')
     security_group_id = openstack_resource.resource_id
+
+    # Define security group rule instance
+    security_group_rule = \
+        OpenstackSecurityGroupRule(client_config=client_config,
+                                   logger=ctx.logger)
+
+    # Check if the "disable_default_egress_rules" is enabled or not so that
+    # we can remove default egress rules for current security group
+    if ctx.node.properties.get('disable_default_egress_rules'):
+        for sg_rule in security_group_rule.list(
+                query={'security_group_id': security_group_id}):
+
+            security_group_rule.resource_id = sg_rule.id
+            security_group_rule.delete()
+
+    security_group_rule.resource_id = None
     # Check the existing rules attached to current security groups
     # in order to apply them to that group
     for rule_config in security_group_rules:
@@ -57,11 +71,7 @@ def configure(openstack_resource, security_group_rules=None):
             rule_config['security_group_id'] = security_group_id
 
         # Create new instance for each security group id
-        security_group_rule =\
-            OpenstackSecurityGroupRule(client_config=client_config,
-                                       resource_config=rule_config,
-                                       logger=ctx.logger)
-
+        security_group_rule.config = rule_config
         # Create security group rule
         security_group_rule.create()
 
