@@ -30,6 +30,7 @@ from openstack_sdk.resources.compute import OpenstackServer
 from openstack_sdk.resources.compute import OpenstackKeyPair
 from openstack_sdk.resources.images import OpenstackImage
 from openstack_sdk.resources.volume import OpenstackVolume
+from openstack_sdk.resources.networks import OpenstackPort
 from openstacksdk_plugin.decorators import with_openstack_resource
 from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            OPENSTACK_RESOURCE_UUID,
@@ -88,7 +89,8 @@ from openstacksdk_plugin.utils import \
      reset_dict_empty_keys,
      get_resource_id_from_runtime_properties,
      get_snapshot_name,
-     generate_attachment_volume_key)
+     generate_attachment_volume_key,
+     assign_resource_payload_as_runtime_properties)
 
 
 def _stop_server(server):
@@ -829,6 +831,12 @@ def _connect_resources_to_external_server(openstack_resource):
     # Validate external key pair connected to the external server
     _connect_keypair_to_external_server(openstack_resource)
 
+    # Assign payload to server
+    remote_server = openstack_resource.get()
+    assign_resource_payload_as_runtime_properties(ctx,
+                                                  remote_server,
+                                                  SERVER_OPENSTACK_TYPE)
+
 
 def _disconnect_resources_from_external_server(openstack_resource):
     """
@@ -846,21 +854,6 @@ def _disconnect_resources_from_external_server(openstack_resource):
             ctx.logger.info(
                 'Successfully detached network {0} to device (server) id {1}.'
                 .format(interface, openstack_resource.resource_id))
-
-
-def _assign_server_payload_as_runtime_properties(payload):
-    """
-    Store server configuration in the runtime
-    properties and cleans any potentially sensitive data.
-    :param payload: The payload.
-    """
-    if getattr(ctx, 'instance') and payload:
-        if SERVER_OPENSTACK_TYPE not in ctx.instance.runtime_properties.keys():
-            ctx.instance.runtime_properties[SERVER_OPENSTACK_TYPE] = {}
-        for key, value in payload.items():
-            if key not in ['user_data', 'adminPass']:
-                ctx.instance.runtime_properties[SERVER_OPENSTACK_TYPE][key]\
-                    = value
 
 
 def _get_server_private_key():
@@ -953,6 +946,40 @@ def _get_user_password(openstack_resource):
             ctx.logger.info('Server has been set with a password')
 
 
+def _disconnect_security_group_from_server_ports(client_config,
+                                                 server_payload,
+                                                 security_group_id):
+    """
+    This method will help to remove connection between port and security group
+    Because when we attach security group to a server that has multiple
+    ports connected to it, all the ports automatically are going to connect
+    to the security group
+    :param dict client_config: Openstack configuration required to connect
+    to API
+    :param dict server_payload: Server payload configuration from openstack
+    :param str security_group_id: Security group ID
+    """
+    if server_payload:
+        networks = server_payload.get('networks', [])
+        server_ports = \
+            [
+                network[PORT_OPENSTACK_TYPE]
+                for network in networks if network.get(PORT_OPENSTACK_TYPE)
+            ]
+        for port_id in server_ports:
+            port = OpenstackPort(client_config=client_config,
+                                 logger=ctx.logger)
+            port.resource_id = port_id
+            remote_port = port.get()
+            port_security_groups = remote_port.security_group_ids
+            if security_group_id in remote_port.security_group_ids:
+                port_security_groups.remove(security_group_id)
+
+            port.update({
+                'security_groups': port_security_groups
+            })
+
+
 @with_openstack_resource(
     OpenstackServer,
     existing_resource_handler=_connect_resources_to_external_server)
@@ -985,7 +1012,9 @@ def create(openstack_resource):
         openstack_resource.resource_id = created_resource.id
 
         # Assign runtime properties for server
-        _assign_server_payload_as_runtime_properties(created_resource)
+        assign_resource_payload_as_runtime_properties(ctx,
+                                                      created_resource,
+                                                      SERVER_OPENSTACK_TYPE)
     else:
         resource_id = ctx.instance.runtime_properties[RESOURCE_ID]
         openstack_resource.resource_id = resource_id
@@ -1392,6 +1421,87 @@ def detach_volume(openstack_resource, **kwargs):
 
 
 @with_openstack_resource(OpenstackServer)
+def connect_floating_ip(openstack_resource, floating_ip, fixed_ip=''):
+    """
+    This method will connect floating ip to server
+    :param openstack_resource: Instance of openstack server resource
+    :param str floating_ip: The floating IP
+    :param str fixed_ip: The fixed IP address to be associated with the
+    floating IP address. Used when the server is connected to multiple
+    networks.
+    """
+    if not floating_ip:
+        raise NonRecoverableError('floating_ip is required in order to '
+                                  'connect floating ip to server {0}'
+                                  ''.format(openstack_resource.resource_id))
+
+    fixed_ip = fixed_ip or None
+    openstack_resource.add_floating_ip_to_server(floating_ip,
+                                                 fixed_ip=fixed_ip)
+
+
+@with_openstack_resource(OpenstackServer)
+def disconnect_floating_ip(openstack_resource, floating_ip):
+    """
+    This will disconnect floating ip address from server
+    :param openstack_resource: Instance of openstack server resource
+    :param floating_ip: The floating IP connetced to the server which should
+    be disconnected
+    """
+    if not floating_ip:
+        raise NonRecoverableError('floating_ip is required in order to '
+                                  'disconnect floating ip from server {0}'
+                                  ''.format(openstack_resource.resource_id))
+
+    openstack_resource.remove_floating_ip_from_server(floating_ip)
+
+
+@with_openstack_resource(OpenstackServer)
+def connect_security_group(openstack_resource, security_group_id):
+    """
+    This method will connect security group to server
+    :param openstack_resource: Instance of openstack server resource
+    :param str security_group_id: The ID of a security group
+    """
+    if not security_group_id:
+        raise NonRecoverableError('security_group_id is required in order to '
+                                  'connect security group to server {0}'
+                                  ''.format(openstack_resource.resource_id))
+
+    openstack_resource.add_security_group_to_server(security_group_id)
+
+
+@with_openstack_resource(OpenstackServer)
+def disconnect_security_group(openstack_resource, security_group_id):
+    """
+    This will disconnect floating ip address from server
+    :param openstack_resource: Instance of openstack server resource
+    :param security_group_id: The ID of a security group
+    """
+    if not security_group_id:
+        raise NonRecoverableError('security_group_id is required in order to '
+                                  'disconnect security group from server {0}'
+                                  ''.format(openstack_resource.resource_id))
+
+    openstack_resource.remove_security_group_from_server(security_group_id)
+
+    # Get the payload for server from runtime properties in order to get the
+    # ports information attached to the server which will automatically
+    # reference the disconnected security group which will cause an issue
+    # when trying to delete security group, so we should break the
+    # connection between the ports attached to the server and the security
+    # group
+    server_payload = \
+        ctx.source.instance.runtime_properties.get(SERVER_OPENSTACK_TYPE)
+    if server_payload:
+        _disconnect_security_group_from_server_ports(
+            openstack_resource.client_config,
+            server_payload,
+            security_group_id
+        )
+
+
+@with_openstack_resource(OpenstackServer)
 def update(openstack_resource, args):
     """
     Update openstack server by passing args dict that contains the info that
@@ -1400,7 +1510,11 @@ def update(openstack_resource, args):
     :param args: dict of information need to be updated
     """
     args = reset_dict_empty_keys(args)
-    openstack_resource.update(args)
+    updated_server = openstack_resource.update(args)
+    # Update the runtime properties for the updated server
+    assign_resource_payload_as_runtime_properties(ctx,
+                                                  updated_server,
+                                                  SERVER_OPENSTACK_TYPE)
 
 
 @with_openstack_resource(OpenstackServer)

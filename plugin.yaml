@@ -1288,6 +1288,43 @@ relationships:
   cloudify.relationships.openstack.server_connected_to_port:
     derived_from: cloudify.relationships.connected_to
 
+  cloudify.relationships.openstack.server_connected_to_floating_ip:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.connect_floating_ip
+          inputs:
+            floating_ip:
+              default: { get_attribute: [ TARGET, floating_ip_address ] }
+            fixed_ip:
+              description: >
+                The fixed IP address to be associated with the
+                floating IP address. Used when the server is
+                connected to multiple networks.
+              type: string
+              default: ''
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.disconnect_floating_ip
+          inputs:
+            floating_ip:
+              default: { get_attribute: [ TARGET, floating_ip_address ] }
+
+  cloudify.relationships.openstack.server_connected_to_security_group:
+    derived_from: cloudify.relationships.connected_to
+    source_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.connect_security_group
+          inputs:
+            security_group_id:
+              default: { get_attribute: [ TARGET, id ] }
+        unlink:
+          implementation: openstacksdk.openstacksdk_plugin.resources.compute.server.disconnect_security_group
+          inputs:
+            security_group_id:
+              default: { get_attribute: [ TARGET, id ] }
+
   cloudify.relationships.openstack.volume_attached_to_server:
     derived_from: cloudify.relationships.connected_to
     target_interfaces:
@@ -1327,6 +1364,15 @@ relationships:
           inputs:
             port_id:
               default: { get_attribute: [ SOURCE, id ] }
+
+  cloudify.relationships.openstack.port_connected_to_security_group:
+    derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.openstack.port_connected_to_subnet:
+    derived_from: cloudify.relationships.connected_to
+
+  cloudify.relationships.openstack.route_connected_to_router:
+    derived_from: cloudify.relationships.connected_to
 
   cloudify.relationships.openstack.subnet_connected_to_router:
     derived_from: cloudify.relationships.connected_to

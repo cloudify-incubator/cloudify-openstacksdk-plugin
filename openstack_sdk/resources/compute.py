@@ -210,6 +210,46 @@ class OpenstackServer(OpenstackResource):
         self.logger.debug('Attempting to list server interfaces')
         return self.connection.compute.server_interfaces(self.resource_id)
 
+    def add_security_group_to_server(self, security_group_id):
+        self.logger.debug(
+            'Attempting to add security group {0} to server {1}'
+            ''.format(security_group_id, self.resource_id))
+        self.connection.compute.add_security_group_to_server(
+            self.resource_id, security_group_id)
+        self.logger.debug(
+            'Security group {0} was added to server {1} '
+            'successfully'.format(security_group_id, self.resource_id))
+
+    def remove_security_group_from_server(self, security_group_id):
+        self.logger.debug(
+            'Attempting to remove security group {0} from server {1}'
+            ''.format(security_group_id, self.resource_id))
+        self.connection.compute.remove_security_group_from_server(
+            self.resource_id, security_group_id)
+        self.logger.debug(
+            'Security group {0} was removed from server {1} '
+            'successfully'.format(security_group_id, self.resource_id))
+
+    def add_floating_ip_to_server(self, floating_ip, fixed_ip=None):
+        self.logger.debug(
+            'Attempting to add floating ip {0} to server {1}'
+            ''.format(floating_ip, self.resource_id))
+        self.connection.compute.add_floating_ip_to_server(
+            self.resource_id, floating_ip, fixed_address=fixed_ip)
+        self.logger.debug(
+            'Floating ip {0} was added to server {1} successfully'
+            ''.format(floating_ip, self.resource_id))
+
+    def remove_floating_ip_from_server(self, floating_ip):
+        self.logger.debug(
+            'Attempting to remove floating ip {0} from server {1}'
+            ''.format(floating_ip, self.resource_id))
+        self.connection.compute.remove_floating_ip_from_server(
+            self.resource_id, floating_ip)
+        self.logger.debug(
+            'Floating ip {0} was removed from server {1} '
+            'successfully'.format(floating_ip, self.resource_id))
+
 
 class OpenstackHostAggregate(OpenstackResource):
     service_type = 'compute'
