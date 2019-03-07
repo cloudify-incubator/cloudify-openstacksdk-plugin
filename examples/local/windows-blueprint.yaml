@@ -58,6 +58,17 @@ dsl_definitions:
 
 node_templates:
 
+  example-external-network:
+    type: cloudify.nodes.openstack.Network
+    properties:
+      client_config: *client_config
+      use_external_resource: true
+      resource_config:
+        id: { get_input: external_network_id }
+        kwargs:
+          routing:
+            external: true
+
   example-server-node:
     type: cloudify.nodes.openstack.WindowsServer
     properties:
@@ -183,7 +194,10 @@ node_templates:
     properties:
       client_config: *client_config
       resource_config:
-        floating_network_id: { get_input: external_network_id }
+        floating_network_id: { get_attribute: [ example-external-network, id ] }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: example-external-network
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
