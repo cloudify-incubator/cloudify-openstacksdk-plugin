@@ -117,7 +117,6 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'subnet_1' ] }
-        network_id: { get_attribute: [ example-network-1, id ] }
         cidr: { get_input: example_subnet_1_cidr }
         enable_dhcp: true
         ip_version: 4
@@ -139,7 +138,6 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'subnet_2' ] }
-        network_id: { get_attribute: [ example-network-2, id ] }
         cidr: { get_input: example_subnet_2_cidr }
         enable_dhcp: true
         ip_version: 4

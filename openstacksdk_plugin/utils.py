@@ -41,6 +41,7 @@ from openstacksdk_plugin.constants import (PS_OPEN,
                                            RESOURCE_ID,
                                            OPENSTACK_TYPE_PROPERTY,
                                            OPENSTACK_NAME_PROPERTY,
+                                           CLOUDIFY_NEW_NODE_OPERATIONS,
                                            CLOUDIFY_CREATE_OPERATION,
                                            CLOUDIFY_DELETE_OPERATION)
 
@@ -497,7 +498,8 @@ def handle_external_resource(ctx_node_instance,
         raise NonRecoverableError(error_message)
 
     # Cannot delete/create resource when it is external
-    if operation_name in ['create', 'delete']:
+    if operation_name in [CLOUDIFY_CREATE_OPERATION,
+                          CLOUDIFY_DELETE_OPERATION]:
         ctx.logger.info(
             'Using external resource {0}'.format(RESOURCE_ID))
 
@@ -512,7 +514,7 @@ def handle_external_resource(ctx_node_instance,
                 causes=[exception_to_error_cause(error, tb)])
 
         # Check the operation type and based on that decide what to do
-        if operation_name == 'create':
+        if operation_name == CLOUDIFY_CREATE_OPERATION:
             ctx.logger.info(
                 'not creating resource {0}'
                 ' since an external resource is being used'
@@ -521,7 +523,7 @@ def handle_external_resource(ctx_node_instance,
                 = remote_resource.id
 
         # Just log message that we cannot delete resource
-        elif operation_name == 'delete':
+        elif operation_name == CLOUDIFY_DELETE_OPERATION:
             ctx.logger.info(
                 'not deleting resource {0}'
                 ' since an external resource is being used'
@@ -558,8 +560,7 @@ def get_current_operation():
     """ Get the current task operation from current cloudify context
     :return str: Operation name
     """
-    _, _, _, operation_name = ctx.operation.name.split('.')
-    return operation_name
+    return ctx.operation.name
 
 
 def get_ready_resource_status(resource,
@@ -675,3 +676,16 @@ def assign_resource_payload_as_runtime_properties(_ctx,
         for key, value in payload.items():
             if key not in ['user_data', 'adminPass']:
                 ctx.instance.runtime_properties[resource_type][key] = value
+
+
+def allow_to_run_operation_for_external_node(operation_name):
+    """
+    This method to check if an a current operation is allowed for external
+    node that has flag "use_external_resource" set "True"
+    :param (str) operation_name: The cloudify operation name for node
+    :return bool: Flag to indicate whether or not it is allowed to run
+    operation for the external node
+    """
+    if operation_name not in CLOUDIFY_NEW_NODE_OPERATIONS:
+        return True
+    return False

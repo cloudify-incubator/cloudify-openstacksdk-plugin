@@ -90,6 +90,25 @@ node_templates:
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'keypair' ] }
 
+  example-network:
+    type: cloudify.nodes.openstack.Network
+    properties:
+      use_external_resource: true
+      client_config: *client_config
+      resource_config:
+        id: { get_input: network_id }
+
+  example-subnet:
+    type: cloudify.nodes.openstack.Subnet
+    properties:
+      use_external_resource: true
+      client_config: *client_config
+      resource_config:
+        id: { get_input: subnet_id }
+    relationships:
+      - type: cloudify.relationships.contained_in
+        target: example-network
+
   example-security-group:
     type: cloudify.nodes.openstack.SecurityGroup
     properties:
@@ -141,10 +160,13 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'port' ] }
-        network_id: { get_input: network_id }
         fixed_ips:
-          - subnet_id: { get_input: subnet_id }
+          - subnet_id: { get_attribute: [ example-subnet, id ] }
     relationships:
+       - type: cloudify.relationships.connected_to
+         target: example-network
+       - type: cloudify.relationships.connected_to
+         target: example-subnet
        - type: cloudify.relationships.connected_to
          target: example-security-group
        - type: cloudify.relationships.openstack.port_connected_to_floating_ip
