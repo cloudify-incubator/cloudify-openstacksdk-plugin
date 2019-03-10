@@ -161,9 +161,6 @@ node_templates:
     type: cloudify.nodes.openstack.FloatingIP
     properties:
       client_config: *client_config
-      resource_config:
-        floating_network_id: { get_attribute: [ example-external_network, id ] }
-        port_id: { get_attribute: [ example-server-port, id ] }
     relationships:
       - type: cloudify.relationships.connected_to
         target: example-external_network

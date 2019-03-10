@@ -206,6 +206,10 @@ data_types:
         description: The ID of the network associated with the floating IP.
         type: string
         required: false
+      floating_network_name:
+        description: The Name of the network associated with the floating IP.
+        type: string
+        required: false
       fixed_ip_address:
         description: The fixed IP address that is associated with the floating IP. If an internal port has multiple associated IP addresses, the service chooses the first IP address unless you explicitly define a fixed IP address in the fixed_ip_address parameter.
         type: string
