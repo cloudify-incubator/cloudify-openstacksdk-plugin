@@ -22,24 +22,21 @@ inputs:
   project_name:
     type: string
 
+  name_prefix:
+    type: string
+    default: 'floating-ip-blueprint_'
+    description: Prefix string for all resources
+
   external_network_id:
     type: string
+    description: A network that provisions floating IPs.
 
   example_subnet_cidr:
     type: string
     default: 10.0.0.0/16
 
-  image_id:
-    type: string
-
-  flavor_id:
-    type: string
-
-  name_prefix:
-    type: string
 
 dsl_definitions:
-
   client_config: &client_config
     auth_url: { get_input: auth_url }
     username: { get_input: username }
@@ -153,44 +150,15 @@ node_templates:
           inputs:
             resource_config: { get_property: [ SELF, resource_config ] }
 
-  example-floating-ip-address:
+  example-ip:
     type: cloudify.nodes.openstack.FloatingIP
     properties:
       client_config: *client_config
+      resource_config:
+        floating_network_id: { get_input: external_network_id }
     relationships:
       - type: cloudify.relationships.connected_to
-        target: example-external-network
-      - type: cloudify.relationships.connected_to
         target: example-server-port
-    # This is only run on local mode. For use with a manager, it can be commented out.
-    interfaces:
-      cloudify.interfaces.lifecycle:
-        create:
-          inputs:
-            resource_config: { get_property: [ SELF, resource_config ] }
-
-  example-keypair:
-    type: cloudify.nodes.openstack.KeyPair
-    properties:
-      client_config: *client_config
-      resource_config:
-        name: { concat: [ { get_input: name_prefix }, 'keypair' ] }
-
-  example-server:
-    type: cloudify.nodes.openstack.Server
-    properties:
-      client_config: *client_config
-      agent_config:
-        install_method: none
-      resource_config:
-        name: { concat: [ { get_input: name_prefix }, 'server' ] }
-        image_id: { get_input: image_id }
-        flavor_id: { get_input: flavor_id }
-    relationships:
-      - type: cloudify.relationships.openstack.server_connected_to_port
-        target: example-server-port
-      - type: cloudify.relationships.openstack.server_connected_to_keypair
-        target: example-keypair
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:

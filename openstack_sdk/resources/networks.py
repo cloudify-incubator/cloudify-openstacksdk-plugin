@@ -44,6 +44,14 @@ class OpenstackNetwork(OpenstackResource):
             'Found network with this result: {0}'.format(network))
         return network
 
+    def find_network(self):
+        self.logger.debug(
+            'Attempting to find this network: {0}'.format(self.name))
+        network = self.connection.network.find_network(self.name)
+        self.logger.debug(
+            'Found network with this result: {0}'.format(network))
+        return network
+
     def create(self):
         self.logger.debug(
             'Attempting to create network with these args: {0}'.format(

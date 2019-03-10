@@ -50,7 +50,7 @@ def _get_subnet_network_id_from_relationship():
 def _update_subnet_config(subnet_config):
     """
     This method will try to update subnet config with network configurations
-    using the relationships connected with server node
+    using the relationships connected with subnet node
     :param dict subnet_config: The subnet configuration required in order to
     create the subnet instance using Openstack API
     """
