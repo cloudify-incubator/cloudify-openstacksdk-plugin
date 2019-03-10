@@ -78,7 +78,7 @@ def _handle_external_subnet_resource(openstack_resource):
     """
     network_id = _get_subnet_network_id_from_relationship()
     remote_subnet = openstack_resource.get()
-    if network_id != remote_subnet.network_id:
+    if network_id and network_id != remote_subnet.network_id:
         raise NonRecoverableError(
             'Expected external resources subnet {0} and network'
             ' {1} to be connected'.format(remote_subnet.id, network_id))

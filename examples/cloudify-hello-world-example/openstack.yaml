@@ -65,6 +65,17 @@ dsl_definitions:
 
 node_templates:
 
+  external-network:
+    type: cloudify.nodes.openstack.Network
+    properties:
+      client_config: *client_config
+      use_external_resource: true
+      resource_config:
+        id: { get_input: external_network_id }
+        kwargs:
+          routing:
+            external: true
+
   vm:
     type: cloudify.nodes.openstack.Server
     properties:
@@ -147,12 +158,9 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, '_router' ] }
-        kwargs:
-          external_gateway_info:
-            network_id: { get_input: external_network_id }
     relationships:
       - type: cloudify.relationships.connected_to
-        target: network
+        target: external-network
     # This is only run on local mode. For use with a manager, it can be commented out.
     interfaces:
       cloudify.interfaces.lifecycle:
@@ -215,7 +223,10 @@ node_templates:
     properties:
       client_config: *client_config
       resource_config:
-        floating_network_id: { get_input: external_network_id }
+        floating_network_id: { get_attribute: [ external-network, id ] }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: external-network
     interfaces:
       cloudify.interfaces.lifecycle:
         create:

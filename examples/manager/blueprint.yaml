@@ -65,9 +65,6 @@ node_templates:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'router' ] }
-        kwargs:
-          external_gateway_info:
-            network_id: { get_attribute: [ example-external_network, id ] }
     relationships:
       - type: cloudify.relationships.connected_to
         target: example-external_network

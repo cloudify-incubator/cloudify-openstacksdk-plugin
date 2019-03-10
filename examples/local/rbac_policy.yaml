@@ -22,6 +22,9 @@ inputs:
   project_name:
     type: string
 
+  external_network_id:
+    type: string
+
   project_id:
     type: string
 
@@ -48,12 +51,32 @@ dsl_definitions:
 
 node_templates:
 
+  example-external-network:
+    type: cloudify.nodes.openstack.Network
+    properties:
+      client_config: *client_config
+      use_external_resource: true
+      resource_config:
+        id: { get_input: external_network_id }
+        kwargs:
+          routing:
+            external: true
+
   example-router:
     type: cloudify.nodes.openstack.Router
     properties:
       client_config: *client_config
       resource_config:
         name: { concat: [ { get_input: name_prefix }, 'router' ] }
+    relationships:
+      - type: cloudify.relationships.connected_to
+        target: example-external-network
+    # This is only run on local mode. For use with a manager, it can be commented out.
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          inputs:
+            resource_config: { get_property: [ SELF, resource_config ] }
 
   example-rbac-policy:
     type: cloudify.nodes.openstack.RBACPolicy
