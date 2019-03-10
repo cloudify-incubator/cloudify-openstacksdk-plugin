@@ -89,7 +89,11 @@ data_types:
       external:
         description: Whether this network is externally accessible.
         type: boolean
-        required: false
+        default: false
+      admin_state_up:
+        description: The administrative state of the network, which is up (true) or down (false).
+        type: boolean
+        default: true
 
   # Note that the OpenStack API object specifies Subnets, a list of subnet. This data type refers to a member of that list.
   cloudify.types.openstack.Subnet:
