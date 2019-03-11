@@ -78,6 +78,32 @@ class OpenStackSDKTestBase(unittest.TestCase):
         server_conn.get_server = self._gen_openstack_sdk_error()
         server_conn.create_server = self._gen_openstack_sdk_error()
         server_conn.delete_server = self._gen_openstack_sdk_error()
+        server_conn.reboot_server = self._gen_openstack_sdk_error()
+        server_conn.resume_server = self._gen_openstack_sdk_error()
+        server_conn.suspend_server = self._gen_openstack_sdk_error()
+        server_conn.backup_server = self._gen_openstack_sdk_error()
+        server_conn.rebuild_server = self._gen_openstack_sdk_error()
+        server_conn.create_server_image = self._gen_openstack_sdk_error()
+        server_conn.update_server = self._gen_openstack_sdk_error()
+        server_conn.start_server = self._gen_openstack_sdk_error()
+        server_conn.stop_server = self._gen_openstack_sdk_error()
+        server_conn.get_server_password = self._gen_openstack_sdk_error()
+        server_conn.volume_attachments = self._gen_openstack_sdk_error()
+        server_conn.get_volume_attachment = self._gen_openstack_sdk_error()
+        server_conn.create_volume_attachment = self._gen_openstack_sdk_error()
+        server_conn.delete_volume_attachment = self._gen_openstack_sdk_error()
+        server_conn.create_server_interface = self._gen_openstack_sdk_error()
+        server_conn.delete_server_interface = self._gen_openstack_sdk_error()
+        server_conn.get_server_interface = self._gen_openstack_sdk_error()
+        server_conn.server_interfaces = self._gen_openstack_sdk_error()
+        server_conn.add_security_group_to_server = \
+            self._gen_openstack_sdk_error()
+        server_conn.remove_security_group_from_server = \
+            self._gen_openstack_sdk_error()
+        server_conn.add_floating_ip_to_server = \
+            self._gen_openstack_sdk_error()
+        server_conn.remove_floating_ip_from_server = \
+            self._gen_openstack_sdk_error()
 
         self.connection.compute = server_conn
         return self.connection.compute

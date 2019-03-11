@@ -45,7 +45,7 @@ class OpenstackServer(OpenstackResource):
             'Attempting to create server with these args: {0}'.format(
                 self.config))
         server = self.connection.compute.create_server(**self.config)
-        self.logger.debug(
+        self.logger.info(
             'Created server with this result: {0}'.format(server))
         return server
 
