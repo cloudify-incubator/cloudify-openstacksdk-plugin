@@ -92,7 +92,7 @@ class KeyPairTestCase(OpenStackTestBase):
             'private_key': 'test_private_key',
 
         })
-        # Mock keypair response
+        # Mock delete keypair response
         mock_connection().compute.delete_keypair = \
             mock.MagicMock(return_value=None)
         # Mock get keypair
@@ -132,7 +132,7 @@ class KeyPairTestCase(OpenStackTestBase):
         mock_connection().compute.keypairs = \
             mock.MagicMock(return_value=keypair_list)
 
-        # Call delete keypair
+        # Call list keypair
         keypair.list_keypairs()
 
         # Check if the keypairs list saved as runtime properties
