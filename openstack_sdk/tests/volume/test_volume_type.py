@@ -43,7 +43,6 @@ class VolumeTypeTestCase(base.OpenStackSDKTestBase):
             'extra_specs': {
                 'capabilities': 'gpu',
             }
-
         })
         self.volume_type_instance.resource_id = '1'
         self.fake_client.get_type = mock.MagicMock(return_value=volume_type)
