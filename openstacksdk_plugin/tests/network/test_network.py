@@ -13,22 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Third party imports
 import mock
+import openstack.network.v2.network
 
+# Local imports
 from openstacksdk_plugin.tests.base import OpenStackTestBase
-from openstacksdk_plugin.resources.network import (
-    network,
-    subnet,
-    router,
-    port,
-    security_group,
-    security_group_rule,
-    floating_ip)
-from openstacksdk_plugin.constants import RESOURCE_ID
-
-from cloudify.state import current_ctx
-
-MODULE_PATH = 'openstack.cloud.openstackcloud._OpenStackCloudMixin'
+from openstacksdk_plugin.resources.network import network
+from openstacksdk_plugin.constants import (RESOURCE_ID,
+                                           OPENSTACK_NAME_PROPERTY,
+                                           OPENSTACK_TYPE_PROPERTY,
+                                           NETWORK_OPENSTACK_TYPE)
 
 
 @mock.patch('openstack.connect')
@@ -36,143 +31,359 @@ class NetworkTestCase(OpenStackTestBase):
 
     def setUp(self):
         super(NetworkTestCase, self).setUp()
-        self._ctx = self.get_mock_ctx('NetworkTestCase')
-        current_ctx.set(self._ctx)
 
-    @mock.patch(
-        '{0}.create_network'.format(MODULE_PATH),
-        return_value=mock.MagicMock())
-    def test_create(self, *_):
+    @property
+    def resource_config(self):
+        return {
+            'name': 'test_network',
+            'description': 'network_description',
+        }
+
+    def test_create(self, mock_connection):
+        # Prepare the context for create operation
+        self._prepare_context_for_operation(
+            test_name='NetworkTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.create')
+
+        network_instance = openstack.network.v2.network.Network(**{
+            'id': '1',
+            'name': 'test_network',
+            'admin_state_up': True,
+            'availability_zone_hints': ['1', '2'],
+            'availability_zones': ['3'],
+            'external': True,
+            'created_at': '2016-03-09T12:14:57.233772',
+            'description': '4',
+            'dns_domain': '5',
+            'ipv4_address_scope': '6',
+            'ipv6_address_scope': '7',
+            'is_default': False,
+            'mtu': 8,
+            'port_security_enabled': True,
+            'project_id': '10',
+            'provider:network_type': '11',
+            'provider:physical_network': '12',
+            'provider:segmentation_id': '13',
+            'qos_policy_id': '14',
+            'revision_number': 15,
+            'router:external': True,
+            'segments': '16',
+            'shared': True,
+            'status': '17',
+            'subnets': ['18', '19'],
+            'updated_at': '2016-07-09T12:14:57.233772',
+            'vlan_transparent': False,
+
+        })
+        # Mock create network response
+        mock_connection().network.create_network = \
+            mock.MagicMock(return_value=network_instance)
+
+        # Call create network
         network.create()
-        self.assertIn(
-            RESOURCE_ID,
-            self._ctx.instance.runtime_properties)
 
-    def test_delete(self, *_):
+        self.assertEqual(self._ctx.instance.runtime_properties[RESOURCE_ID],
+                         '1')
+
+        self.assertEqual(
+            self._ctx.instance.runtime_properties[OPENSTACK_NAME_PROPERTY],
+            'test_network')
+
+        self.assertEqual(
+            self._ctx.instance.runtime_properties[OPENSTACK_TYPE_PROPERTY],
+            NETWORK_OPENSTACK_TYPE)
+
+    def test_delete(self, mock_connection):
+        # Prepare the context for delete operation
+        self._prepare_context_for_operation(
+            test_name='NetworkTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.delete')
+
+        network_instance = openstack.network.v2.network.Network(**{
+            'id': '1',
+            'name': 'test_network',
+            'admin_state_up': True,
+            'availability_zone_hints': ['1', '2'],
+            'availability_zones': ['3'],
+            'external': True,
+            'created_at': '2016-03-09T12:14:57.233772',
+            'description': '4',
+            'dns_domain': '5',
+            'ipv4_address_scope': '6',
+            'ipv6_address_scope': '7',
+            'is_default': False,
+            'mtu': 8,
+            'port_security_enabled': True,
+            'project_id': '10',
+            'provider:network_type': '11',
+            'provider:physical_network': '12',
+            'provider:segmentation_id': '13',
+            'qos_policy_id': '14',
+            'revision_number': 15,
+            'router:external': True,
+            'segments': '16',
+            'shared': True,
+            'status': '17',
+            'subnets': ['18', '19'],
+            'updated_at': '2016-07-09T12:14:57.233772',
+            'vlan_transparent': False,
+
+        })
+        # Mock delete network response
+        mock_connection().network.delete_network = \
+            mock.MagicMock(return_value=None)
+
+        # Mock get user response
+        mock_connection().identity.get_user = \
+            mock.MagicMock(return_value=network_instance)
+
+        # Call delete network
         network.delete()
 
+        for attr in [RESOURCE_ID,
+                     OPENSTACK_NAME_PROPERTY,
+                     OPENSTACK_TYPE_PROPERTY]:
+            self.assertNotIn(attr, self._ctx.instance.runtime_properties)
 
-@mock.patch('openstack.connect')
-class SubnetTestCase(OpenStackTestBase):
+    def test_update(self, mock_connection):
+        # Prepare the context for update operation
+        self._prepare_context_for_operation(
+            test_name='NetworkTestCase',
+            ctx_operation_name='cloudify.interfaces.operations.update')
 
-    def setUp(self):
-        super(SubnetTestCase, self).setUp()
-        self._ctx = self.get_mock_ctx('SubnetTestCase')
-        current_ctx.set(self._ctx)
+        old_network_instance = openstack.network.v2.network.Network(**{
+            'id': '1',
+            'name': 'test_network',
+            'admin_state_up': True,
+            'availability_zone_hints': ['1', '2'],
+            'availability_zones': ['3'],
+            'external': True,
+            'created_at': '2016-03-09T12:14:57.233772',
+            'description': '4',
+            'dns_domain': '5',
+            'ipv4_address_scope': '6',
+            'ipv6_address_scope': '7',
+            'is_default': False,
+            'mtu': 8,
+            'port_security_enabled': True,
+            'project_id': '10',
+            'provider:network_type': '11',
+            'provider:physical_network': '12',
+            'provider:segmentation_id': '13',
+            'qos_policy_id': '14',
+            'revision_number': 15,
+            'router:external': True,
+            'segments': '16',
+            'shared': True,
+            'status': '17',
+            'subnets': ['18', '19'],
+            'updated_at': '2016-07-09T12:14:57.233772',
+            'vlan_transparent': False,
+        })
 
-    @mock.patch(
-        '{0}.create_subnet'.format(MODULE_PATH),
-        return_value=mock.MagicMock())
-    def test_create(self, *_):
-        subnet.create()
+        new_config = {
+            'name': 'test_updated_network',
+        }
+
+        new_network_instance = openstack.network.v2.network.Network(**{
+            'id': '1',
+            'name': 'test_updated_network',
+            'admin_state_up': True,
+            'availability_zone_hints': ['1', '2'],
+            'availability_zones': ['3'],
+            'external': True,
+            'created_at': '2016-03-09T12:14:57.233772',
+            'description': '4',
+            'dns_domain': '5',
+            'ipv4_address_scope': '6',
+            'ipv6_address_scope': '7',
+            'is_default': False,
+            'mtu': 8,
+            'port_security_enabled': True,
+            'project_id': '10',
+            'provider:network_type': '11',
+            'provider:physical_network': '12',
+            'provider:segmentation_id': '13',
+            'qos_policy_id': '14',
+            'revision_number': 15,
+            'router:external': True,
+            'segments': '16',
+            'shared': True,
+            'status': '17',
+            'subnets': ['18', '19'],
+            'updated_at': '2016-07-09T12:14:57.233772',
+            'vlan_transparent': False,
+
+        })
+
+        # Mock get network response
+        mock_connection().network.get_network = \
+            mock.MagicMock(return_value=old_network_instance)
+
+        # Mock update network response
+        mock_connection().network.update_network = \
+            mock.MagicMock(return_value=new_network_instance)
+
+        # Call update network
+        network.update(args=new_config)
+
+    def test_list_networks(self, mock_connection):
+        # Prepare the context for list projects operation
+        self._prepare_context_for_operation(
+            test_name='NetworkTestCase',
+            ctx_operation_name='cloudify.interfaces.operations.list')
+
+        networks = [
+            openstack.network.v2.network.Network(**{
+                'id': '1',
+                'name': 'test_network_1',
+                'admin_state_up': True,
+                'availability_zone_hints': ['1', '2'],
+                'availability_zones': ['3'],
+                'external': True,
+                'created_at': '2016-03-09T12:14:57.233772',
+                'description': '4',
+                'dns_domain': '5',
+                'ipv4_address_scope': '6',
+                'ipv6_address_scope': '7',
+                'is_default': False,
+                'mtu': 8,
+                'port_security_enabled': True,
+                'project_id': '10',
+                'provider:network_type': '11',
+                'provider:physical_network': '12',
+                'provider:segmentation_id': '13',
+                'qos_policy_id': '14',
+                'revision_number': 15,
+                'router:external': True,
+                'segments': '16',
+                'shared': True,
+                'status': '17',
+                'subnets': ['18', '19'],
+                'updated_at': '2016-07-09T12:14:57.233772',
+                'vlan_transparent': False,
+            }),
+            openstack.network.v2.network.Network(**{
+                'id': '2',
+                'name': 'test_network_2',
+                'admin_state_up': True,
+                'availability_zone_hints': ['1', '2'],
+                'availability_zones': ['3'],
+                'external': True,
+                'created_at': '2016-03-09T12:14:57.233772',
+                'description': '4',
+                'dns_domain': '5',
+                'ipv4_address_scope': '6',
+                'ipv6_address_scope': '7',
+                'is_default': False,
+                'mtu': 8,
+                'port_security_enabled': True,
+                'project_id': '10',
+                'provider:network_type': '11',
+                'provider:physical_network': '12',
+                'provider:segmentation_id': '13',
+                'qos_policy_id': '14',
+                'revision_number': 15,
+                'router:external': True,
+                'segments': '16',
+                'shared': True,
+                'status': '17',
+                'subnets': ['18', '19'],
+                'updated_at': '2016-07-09T12:14:57.233772',
+                'vlan_transparent': False,
+            }),
+        ]
+
+        # Mock list project response
+        mock_connection().network.networks = \
+            mock.MagicMock(return_value=networks)
+
+        # Call list networks
+        network.list_networks()
+
+        # Check if the networks list saved as runtime properties
         self.assertIn(
-            RESOURCE_ID,
+            'network_list',
             self._ctx.instance.runtime_properties)
 
-    def test_delete(self, *_):
-        subnet.delete()
+        # Check the size of networks list
+        self.assertEqual(
+            len(self._ctx.instance.runtime_properties['network_list']), 2)
 
+    @mock.patch('openstack_sdk.common.OpenstackResource.get_quota_sets')
+    def test_creation_validation(self, mock_quota_sets, mock_connection):
+        # Prepare the context for list projects operation
+        self._prepare_context_for_operation(
+            test_name='NetworkTestCase',
+            ctx_operation_name='cloudify.interfaces.validation.creation')
 
-@mock.patch('openstack.connect')
-class RouterTestCase(OpenStackTestBase):
+        networks = [
+            openstack.network.v2.network.Network(**{
+                'id': '1',
+                'name': 'test_network_1',
+                'admin_state_up': True,
+                'availability_zone_hints': ['1', '2'],
+                'availability_zones': ['3'],
+                'external': True,
+                'created_at': '2016-03-09T12:14:57.233772',
+                'description': '4',
+                'dns_domain': '5',
+                'ipv4_address_scope': '6',
+                'ipv6_address_scope': '7',
+                'is_default': False,
+                'mtu': 8,
+                'port_security_enabled': True,
+                'project_id': '10',
+                'provider:network_type': '11',
+                'provider:physical_network': '12',
+                'provider:segmentation_id': '13',
+                'qos_policy_id': '14',
+                'revision_number': 15,
+                'router:external': True,
+                'segments': '16',
+                'shared': True,
+                'status': '17',
+                'subnets': ['18', '19'],
+                'updated_at': '2016-07-09T12:14:57.233772',
+                'vlan_transparent': False,
+            }),
+            openstack.network.v2.network.Network(**{
+                'id': '2',
+                'name': 'test_network_2',
+                'admin_state_up': True,
+                'availability_zone_hints': ['1', '2'],
+                'availability_zones': ['3'],
+                'external': True,
+                'created_at': '2016-03-09T12:14:57.233772',
+                'description': '4',
+                'dns_domain': '5',
+                'ipv4_address_scope': '6',
+                'ipv6_address_scope': '7',
+                'is_default': False,
+                'mtu': 8,
+                'port_security_enabled': True,
+                'project_id': '10',
+                'provider:network_type': '11',
+                'provider:physical_network': '12',
+                'provider:segmentation_id': '13',
+                'qos_policy_id': '14',
+                'revision_number': 15,
+                'router:external': True,
+                'segments': '16',
+                'shared': True,
+                'status': '17',
+                'subnets': ['18', '19'],
+                'updated_at': '2016-07-09T12:14:57.233772',
+                'vlan_transparent': False,
+            }),
+        ]
 
-    def setUp(self):
-        super(RouterTestCase, self).setUp()
-        self._ctx = self.get_mock_ctx('RouterTestCase')
-        current_ctx.set(self._ctx)
+        # Mock list project response
+        mock_connection().network.networks = \
+            mock.MagicMock(return_value=networks)
 
-    @mock.patch(
-        '{0}.create_router'.format(MODULE_PATH),
-        return_value=mock.MagicMock())
-    def test_create(self, *_):
-        router.create()
-        self.assertIn(
-            RESOURCE_ID,
-            self._ctx.instance.runtime_properties)
+        # Mock the quota size response
+        mock_quota_sets.return_value = 20
 
-    def test_delete(self, *_):
-        router.delete()
-
-
-@mock.patch('openstack.connect')
-class PortTestCase(OpenStackTestBase):
-
-    def setUp(self):
-        super(PortTestCase, self).setUp()
-        self._ctx = self.get_mock_ctx('PortTestCase')
-        current_ctx.set(self._ctx)
-
-    @mock.patch(
-        '{0}.create_port'.format(MODULE_PATH),
-        return_value=mock.MagicMock())
-    def test_create(self, *_):
-        port.create()
-        self.assertIn(
-            RESOURCE_ID,
-            self._ctx.instance.runtime_properties)
-
-    def test_delete(self, *_):
-        port.delete()
-
-
-@mock.patch('openstack.connect')
-class SecurityGroupTestCase(OpenStackTestBase):
-
-    def setUp(self):
-        super(SecurityGroupTestCase, self).setUp()
-        self._ctx = self.get_mock_ctx('SecurityGroupTestCase')
-        current_ctx.set(self._ctx)
-
-    @mock.patch(
-        '{0}.create_security_group'.format(MODULE_PATH),
-        return_value=mock.MagicMock())
-    def test_create(self, *_):
-        security_group.create()
-        self.assertIn(
-            RESOURCE_ID,
-            self._ctx.instance.runtime_properties)
-
-    def test_delete(self, *_):
-        security_group.delete()
-
-
-@mock.patch('openstack.connect')
-class SecurityGroupTestCaseRule(OpenStackTestBase):
-
-    def setUp(self):
-        super(SecurityGroupTestCaseRule, self).setUp()
-        self._ctx = self.get_mock_ctx('SecurityGroupTestCaseRule')
-        current_ctx.set(self._ctx)
-
-    @mock.patch(
-        '{0}.create_security_group_rule'.format(MODULE_PATH),
-        return_value=mock.MagicMock())
-    def test_create(self, *_):
-        security_group_rule.create()
-        self.assertIn(
-            RESOURCE_ID,
-            self._ctx.instance.runtime_properties)
-
-    def test_delete(self, *_):
-        security_group_rule.delete()
-
-
-@mock.patch('openstack.connect')
-class FloatingIPTestCase(OpenStackTestBase):
-
-    def setUp(self):
-        super(FloatingIPTestCase, self).setUp()
-        self._ctx = self.get_mock_ctx('FloatingIPTestCase')
-        current_ctx.set(self._ctx)
-
-    @mock.patch(
-        '{0}.create_floating_ip'.format(MODULE_PATH),
-        return_value=mock.MagicMock())
-    def test_create(self, *_):
-        floating_ip.create()
-        self.assertIn(
-            RESOURCE_ID,
-            self._ctx.instance.runtime_properties)
-
-    def test_delete(self, *_):
-        floating_ip.delete()
+        # Call creation validation
+        network.creation_validation()

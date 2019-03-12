@@ -131,7 +131,7 @@ class UserTestCase(OpenStackTestBase):
         mock_connection().identity.get_user = \
             mock.MagicMock(return_value=old_user_instance)
 
-        # Mock get user response
+        # Mock update user response
         mock_connection().identity.update_user = \
             mock.MagicMock(return_value=new_user_instance)
 

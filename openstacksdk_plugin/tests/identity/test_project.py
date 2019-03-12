@@ -171,6 +171,7 @@ class ProjectTestCase(OpenStackTestBase):
         mock_connection().identity.get_project = \
             mock.MagicMock(return_value=old_project_instance)
 
+        # Mock update project response
         mock_connection().identity.update_project = \
             mock.MagicMock(return_value=new_project_instance)
 
@@ -198,7 +199,7 @@ class ProjectTestCase(OpenStackTestBase):
     def test_list_projects(self, mock_connection):
         # Prepare the context for list projects operation
         self._prepare_context_for_operation(
-            test_name='HostAggregateTestCase',
+            test_name='ProjectTestCase',
             ctx_operation_name='cloudify.interfaces.operations.list')
 
         projects = [
@@ -244,7 +245,7 @@ class ProjectTestCase(OpenStackTestBase):
     def test_creation_validation(self, mock_quota_sets, mock_connection):
         # Prepare the context for creation validation projects operation
         self._prepare_context_for_operation(
-            test_name='KeyPairTestCase',
+            test_name='ProjectTestCase',
             ctx_operation_name='cloudify.interfaces.validation.creation')
 
         projects = [
