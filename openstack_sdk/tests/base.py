@@ -49,6 +49,7 @@ class OpenStackSDKTestBase(unittest.TestCase):
             'volume': self._fake_block_storage_volume,
             'volume_attachment': self._fake_compute_volume_attachment,
             'volume_type': self._fake_block_storage_type,
+            'backup': self._fake_block_storage_backup,
             'snapshot': self._fake_block_storage_snapshot,
             'user': self._fake_identity_user,
             'project': self._fake_identity_project,
@@ -309,6 +310,16 @@ class OpenStackSDKTestBase(unittest.TestCase):
         snapshot.create_snapshot = self._gen_openstack_sdk_error()
         snapshot.delete_snapshot = self._gen_openstack_sdk_error()
         self.connection.block_storage = snapshot
+        return self.connection.block_storage
+
+    def _fake_block_storage_backup(self):
+        backup = mock.MagicMock()
+        backup.backups = self._gen_openstack_sdk_error()
+        backup.get_backup = self._gen_openstack_sdk_error()
+        backup.create_backup = self._gen_openstack_sdk_error()
+        backup.delete_backup = self._gen_openstack_sdk_error()
+        backup.restore_backup = self._gen_openstack_sdk_error()
+        self.connection.block_storage = backup
         return self.connection.block_storage
 
     def _fake_identity_user(self):

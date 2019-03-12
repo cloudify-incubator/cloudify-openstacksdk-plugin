@@ -187,3 +187,5 @@ class OpenStackTestBase(unittest.TestCase):
             rel_ctx = MockRelationshipContext(target=rel_subject_ctx,
                                               type=rel_type)
             relationships.append(rel_ctx)
+
+        return relationships

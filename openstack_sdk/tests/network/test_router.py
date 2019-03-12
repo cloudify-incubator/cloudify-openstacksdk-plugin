@@ -61,7 +61,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
         self.assertEqual(response.name, 'test_name')
         self.assertEqual(response.flavor_id, '5')
 
-    def test_list_ports(self):
+    def test_list_routers(self):
         routers = [
             openstack.network.v2.router.Router(**{
                 'id': '1',

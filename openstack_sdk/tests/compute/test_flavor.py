@@ -54,7 +54,7 @@ class FlavorTestCase(base.OpenStackSDKTestBase):
         self.assertEqual(response.links, '2')
         self.assertEqual(response.name, 'test_flavor')
 
-    def test_list_flavor(self):
+    def test_list_flavors(self):
         flavors = [
             openstack.compute.v2.flavor.FlavorDetail(**{
                 'id': '1',

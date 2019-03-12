@@ -91,6 +91,7 @@ IMAGE_STATUS_ACTIVE = 'active'
 # Cloudify node types
 SERVER_GROUP_NODE_TYPE = 'cloudify.nodes.openstack.ServerGroup'
 KEYPAIR_NODE_TYPE = 'cloudify.nodes.openstack.KeyPair'
+IMAGE_NODE_TYPE = 'cloudify.nodes.openstack.Image'
 
 # Cloudify relationship types
 RBAC_POLICY_RELATIONSHIP_TYPE = \

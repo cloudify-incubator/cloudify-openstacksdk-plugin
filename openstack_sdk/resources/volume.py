@@ -52,10 +52,7 @@ class OpenstackVolume(OpenstackResource):
         volume = self.get()
         self.logger.debug(
             'Attempting to delete this volume: {0}'.format(volume))
-        result = self.connection.block_storage.delete_volume(volume)
-        self.logger.debug(
-            'Deleted volume with this result: {0}'.format(result))
-        return result
+        self.connection.block_storage.delete_volume(volume)
 
 
 class OpenstackVolumeType(OpenstackResource):
@@ -89,10 +86,7 @@ class OpenstackVolumeType(OpenstackResource):
         volume_type = self.get()
         self.logger.debug(
             'Attempting to delete this volume type: {0}'.format(volume_type))
-        result = self.connection.block_storage.delete_type(volume_type)
-        self.logger.debug(
-            'Deleted volume type with this result: {0}'.format(result))
-        return result
+        self.connection.block_storage.delete_type(volume_type)
 
 
 class OpenstackVolumeBackup(OpenstackResource):
@@ -140,10 +134,7 @@ class OpenstackVolumeBackup(OpenstackResource):
         volume = self.get()
         self.logger.debug(
             'Attempting to delete this backup: {0}'.format(volume))
-        result = self.connection.block_storage.delete_backup(volume)
-        self.logger.debug(
-            'Deleted backup with this result: {0}'.format(result))
-        return result
+        self.connection.block_storage.delete_backup(volume)
 
 
 class OpenstackVolumeSnapshot(OpenstackResource):
@@ -180,7 +171,4 @@ class OpenstackVolumeSnapshot(OpenstackResource):
         snapshot = self.get()
         self.logger.debug(
             'Attempting to delete this snapshot: {0}'.format(snapshot))
-        result = self.connection.block_storage.delete_snapshot(snapshot)
-        self.logger.debug(
-            'Deleted snapshot with this result: {0}'.format(result))
-        return result
+        self.connection.block_storage.delete_snapshot(snapshot)

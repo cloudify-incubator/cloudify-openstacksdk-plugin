@@ -131,8 +131,7 @@ class ProjectTestCase(OpenStackTestBase):
         for attr in [RESOURCE_ID,
                      OPENSTACK_NAME_PROPERTY,
                      OPENSTACK_TYPE_PROPERTY]:
-            self.assertNotIn(attr,
-                             self._ctx.instance.runtime_properties)
+            self.assertNotIn(attr, self._ctx.instance.runtime_properties)
 
     def test_update(self, mock_connection):
         # Prepare the context for update operation

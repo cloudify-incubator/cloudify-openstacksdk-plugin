@@ -52,7 +52,7 @@ class VolumeTypeTestCase(base.OpenStackSDKTestBase):
         self.assertEqual(response.id, '1')
         self.assertEqual(response.name, 'test_volume_type')
 
-    def test_list_volume_type(self):
+    def test_list_volume_types(self):
         volume_type_list = [
             openstack.block_storage.v2.type.Type(**{
                 'id': '1',
