@@ -109,6 +109,26 @@ class OpenStackTestBase(unittest.TestCase):
 
         return ctx
 
+    def _prepare_context_for_operation(self,
+                                       test_name,
+                                       test_properties={},
+                                       test_runtime_properties={},
+                                       test_relationships=None,
+                                       type_hierarchy=['cloudify.nodes.Root'],
+                                       test_source=None,
+                                       test_target=None,
+                                       ctx_operation_name=None):
+        self._ctx = self.get_mock_ctx(
+            test_name=test_name,
+            test_properties=test_properties,
+            test_runtime_properties=test_runtime_properties,
+            test_relationships=test_relationships,
+            type_hierarchy=type_hierarchy,
+            test_source=test_source,
+            test_target=test_target,
+            ctx_operation_name=ctx_operation_name)
+        current_ctx.set(self._ctx)
+
     def get_mock_relationship_ctx(self,
                                   deployment_name=None,
                                   node_id=None,

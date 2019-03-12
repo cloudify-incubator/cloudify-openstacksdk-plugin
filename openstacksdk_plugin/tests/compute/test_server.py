@@ -57,19 +57,6 @@ class ServerTestCase(OpenStackTestBase):
         super(ServerTestCase, self).setUp()
         self.type_hierarchy = ['cloudify.nodes.Root', 'cloudify.nodes.Compute']
 
-    def _prepare_context_for_operation(self,
-                                       node_id,
-                                       operation_name,
-                                       relationships=None,
-                                       runtime_properties={}):
-        self._ctx = self.get_mock_ctx(
-            test_name=node_id,
-            type_hierarchy=self.type_hierarchy,
-            ctx_operation_name=operation_name,
-            test_relationships=relationships,
-            test_runtime_properties=runtime_properties)
-        current_ctx.set(self._ctx)
-
     def _pepare_relationship_context_for_operation(self,
                                                    deployment_id,
                                                    source,
@@ -93,8 +80,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_create(self, mock_connection):
         # Prepare the context for create operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.lifecycle.create')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.create',
+            type_hierarchy=self.type_hierarchy)
 
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
@@ -134,8 +122,9 @@ class ServerTestCase(OpenStackTestBase):
                        mock_connection):
         # Prepare the context for configure operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.lifecycle.configure')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.configure',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -161,8 +150,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_stop(self, mock_connection):
         # Prepare the context for stop operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.lifecycle.stop')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.stop',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -241,8 +231,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_reboot(self, mock_connection):
         # Prepare the context for reboot operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.lifecycle.reboot')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.reboot',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -297,8 +288,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_suspend(self, mock_connection):
         # Prepare the context for suspend operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.freeze.suspend')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.freeze.suspend',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -332,8 +324,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_resume(self, mock_connection):
         # Prepare the context for resume operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.freeze.resume')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.freeze.resume',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -367,8 +360,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_create_snapshot(self, mock_connection):
         # Prepare the context for snapshot create operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.snapshot.create')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.snapshot.create',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -415,8 +409,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_create_backup(self, mock_connection):
         # Prepare the context for backup create operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.snapshot.create')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.snapshot.create',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -465,8 +460,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_apply_snapshot(self, mock_connection):
         # Prepare the context for snapshot apply operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.snapshot.apply')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.snapshot.apply',
+            type_hierarchy=self.type_hierarchy)
 
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
@@ -528,8 +524,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_apply_backup(self, mock_connection):
         # Prepare the context for backup apply operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.snapshot.apply')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.snapshot.apply',
+            type_hierarchy=self.type_hierarchy)
 
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
@@ -591,8 +588,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_delete_snapshot(self, mock_connection):
         # Prepare the context for snapshot delete operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.snapshot.delete')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.snapshot.delete',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -661,8 +659,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_delete_backup(self, mock_connection):
         # Prepare the context for snapshot delete backup
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.snapshot.delete')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.snapshot.delete',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -1103,8 +1102,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_delete(self, mock_connection):
         # Prepare the context for delete operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.lifecycle.delete')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.delete',
+            type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -1142,8 +1142,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_update(self, mock_connection):
         # Prepare the context for update operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.operations.update')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.operations.update',
+            type_hierarchy=self.type_hierarchy)
         old_server = openstack.compute.v2.server.Server(**{
             'id': '1',
             'name': 'test_server',
@@ -1192,11 +1193,12 @@ class ServerTestCase(OpenStackTestBase):
             self._ctx.instance.runtime_properties[SERVER_OPENSTACK_TYPE][
                 'name'], old_server.name)
 
-    def list_servers(self, mock_connection):
+    def test_list_servers(self, mock_connection):
         # Prepare the context for list servers operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.operations.list')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.operations.list',
+            type_hierarchy=self.type_hierarchy)
         server_list = [
             openstack.compute.v2.server.ServerDetail(**{
                 'id': '1',
@@ -1245,8 +1247,9 @@ class ServerTestCase(OpenStackTestBase):
     def test_creation_validation(self, mock_quota_sets, mock_connection):
         # Prepare the context for creation validation servers operation
         self._prepare_context_for_operation(
-            node_id='ServerTestCase',
-            operation_name='cloudify.interfaces.validation.creation')
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.validation.creation',
+            type_hierarchy=self.type_hierarchy)
         server_list = [
             openstack.compute.v2.server.ServerDetail(**{
                 'id': '1',

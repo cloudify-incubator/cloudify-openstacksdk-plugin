@@ -35,14 +35,14 @@ class KeyPairTestCase(base.OpenStackSDKTestBase):
         self.keypair_instance.connection = self.connection
 
     def test_get_keypair(self):
-        image = openstack.compute.v2.keypair.Keypair(**{
+        keypair = openstack.compute.v2.keypair.Keypair(**{
             'name': 'test_key_pair',
             'fingerprint': 'test_fingerprint',
             'public_key': 'test_public_key'
 
         })
         self.keypair_instance.name = 'test_key_pair'
-        self.fake_client.get_keypair = mock.MagicMock(return_value=image)
+        self.fake_client.get_keypair = mock.MagicMock(return_value=keypair)
 
         response = self.keypair_instance.get()
         self.assertEqual(response.name, 'test_key_pair')
