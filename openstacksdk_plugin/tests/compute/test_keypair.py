@@ -135,12 +135,12 @@ class KeyPairTestCase(OpenStackTestBase):
         # Call delete keypair
         keypair.list_keypairs()
 
-        # Check if the server list saved as runtime properties
+        # Check if the keypairs list saved as runtime properties
         self.assertIn(
             'key_pair_list',
             self._ctx.instance.runtime_properties)
 
-        # Check the size of server list
+        # Check the size of keypairs list
         self.assertEqual(
             len(self._ctx.instance.runtime_properties['key_pair_list']), 2)
 
