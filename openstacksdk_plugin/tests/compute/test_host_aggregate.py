@@ -182,7 +182,7 @@ class HostAggregateTestCase(OpenStackTestBase):
             'aggregate_list',
             self._ctx.instance.runtime_properties)
 
-        # Check the size of server list
+        # Check the size of aggregate list
         self.assertEqual(
             len(self._ctx.instance.runtime_properties['aggregate_list']), 2)
 

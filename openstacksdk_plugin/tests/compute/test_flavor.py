@@ -162,6 +162,6 @@ class KeyPairTestCase(OpenStackTestBase):
             'flavor_list',
             self._ctx.instance.runtime_properties)
 
-        # Check the size of server list
+        # Check the size of flavor list
         self.assertEqual(
             len(self._ctx.instance.runtime_properties['flavor_list']), 2)
