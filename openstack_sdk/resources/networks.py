@@ -296,10 +296,7 @@ class OpenstackFloatingIP(OpenstackResource):
         floating_ip = self.get()
         self.logger.debug(
             'Attempting to delete this floating ip: {0}'.format(floating_ip))
-        result = self.connection.network.delete_ip(floating_ip)
-        self.logger.debug(
-            'Deleted floating ip with this result: {0}'.format(result))
-        return result
+        self.connection.network.delete_ip(floating_ip)
 
     def update(self, new_config=None):
         floating_ip = self.get()
