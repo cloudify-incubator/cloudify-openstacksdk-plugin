@@ -37,7 +37,7 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
 
     def test_get_subnet(self):
         subnet = openstack.network.v2.subnet.Subnet(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'allocation_pools': [{'1': 1}],
             'cidr': '2',
@@ -59,16 +59,17 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
             'updated_at': '18',
             'use_default_subnetpool': True,
         })
-        self.subnet_instance.resource_id = '1'
+        self.subnet_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_subnet = mock.MagicMock(return_value=subnet)
         response = self.subnet_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_name')
 
     def test_list_subnets(self):
         subnets = [
             openstack.network.v2.subnet.Subnet(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name_1',
                 'description': 'test_description_1',
                 'allocation_pools': [{'1': 1}],
@@ -91,7 +92,7 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
                 'use_default_subnetpool': True,
             }),
             openstack.network.v2.subnet.Subnet(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_name_2',
                 'description': 'test_description_2',
                 'allocation_pools': [{'1': 1}],
@@ -121,6 +122,7 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
 
     def test_create_subnet(self):
         subnet = {
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name',
                 'description': 'test_description',
                 'allocation_pools': [{'1': 1}],
@@ -150,7 +152,7 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
     def test_update_subnet(self):
         old_subnet =\
             openstack.network.v2.subnet.Subnet(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name',
                 'description': 'test_description',
                 'allocation_pools': [{'1': 1}],
@@ -181,7 +183,7 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
 
         new_subnet =\
             openstack.network.v2.subnet.Subnet(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name_update',
                 'description': 'test_description_update',
                 'allocation_pools': [{'1': 1}],
@@ -204,7 +206,8 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
                 'use_default_subnetpool': True,
             })
 
-        self.subnet_instance.resource_id = '1'
+        self.subnet_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_subnet = mock.MagicMock(return_value=old_subnet)
         self.fake_client.update_subnet =\
             mock.MagicMock(return_value=new_subnet)
@@ -217,7 +220,7 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_subnet(self):
         subnet = openstack.network.v2.subnet.Subnet(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'allocation_pools': [{'1': 1}],
             'cidr': '2',
@@ -240,7 +243,8 @@ class SubnetTestCase(base.OpenStackSDKTestBase):
             'use_default_subnetpool': True,
         })
 
-        self.subnet_instance.resource_id = '1'
+        self.subnet_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_subnet = mock.MagicMock(return_value=subnet)
         self.fake_client.delete_subnet = mock.MagicMock(return_value=None)
         response = self.subnet_instance.delete()

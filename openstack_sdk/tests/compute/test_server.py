@@ -18,6 +18,8 @@ import mock
 
 # Third party imports
 import openstack.compute.v2.server
+import openstack.compute.v2.volume_attachment
+import openstack.compute.v2.server_interface
 
 # Local imports
 from openstack_sdk.tests import base
@@ -36,7 +38,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_get_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -51,17 +53,17 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         })
 
         self.server_instance.name = 'test_server'
-        self.server_instance.id = '1'
+        self.server_instance.id = 'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
 
         response = self.server_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a34b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_server')
 
     def test_list_servers(self):
         server_list = [
             openstack.compute.v2.server.ServerDetail(**{
-                'id': '1',
+                'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_server_1',
                 'access_ipv4': '1',
                 'access_ipv6': '2',
@@ -74,7 +76,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
                 'key_name': 'test_key_name',
             }),
             openstack.compute.v2.server.ServerDetail(**{
-                'id': '2',
+                'id': 'b24b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_server_2',
                 'access_ipv4': '1',
                 'access_ipv6': '2',
@@ -102,7 +104,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         }
 
         server = {
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -124,7 +126,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_update_server(self):
         old_server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -142,7 +144,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         }
 
         new_server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'update_test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -155,7 +157,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
             'key_name': 'test_key_name',
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=old_server)
         self.fake_client.update_server =\
             mock.MagicMock(return_value=new_server)
@@ -165,7 +168,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -179,7 +182,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.delete_server = mock.MagicMock(return_value=None)
 
@@ -188,7 +192,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_reboot_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -203,7 +207,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.reboot_server = mock.MagicMock(return_value=None)
 
@@ -212,7 +217,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_resume_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -227,7 +232,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.resume_server = mock.MagicMock(return_value=None)
 
@@ -236,7 +242,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_suspend_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -251,7 +257,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.suspend_server = mock.MagicMock(return_value=None)
 
@@ -260,7 +267,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_backup_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -275,7 +282,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.backup_server = mock.MagicMock(return_value=None)
 
@@ -284,7 +292,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_rebuild_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -299,7 +307,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.rebuild_server = mock.MagicMock(return_value=None)
 
@@ -308,7 +317,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_create_image(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -323,7 +332,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.create_server_image = \
             mock.MagicMock(return_value=None)
@@ -333,7 +343,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_start_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -347,7 +357,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.start_server = \
             mock.MagicMock(return_value=None)
@@ -357,7 +368,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_stop_server(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -371,7 +382,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.stop_server = \
             mock.MagicMock(return_value=None)
@@ -381,7 +393,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_get_server_password(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -395,7 +407,8 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
         password = 'rasmuslerdorf'
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.get_server_password = \
             mock.MagicMock(return_value=password)
@@ -405,7 +418,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_list_volume_attachments(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -420,13 +433,14 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         })
         volume_attachments = [
             openstack.compute.v2.volume_attachment.VolumeAttachment(**{
-                'id': '1',
-                'server_id': '1',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
+                'server_id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
                 'volume_id': '1',
                 'attachment_id': '1',
             })
         ]
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.volume_attachments = \
             mock.MagicMock(return_value=volume_attachments)
@@ -436,7 +450,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_get_volume_attachment(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -451,25 +465,27 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         })
         volume_attachment = \
             openstack.compute.v2.volume_attachment.VolumeAttachment(**{
-                'id': '1',
-                'server_id': '2',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
+                'server_id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
                 'volume_id': '3',
                 'attachment_id': '4',
             })
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.get_volume_attachment = \
             mock.MagicMock(return_value=volume_attachment)
 
         response = self.server_instance.get_volume_attachment('4')
-        self.assertEqual(response.id, '1')
-        self.assertEqual(response.server_id, '2')
+        self.assertEqual(response.id, 'a34b5509-d122-4d2f-823e-884bb559afe8')
+        self.assertEqual(response.server_id,
+                         'a34b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.volume_id, '3')
         self.assertEqual(response.attachment_id, '4')
 
     def test_create_volume_attachment(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -489,25 +505,27 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         }
         volume_attachment = \
             openstack.compute.v2.volume_attachment.VolumeAttachment(**{
-                'id': '1',
-                'server_id': '2',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
+                'server_id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
                 'volume_id': '3',
                 'attachment_id': '4',
             })
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.create_volume_attachment = \
             mock.MagicMock(return_value=volume_attachment)
 
         response = self.server_instance.create_volume_attachment(volume_config)
-        self.assertEqual(response.id, '1')
-        self.assertEqual(response.server_id, '2')
+        self.assertEqual(response.id, 'a34b5509-d122-4d2f-823e-884bb559afe8')
+        self.assertEqual(response.server_id,
+                         'a34b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.volume_id, '3')
         self.assertEqual(response.attachment_id, '4')
 
     def test_delete_volume_attachment(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -521,17 +539,19 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.delete_volume_attachment = \
             mock.MagicMock(return_value=None)
 
-        response = self.server_instance.delete_volume_attachment('4')
+        response = self.server_instance.delete_volume_attachment(
+            'a34b5509-d122-4d2f-823e-884bb559afe8')
         self.assertIsNone(response)
 
     def test_list_server_interfaces(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -546,19 +566,20 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         })
         server_interfaces = [
             openstack.compute.v2.server_interface.ServerInterface(**{
-                'id': '1',
-                'net_id': '2',
-                'port_id': '3',
-                'server_id': '1',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe5',
+                'net_id': 'a34b5509-d122-4d2f-823e-884bb559afe6',
+                'port_id': 'a34b5509-d122-4d2f-823e-884bb559afe7',
+                'server_id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             }),
             openstack.compute.v2.server_interface.ServerInterface(**{
-                'id': '2',
-                'net_id': '3',
-                'port_id': '4',
-                'server_id': '1',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe4',
+                'net_id': 'a34b5509-d122-4d2f-823e-884bb559afe2',
+                'port_id': 'a34b5509-d122-4d2f-823e-884bb559afe1',
+                'server_id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             })
         ]
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.server_interfaces = \
             mock.MagicMock(return_value=server_interfaces)
@@ -568,7 +589,7 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
     def test_get_server_interface(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -583,25 +604,30 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         })
         server_interface = \
             openstack.compute.v2.server_interface.ServerInterface(**{
-                'id': '1',
-                'net_id': '2',
-                'port_id': '3',
-                'server_id': '1',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe5',
+                'net_id': 'a34b5509-d122-4d2f-823e-884bb559afe6',
+                'port_id': 'a34b5509-d122-4d2f-823e-884bb559afe7',
+                'server_id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             })
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.get_server_interface = \
             mock.MagicMock(return_value=server_interface)
 
-        response = self.server_instance.get_server_interface('1')
-        self.assertEqual(response.id, '1')
-        self.assertEqual(response.net_id, '2')
-        self.assertEqual(response.port_id, '3')
-        self.assertEqual(response.server_id, '1')
+        response = self.server_instance.get_server_interface(
+            'a34b5509-d122-4d2f-823e-884bb559afe5')
+        self.assertEqual(response.id, 'a34b5509-d122-4d2f-823e-884bb559afe5')
+        self.assertEqual(response.net_id,
+                         'a34b5509-d122-4d2f-823e-884bb559afe6')
+        self.assertEqual(response.port_id,
+                         'a34b5509-d122-4d2f-823e-884bb559afe7')
+        self.assertEqual(response.server_id,
+                         'a34b5509-d122-4d2f-823e-884bb559afe8')
 
     def test_create_server_interface(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -616,29 +642,32 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         })
 
         interface_config = {
-            'port_id': '3',
+            'port_id': 'a34b5509-d122-4d2f-823e-884bb559afa7',
         }
         server_interface = \
             openstack.compute.v2.server_interface.ServerInterface(**{
-                'id': '1',
-                'net_id': None,
-                'port_id': '3',
-                'server_id': '1',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe5',
+                'net_id': 'a34b5509-d122-4d2f-823e-884bb559afe6',
+                'port_id': 'a34b5509-d122-4d2f-823e-884bb559afa7',
+                'server_id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             })
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.create_server_interface = \
             mock.MagicMock(return_value=server_interface)
 
         response = \
             self.server_instance.create_server_interface(interface_config)
-        self.assertEqual(response.id, '1')
-        self.assertEqual(response.server_id, '1')
-        self.assertEqual(response.port_id, '3')
+        self.assertEqual(response.id, 'a34b5509-d122-4d2f-823e-884bb559afe5')
+        self.assertEqual(response.server_id,
+                         'a34b5509-d122-4d2f-823e-884bb559afe8')
+        self.assertEqual(response.port_id,
+                         'a34b5509-d122-4d2f-823e-884bb559afa7')
 
     def test_delete_server_interface(self):
         server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -652,42 +681,52 @@ class ServerTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.get_server = mock.MagicMock(return_value=server)
         self.fake_client.delete_server_interface = \
             mock.MagicMock(return_value=None)
 
-        response = self.server_instance.delete_server_interface('1')
+        response = self.server_instance.delete_server_interface(
+            'a34b5509-d122-4d2f-823e-884bb559afe5')
         self.assertIsNone(response)
 
     def test_add_security_group_to_server(self):
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.add_security_group_to_server = \
             mock.MagicMock(return_value=None)
 
-        response = self.server_instance.add_security_group_to_server('1')
+        response = self.server_instance.add_security_group_to_server(
+            'a34b5509-d122-4d2f-823e-884bb559afe4')
         self.assertIsNone(response)
 
     def test_remove_security_group_from_server(self):
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.remove_security_group_from_server = \
             mock.MagicMock(return_value=None)
 
-        response = self.server_instance.remove_security_group_from_server('1')
+        response = self.server_instance.remove_security_group_from_server(
+            'a34b5509-d122-4d2f-823e-884bb559afe4')
         self.assertIsNone(response)
 
     def test_add_floating_ip_to_server(self):
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            '1a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.add_floating_ip_to_server = \
             mock.MagicMock(return_value=None)
 
-        response = self.server_instance.add_floating_ip_to_server('1')
+        response = self.server_instance.add_floating_ip_to_server(
+            'a34b5509-d122-4d2f-823e-884bb559afe2')
         self.assertIsNone(response)
 
     def test_remove_floating_ip_from_server(self):
-        self.server_instance.resource_id = '1'
+        self.server_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.remove_floating_ip_from_server = \
             mock.MagicMock(return_value=None)
 
-        response = self.server_instance.remove_floating_ip_from_server('1')
+        response = self.server_instance.remove_floating_ip_from_server(
+            'a34b5509-d122-4d2f-823e-884bb559afe2')
         self.assertIsNone(response)

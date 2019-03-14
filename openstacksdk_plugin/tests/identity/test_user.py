@@ -48,7 +48,7 @@ class UserTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.create')
 
         user_instance = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_user',
             'is_enabled': True,
             'email': 'test_email@test.com',
@@ -62,7 +62,7 @@ class UserTestCase(OpenStackTestBase):
         user.create()
 
         self.assertEqual(self._ctx.instance.runtime_properties[RESOURCE_ID],
-                         '1')
+                         'a95b5509-c122-4c2f-823e-884bb559afe8')
 
         self.assertEqual(
             self._ctx.instance.runtime_properties[OPENSTACK_NAME_PROPERTY],
@@ -79,7 +79,7 @@ class UserTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
 
         user_instance = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_user',
             'is_enabled': True,
             'email': 'test_email@test.com',
@@ -108,7 +108,7 @@ class UserTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.operations.update')
 
         old_user_instance = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_user',
             'is_enabled': True,
             'email': 'test_email@test.com',
@@ -120,7 +120,7 @@ class UserTestCase(OpenStackTestBase):
         }
 
         new_user_instance = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_updated_user',
             'is_enabled': True,
             'email': 'test_email@test.com',
@@ -146,13 +146,13 @@ class UserTestCase(OpenStackTestBase):
 
         users = [
             openstack.identity.v2.user.User(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_user_!',
                 'is_enabled': True,
                 'email': 'test1_email@test.com',
             }),
             openstack.identity.v2.user.User(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_user_2',
                 'is_enabled': True,
                 'email': 'test2_email@test.com',

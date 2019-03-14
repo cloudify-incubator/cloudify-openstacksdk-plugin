@@ -36,7 +36,7 @@ class FlavorTestCase(base.OpenStackSDKTestBase):
 
     def test_get_flavor(self):
         flavor = openstack.compute.v2.flavor.Flavor(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_flavor',
             'links': '2',
             'description': 'Testing flavor',
@@ -46,18 +46,19 @@ class FlavorTestCase(base.OpenStackSDKTestBase):
             'swap': 8
 
         })
-        self.flavor_instance.resource_id = '1'
+        self.flavor_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_flavor = mock.MagicMock(return_value=flavor)
 
         response = self.flavor_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.links, '2')
         self.assertEqual(response.name, 'test_flavor')
 
     def test_list_flavors(self):
         flavors = [
             openstack.compute.v2.flavor.FlavorDetail(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_flavor_1',
                 'links': '2',
                 'description': 'Testing flavor 1',
@@ -67,7 +68,7 @@ class FlavorTestCase(base.OpenStackSDKTestBase):
                 'swap': 8
             }),
             openstack.compute.v2.flavor.FlavorDetail(**{
-                'id': '2',
+                'id': 'fg5b5509-c122-4c2f-823e-884bb559afes',
                 'name': 'test_flavor_2',
                 'links': '3',
                 'description': 'Testing flavor 2',
@@ -85,7 +86,7 @@ class FlavorTestCase(base.OpenStackSDKTestBase):
 
     def test_create_flavor(self):
         flavor = {
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'links': '2',
             'name': 'test_flavor',
             'description': 'Testing flavor',
@@ -105,7 +106,7 @@ class FlavorTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_flavor(self):
         flavor = openstack.compute.v2.flavor.Flavor(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_flavor',
             'links': '2',
             'description': 'Testing flavor',
@@ -116,7 +117,8 @@ class FlavorTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.flavor_instance.resource_id = '1'
+        self.flavor_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_flavor = mock.MagicMock(return_value=flavor)
         self.fake_client.delete_flavor = mock.MagicMock(return_value=None)
 

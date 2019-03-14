@@ -61,7 +61,7 @@ class FloatingIPTestCase(OpenStackTestBase):
                 'instance': {
                     'id': 'network-1-efrgsd',
                     'runtime_properties': {
-                        RESOURCE_ID: '1',
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe8',
                         OPENSTACK_TYPE_PROPERTY: NETWORK_OPENSTACK_TYPE,
                         OPENSTACK_NAME_PROPERTY: 'test-network'
                     }
@@ -81,7 +81,7 @@ class FloatingIPTestCase(OpenStackTestBase):
                 'instance': {
                     'id': 'port-1-efrgsd',
                     'runtime_properties': {
-                        RESOURCE_ID: '2',
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe7',
                         OPENSTACK_TYPE_PROPERTY: PORT_OPENSTACK_TYPE,
                         OPENSTACK_NAME_PROPERTY: 'test-port'
                     }
@@ -101,7 +101,7 @@ class FloatingIPTestCase(OpenStackTestBase):
                 'instance': {
                     'id': 'subnet-1-efrgsd',
                     'runtime_properties': {
-                        RESOURCE_ID: '3',
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe6',
                         OPENSTACK_TYPE_PROPERTY: SUBNET_OPENSTACK_TYPE,
                         OPENSTACK_NAME_PROPERTY: 'test-subnet'
                     }
@@ -117,7 +117,7 @@ class FloatingIPTestCase(OpenStackTestBase):
             test_relationships=floating_ip_rels)
 
         floating_ip_instance = openstack.network.v2.floating_ip.FloatingIP(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
             'description': 'test_description',
             'name': '10.0.0.1',
             'created_at': '2016-03-09T12:14:57.233772',
@@ -145,7 +145,7 @@ class FloatingIPTestCase(OpenStackTestBase):
         floating_ip.create()
 
         self.assertEqual(self._ctx.instance.runtime_properties[RESOURCE_ID],
-                         '1')
+                         'a95b5509-c122-4c2f-823e-884bb559afe4')
 
         self.assertEqual(
             self._ctx.instance.runtime_properties[OPENSTACK_NAME_PROPERTY],
@@ -166,7 +166,7 @@ class FloatingIPTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
 
         floating_ip_instance = openstack.network.v2.floating_ip.FloatingIP(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
             'description': 'test_description',
             'name': '10.0.0.1',
             'created_at': '2016-03-09T12:14:57.233772',
@@ -211,7 +211,7 @@ class FloatingIPTestCase(OpenStackTestBase):
 
         old_floating_ip_instance = \
             openstack.network.v2.floating_ip.FloatingIP(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
                 'description': 'test_description',
                 'name': '10.0.0.1',
                 'created_at': '2016-03-09T12:14:57.233772',
@@ -237,7 +237,7 @@ class FloatingIPTestCase(OpenStackTestBase):
 
         new_floating_ip_instance = \
             openstack.network.v2.floating_ip.FloatingIP(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
                 'description': 'test_description',
                 'name': '10.0.0.1',
                 'created_at': '2016-03-09T12:14:57.233772',
@@ -269,14 +269,14 @@ class FloatingIPTestCase(OpenStackTestBase):
         floating_ip.update(args=new_config)
 
     def test_list_floating_ips(self, mock_connection):
-        # Prepare the context for list projects operation
+        # Prepare the context for list floating ips operation
         self._prepare_context_for_operation(
             test_name='FloatingIPTestCase',
             ctx_operation_name='cloudify.interfaces.operations.list')
 
         floating_ips = [
             openstack.network.v2.floating_ip.FloatingIP(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
                 'description': 'test_description',
                 'name': '10.0.0.1',
                 'created_at': '2016-03-09T12:14:57.233772',
@@ -296,7 +296,7 @@ class FloatingIPTestCase(OpenStackTestBase):
                 'tags': ['15', '16']
             }),
             openstack.network.v2.floating_ip.FloatingIP(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe3',
                 'description': 'test_description_1',
                 'name': '10.0.0.2',
                 'created_at': '2016-03-09T12:14:57.233772',
@@ -342,7 +342,7 @@ class FloatingIPTestCase(OpenStackTestBase):
 
         floating_ips = [
             openstack.network.v2.floating_ip.FloatingIP(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
                 'description': 'test_description',
                 'name': '10.0.0.1',
                 'created_at': '2016-03-09T12:14:57.233772',
@@ -362,7 +362,7 @@ class FloatingIPTestCase(OpenStackTestBase):
                 'tags': ['15', '16']
             }),
             openstack.network.v2.floating_ip.FloatingIP(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe3',
                 'description': 'test_description_1',
                 'name': '10.0.0.2',
                 'created_at': '2016-03-09T12:14:57.233772',

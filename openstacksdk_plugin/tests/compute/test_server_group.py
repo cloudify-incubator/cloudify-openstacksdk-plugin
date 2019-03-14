@@ -47,7 +47,7 @@ class ServerGroupTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.create')
 
         server_instance = openstack.compute.v2.server_group.ServerGroup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server_group',
             'members': ['server1', 'server2'],
             'metadata': {'k': 'v'},
@@ -62,7 +62,7 @@ class ServerGroupTestCase(OpenStackTestBase):
         server_group.create()
 
         self.assertEqual(self._ctx.instance.runtime_properties[RESOURCE_ID],
-                         '1')
+                         'a95b5509-c122-4c2f-823e-884bb559afe8')
 
         self.assertEqual(
             self._ctx.instance.runtime_properties[OPENSTACK_NAME_PROPERTY],
@@ -79,7 +79,7 @@ class ServerGroupTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
 
         server_instance = openstack.compute.v2.server_group.ServerGroup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server_group',
             'members': ['server1', 'server2'],
             'metadata': {'k': 'v'},
@@ -125,15 +125,15 @@ class ServerGroupTestCase(OpenStackTestBase):
 
         server_group_list = [
             openstack.compute.v2.server_group.ServerGroup(**{
-                'id': '1',
-                'name': 'test_server_group',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+                'name': 'test_server_group_1',
                 'members': ['server1', 'server2'],
                 'metadata': {'k': 'v'},
                 'policies': ['anti-affinity'],
             }),
             openstack.compute.v2.server_group.ServerGroup(**{
-                'id': '1',
-                'name': 'test_server_group',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
+                'name': 'test_server_group_2',
                 'members': ['server2', 'server3'],
                 'metadata': {'k': 'v'},
                 'policies': ['anti-affinity'],
@@ -164,15 +164,15 @@ class ServerGroupTestCase(OpenStackTestBase):
 
         server_group_list = [
             openstack.compute.v2.server_group.ServerGroup(**{
-                'id': '1',
-                'name': 'test_server_group',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+                'name': 'test_server_group_1',
                 'members': ['server1', 'server2'],
                 'metadata': {'k': 'v'},
                 'policies': ['anti-affinity'],
             }),
             openstack.compute.v2.server_group.ServerGroup(**{
-                'id': '1',
-                'name': 'test_server_group',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
+                'name': 'test_server_group_2',
                 'members': ['server2', 'server3'],
                 'metadata': {'k': 'v'},
                 'policies': ['anti-affinity'],

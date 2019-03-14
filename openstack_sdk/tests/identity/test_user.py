@@ -36,29 +36,29 @@ class UserTestCase(base.OpenStackSDKTestBase):
 
     def test_get_user(self):
         user = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_user',
             'is_enabled': True,
             'email': 'test_email@test.com',
 
         })
-        self.user_instance.resource_id = '1'
+        self.user_instance.resource_id = 'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_user = mock.MagicMock(return_value=user)
 
         response = self.user_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_user')
 
     def test_list_users(self):
         users = [
             openstack.identity.v2.user.User(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_user_1',
                 'is_enabled': True,
                 'email': 'test1_email@test.com',
             }),
             openstack.identity.v2.user.User(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_user_2',
                 'is_enabled': True,
                 'email': 'test2_email@test.com',
@@ -72,7 +72,7 @@ class UserTestCase(base.OpenStackSDKTestBase):
 
     def test_create_user(self):
         user = {
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_user_1',
             'is_enabled': True,
             'email': 'test1_email@test.com',
@@ -87,7 +87,7 @@ class UserTestCase(base.OpenStackSDKTestBase):
 
     def test_update_user(self):
         old_user = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_user_1',
             'is_enabled': True,
             'email': 'test1_email@test.com',
@@ -100,14 +100,14 @@ class UserTestCase(base.OpenStackSDKTestBase):
         }
 
         new_user = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_updated_name',
             'is_enabled': False,
             'email': 'test1_email@test.com',
 
         })
 
-        self.user_instance.resource_id = '1'
+        self.user_instance.resource_id = 'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_user = mock.MagicMock(return_value=old_user)
         self.fake_client.update_user = mock.MagicMock(return_value=new_user)
 
@@ -117,14 +117,14 @@ class UserTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_user(self):
         user = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_user',
             'is_enabled': True,
             'email': 'test_email@test.com',
 
         })
 
-        self.user_instance.resource_id = '1'
+        self.user_instance.resource_id = 'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_user = mock.MagicMock(return_value=user)
         self.fake_client.delete_user = mock.MagicMock(return_value=None)
 

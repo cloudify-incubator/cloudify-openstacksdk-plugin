@@ -37,32 +37,33 @@ class VolumeBackupTestCase(base.OpenStackSDKTestBase):
 
     def test_get_backup(self):
         volume_backup_instance = openstack.block_storage.v2.backup.Backup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_backup',
             'description': 'volume_backup_description',
             'availability_zone': 'test_availability_zone',
             'status': 'available'
 
         })
-        self.volume_backup_instance.resource_id = '1'
+        self.volume_backup_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_backup = \
             mock.MagicMock(return_value=volume_backup_instance)
 
         response = self.volume_backup_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_backup')
 
     def test_list_backups(self):
         volume_backups = [
             openstack.block_storage.v2.backup.Backup(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_volume_backup_1',
                 'description': 'volume_backup_description',
                 'availability_zone': 'test_availability_zone',
                 'status': 'available'
             }),
             openstack.block_storage.v2.backup.Backup(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_volume_backup_2',
                 'description': 'volume_backup_description',
                 'availability_zone': 'test_availability_zone',
@@ -76,7 +77,7 @@ class VolumeBackupTestCase(base.OpenStackSDKTestBase):
 
     def test_create_backup(self):
         volume_backup = {
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_volume_backup_1',
             'description': 'volume_backup_description',
             'availability_zone': 'test_availability_zone',
@@ -90,13 +91,14 @@ class VolumeBackupTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_backup(self):
         volume_backup = openstack.block_storage.v2.backup.Backup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_volume_backup_1',
             'description': 'volume_backup_description',
             'availability_zone': 'test_availability_zone',
         })
 
-        self.volume_backup_instance.resource_id = '1'
+        self.volume_backup_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_backup = mock.MagicMock(
             return_value=volume_backup)
         self.fake_client.delete_backup = mock.MagicMock(return_value=None)
@@ -106,14 +108,15 @@ class VolumeBackupTestCase(base.OpenStackSDKTestBase):
 
     def test_restore_backup(self):
         volume_backup = openstack.block_storage.v2.backup.Backup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_volume_backup_1',
             'description': 'volume_backup_description',
             'availability_zone': 'test_availability_zone',
             'status': 'available'
         })
 
-        self.volume_backup_instance.resource_id = '1'
+        self.volume_backup_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
 
         self.fake_client.restore_backup = \
             mock.MagicMock(return_value=volume_backup)

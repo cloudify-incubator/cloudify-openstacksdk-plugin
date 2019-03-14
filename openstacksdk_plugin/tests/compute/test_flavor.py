@@ -47,7 +47,7 @@ class KeyPairTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.create')
 
         flavor_instance = openstack.compute.v2.flavor.Flavor(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_flavor',
             'links': '2',
             'description': 'Testing flavor',
@@ -65,7 +65,7 @@ class KeyPairTestCase(OpenStackTestBase):
         flavor.create()
 
         self.assertEqual(self._ctx.instance.runtime_properties[RESOURCE_ID],
-                         '1')
+                         'a95b5509-c122-4c2f-823e-884bb559afe8')
 
         self.assertEqual(
             self._ctx.instance.runtime_properties[OPENSTACK_NAME_PROPERTY],
@@ -82,7 +82,7 @@ class KeyPairTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
 
         flavor_instance = openstack.compute.v2.flavor.Flavor(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_flavor',
             'links': '2',
             'description': 'Testing flavor',
@@ -131,7 +131,7 @@ class KeyPairTestCase(OpenStackTestBase):
 
         flavors = [
             openstack.compute.v2.flavor.FlavorDetail(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_flavor_1',
                 'links': '2',
                 'description': 'Testing flavor 1',
@@ -141,7 +141,7 @@ class KeyPairTestCase(OpenStackTestBase):
                 'swap': 8
             }),
             openstack.compute.v2.flavor.FlavorDetail(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_flavor_2',
                 'links': '3',
                 'description': 'Testing flavor 2',

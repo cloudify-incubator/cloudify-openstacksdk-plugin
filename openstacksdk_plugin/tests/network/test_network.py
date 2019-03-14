@@ -46,7 +46,7 @@ class NetworkTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.create')
 
         network_instance = openstack.network.v2.network.Network(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
             'name': 'test_network',
             'admin_state_up': True,
             'availability_zone_hints': ['1', '2'],
@@ -83,7 +83,7 @@ class NetworkTestCase(OpenStackTestBase):
         network.create()
 
         self.assertEqual(self._ctx.instance.runtime_properties[RESOURCE_ID],
-                         '1')
+                         'a95b5509-c122-4c2f-823e-884bb559afe4')
 
         self.assertEqual(
             self._ctx.instance.runtime_properties[OPENSTACK_NAME_PROPERTY],
@@ -100,7 +100,7 @@ class NetworkTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
 
         network_instance = openstack.network.v2.network.Network(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
             'name': 'test_network',
             'admin_state_up': True,
             'availability_zone_hints': ['1', '2'],
@@ -152,7 +152,7 @@ class NetworkTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.operations.update')
 
         old_network_instance = openstack.network.v2.network.Network(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
             'name': 'test_network',
             'admin_state_up': True,
             'availability_zone_hints': ['1', '2'],
@@ -186,7 +186,7 @@ class NetworkTestCase(OpenStackTestBase):
         }
 
         new_network_instance = openstack.network.v2.network.Network(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
             'name': 'test_updated_network',
             'admin_state_up': True,
             'availability_zone_hints': ['1', '2'],
@@ -235,7 +235,7 @@ class NetworkTestCase(OpenStackTestBase):
 
         networks = [
             openstack.network.v2.network.Network(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
                 'name': 'test_network_1',
                 'admin_state_up': True,
                 'availability_zone_hints': ['1', '2'],
@@ -264,7 +264,7 @@ class NetworkTestCase(OpenStackTestBase):
                 'vlan_transparent': False,
             }),
             openstack.network.v2.network.Network(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe3',
                 'name': 'test_network_2',
                 'admin_state_up': True,
                 'availability_zone_hints': ['1', '2'],
@@ -319,7 +319,7 @@ class NetworkTestCase(OpenStackTestBase):
 
         networks = [
             openstack.network.v2.network.Network(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
                 'name': 'test_network_1',
                 'admin_state_up': True,
                 'availability_zone_hints': ['1', '2'],
@@ -348,7 +348,7 @@ class NetworkTestCase(OpenStackTestBase):
                 'vlan_transparent': False,
             }),
             openstack.network.v2.network.Network(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe3',
                 'name': 'test_network_2',
                 'admin_state_up': True,
                 'availability_zone_hints': ['1', '2'],

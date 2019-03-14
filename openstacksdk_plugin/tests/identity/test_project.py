@@ -72,7 +72,7 @@ class ProjectTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.create')
 
         project_instance = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -90,7 +90,7 @@ class ProjectTestCase(OpenStackTestBase):
         project.create()
 
         self.assertEqual(self._ctx.instance.runtime_properties[RESOURCE_ID],
-                         '1')
+                         'a95b5509-c122-4c2f-823e-884bb559afe8')
 
         self.assertEqual(
             self._ctx.instance.runtime_properties[OPENSTACK_NAME_PROPERTY],
@@ -107,7 +107,7 @@ class ProjectTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
 
         project_instance = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -140,7 +140,7 @@ class ProjectTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.operations.update_project')
 
         old_project_instance = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -156,7 +156,7 @@ class ProjectTestCase(OpenStackTestBase):
         }
 
         new_project_instance = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_updated_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -204,7 +204,7 @@ class ProjectTestCase(OpenStackTestBase):
 
         projects = [
             openstack.identity.v3.project.Project(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_project_1',
                 'description': 'Testing Project 1',
                 'domain_id': 'test_domain_id',
@@ -214,9 +214,9 @@ class ProjectTestCase(OpenStackTestBase):
                 'parent_id': 'test_parent_id'
             }),
             openstack.identity.v3.project.Project(**{
-                'id': '2',
-                'name': 'test_project_1',
-                'description': 'Testing Project 1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
+                'name': 'test_project_2',
+                'description': 'Testing Project 2',
                 'domain_id': 'test_domain_id',
                 'enabled': True,
                 'is_domain': True,
@@ -250,7 +250,7 @@ class ProjectTestCase(OpenStackTestBase):
 
         projects = [
             openstack.identity.v3.project.Project(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_project_1',
                 'description': 'Testing Project 1',
                 'domain_id': 'test_domain_id',
@@ -260,9 +260,9 @@ class ProjectTestCase(OpenStackTestBase):
                 'parent_id': 'test_parent_id'
             }),
             openstack.identity.v3.project.Project(**{
-                'id': '2',
-                'name': 'test_project_1',
-                'description': 'Testing Project 1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
+                'name': 'test_project_2',
+                'description': 'Testing Project 2',
                 'domain_id': 'test_domain_id',
                 'enabled': True,
                 'is_domain': True,
@@ -292,7 +292,7 @@ class ProjectTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.start')
 
         project_instance = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -326,7 +326,7 @@ class ProjectTestCase(OpenStackTestBase):
             test_properties=properties)
 
         project_instance = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -353,27 +353,27 @@ class ProjectTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.start')
 
         user_instance_1 = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'user-1',
             'email': 'test_email',
             'is_enabled': True
 
         })
         role_instance_1 = openstack.identity.v2.role.Role(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': 'test-role-1',
             'description': 'Testing Role 1',
             'is_enabled': True
         })
         role_instance_2 = openstack.identity.v2.role.Role(**{
-            'id': '2',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe6',
             'name': 'test-role-2',
             'description': 'Testing Role 2',
             'domain_id': 'test_domain_id',
             'is_enabled': True
         })
         role_instance_3 = openstack.identity.v2.role.Role(**{
-            'id': '3',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe5',
             'name': 'test-role-3',
             'description': 'Testing Role 3',
             'is_enabled': True
@@ -398,27 +398,27 @@ class ProjectTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.start')
 
         user_instance_1 = openstack.identity.v2.user.User(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'user-1',
             'email': 'test_email',
             'is_enabled': True
 
         })
         role_instance_1 = openstack.identity.v2.role.Role(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': 'test-role-1',
             'description': 'Testing Role 1',
             'is_enabled': True
         })
         role_instance_2 = openstack.identity.v2.role.Role(**{
-            'id': '2',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe6',
             'name': 'test-role-2',
             'description': 'Testing Role 2',
             'domain_id': 'test_domain_id',
             'is_enabled': True
         })
         role_instance_3 = openstack.identity.v2.role.Role(**{
-            'id': '3',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe5',
             'name': 'test-role-3',
             'description': 'Testing Role 3',
             'is_enabled': True
@@ -434,7 +434,7 @@ class ProjectTestCase(OpenStackTestBase):
                                         role_instance_3])
 
         project_instance = OpenstackProject(client_config=self.client_config)
-        project_instance.resource_id = '1'
+        project_instance.resource_id = 'a95b5509-c122-4c2f-823e-884bb559afe9'
 
         # Call start project
         project._assign_users(project_instance, self.users)

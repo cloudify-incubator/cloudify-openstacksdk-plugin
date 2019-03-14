@@ -37,23 +37,24 @@ class VolumeTestCase(base.OpenStackSDKTestBase):
 
     def test_get_volume(self):
         volume_instance = openstack.block_storage.v2.volume.Volume(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_volume',
             'description': 'volume_description',
             'status': 'available'
         })
-        self.volume_instance.resource_id = '1'
+        self.volume_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_volume = \
             mock.MagicMock(return_value=volume_instance)
 
         response = self.volume_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_volume')
 
     def test_list_volumes(self):
         volumes = [
             openstack.block_storage.v2.volume.Volume(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_volume_1',
                 'description': 'volume_description_1',
                 'availability_zone': 'test_availability_zone',
@@ -61,7 +62,7 @@ class VolumeTestCase(base.OpenStackSDKTestBase):
                 'status': 'available'
             }),
             openstack.block_storage.v2.volume.Volume(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_volume_2',
                 'description': 'volume_description_2',
                 'availability_zone': 'test_availability_zone',
@@ -89,7 +90,7 @@ class VolumeTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_volume(self):
         volume_instance = openstack.block_storage.v2.volume.Volume(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_volume_1',
             'description': 'volume_description_1',
             'availability_zone': 'test_availability_zone',
@@ -97,7 +98,8 @@ class VolumeTestCase(base.OpenStackSDKTestBase):
             'status': 'available'
         })
 
-        self.volume_instance.resource_id = '1'
+        self.volume_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_volume = mock.MagicMock(
             return_value=volume_instance)
         self.fake_client.delete_volume = mock.MagicMock(return_value=None)

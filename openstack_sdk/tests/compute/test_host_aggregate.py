@@ -37,28 +37,29 @@ class HostAggregateTestCase(base.OpenStackSDKTestBase):
 
     def test_get_host_aggregate(self):
         aggregate = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_aggregate',
             'availability_zone': 'test_availability_zone',
         })
 
         self.host_aggregate_instance.name = 'test_aggregate'
-        self.host_aggregate_instance.id = '1'
+        self.host_aggregate_instance.id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_aggregate = mock.MagicMock(return_value=aggregate)
 
         response = self.host_aggregate_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a34b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_aggregate')
 
     def test_list_aggregates(self):
         aggregate_list = [
             openstack.compute.v2.aggregate.Aggregate(**{
-                'id': '1',
+                'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_aggregate_1',
                 'availability_zone': 'test_availability_zone_1',
             }),
             openstack.compute.v2.aggregate.Aggregate(**{
-                'id': '2',
+                'id': 'a44b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_aggregate_2',
                 'availability_zone': 'test_availability_zone_2',
             }),
@@ -76,7 +77,7 @@ class HostAggregateTestCase(base.OpenStackSDKTestBase):
         }
 
         aggregate = {
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_aggregate',
             'availability_zone': 'test_availability_zone',
         }
@@ -91,7 +92,7 @@ class HostAggregateTestCase(base.OpenStackSDKTestBase):
 
     def test_update_aggregate(self):
         old_aggregate = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_aggregate',
             'availability_zone': 'test_availability_zone',
         })
@@ -101,12 +102,13 @@ class HostAggregateTestCase(base.OpenStackSDKTestBase):
         }
 
         new_aggregate = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'update_test_aggregate',
             'availability_zone': 'test_availability_zone',
         })
 
-        self.host_aggregate_instance.resource_id = '1'
+        self.host_aggregate_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_aggregate = \
             mock.MagicMock(return_value=old_aggregate)
         self.fake_client.update_aggregate =\
@@ -117,13 +119,14 @@ class HostAggregateTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_server(self):
         aggregate = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_aggregate',
             'availability_zone': 'test_availability_zone',
 
         })
 
-        self.host_aggregate_instance.resource_id = '1'
+        self.host_aggregate_instance.resource_id = \
+            'a34b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_aggregate = mock.MagicMock(return_value=aggregate)
         self.fake_client.delete_aggregate = mock.MagicMock(return_value=None)
 

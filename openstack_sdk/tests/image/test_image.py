@@ -36,7 +36,7 @@ class ImageTestCase(base.OpenStackSDKTestBase):
 
     def test_get_image(self):
         image = openstack.image.v2.image.Image(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_image',
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -44,18 +44,19 @@ class ImageTestCase(base.OpenStackSDKTestBase):
             'size': 258540032
 
         })
-        self.image_instance.resource_id = '1'
+        self.image_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_image = mock.MagicMock(return_value=image)
 
         response = self.image_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_image')
         self.assertEqual(response.container_format, 'test_bare')
 
     def test_list_images(self):
         image_list = [
             openstack.image.v2.image.Image(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_image_1',
                 'container_format': 'test_bare',
                 'disk_format': 'test_format_1',
@@ -63,7 +64,7 @@ class ImageTestCase(base.OpenStackSDKTestBase):
                 'size': 258540032
             }),
             openstack.image.v2.image.Image(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_image_2',
                 'container_format': 'test_bare',
                 'disk_format': 'test_format',
@@ -79,7 +80,7 @@ class ImageTestCase(base.OpenStackSDKTestBase):
 
     def test_create_image(self):
         image = {
-            'id': '2',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': 'test_image_2',
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -96,7 +97,7 @@ class ImageTestCase(base.OpenStackSDKTestBase):
 
     def test_update_image(self):
         old_image = openstack.image.v2.image.Image(**{
-            'id': '2',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': 'test_image_2',
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -111,7 +112,7 @@ class ImageTestCase(base.OpenStackSDKTestBase):
         }
 
         new_image = openstack.image.v2.image.Image(**{
-            'id': '2',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': 'test_image_2',
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -121,7 +122,8 @@ class ImageTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.image_instance.resource_id = '2'
+        self.image_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe7'
         self.fake_client.get_image = mock.MagicMock(return_value=old_image)
         self.fake_client.update_image = mock.MagicMock(return_value=new_image)
 
@@ -130,7 +132,7 @@ class ImageTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_image(self):
         image = openstack.image.v2.image.Image(**{
-            'id': '2',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': 'test_image_2',
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -140,7 +142,8 @@ class ImageTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.image_instance.resource_id = '2'
+        self.image_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe7'
         self.fake_client.get_image = mock.MagicMock(return_value=image)
         self.fake_client.delete_image = mock.MagicMock(return_value=None)
 

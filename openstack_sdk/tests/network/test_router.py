@@ -36,7 +36,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
     def test_get_router(self):
         router = openstack.network.v2.router.Router(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'description': 'test_description',
             'availability_zone_hints': ['1'],
@@ -53,18 +53,19 @@ class RouterTestCase(base.OpenStackSDKTestBase):
             'updated_at': 'timestamp2',
 
         })
-        self.router_instance.resource_id = '1'
+        self.router_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_router = mock.MagicMock(return_value=router)
 
         response = self.router_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_name')
         self.assertEqual(response.flavor_id, '5')
 
     def test_list_routers(self):
         routers = [
             openstack.network.v2.router.Router(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name_1',
                 'description': 'test_description_1',
                 'availability_zone_hints': ['1'],
@@ -82,7 +83,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
             }),
             openstack.network.v2.router.Router(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_name_2',
                 'description': 'test_description_2',
                 'availability_zone_hints': ['1'],
@@ -107,6 +108,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
     def test_create_router(self):
         router = {
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'description': 'test_description',
             'availability_zone_hints': ['1'],
@@ -128,7 +130,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
     def test_update_router(self):
         old_router = openstack.network.v2.router.Router(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'description': 'test_description',
             'availability_zone_hints': ['1'],
@@ -153,7 +155,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
         }
 
         new_router = openstack.network.v2.router.Router(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name_update',
             'description': 'test_description_update',
             'availability_zone_hints': ['1'],
@@ -171,7 +173,8 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.router_instance.resource_id = '1'
+        self.router_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_router = mock.MagicMock(return_value=old_router)
         self.fake_client.update_router = \
             mock.MagicMock(return_value=new_router)
@@ -183,7 +186,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_router(self):
         router = openstack.network.v2.router.Router(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'description': 'test_description',
             'availability_zone_hints': ['1'],
@@ -201,7 +204,8 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.router_instance.resource_id = '1'
+        self.router_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_router = mock.MagicMock(return_value=router)
         self.fake_client.delete_router = mock.MagicMock(return_value=None)
 
@@ -210,7 +214,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
     def test_add_interface_router(self):
         router = openstack.network.v2.router.Router(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'description': 'test_description',
             'availability_zone_hints': ['1'],
@@ -228,7 +232,8 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.router_instance.resource_id = '1'
+        self.router_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_router = mock.MagicMock(return_value=router)
         self.fake_client.add_interface_to_router = \
             mock.MagicMock(return_value=None)
@@ -238,7 +243,7 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
     def test_remove_interface_router(self):
         router = openstack.network.v2.router.Router(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'description': 'test_description',
             'availability_zone_hints': ['1'],
@@ -256,7 +261,8 @@ class RouterTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.router_instance.resource_id = '1'
+        self.router_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_router = mock.MagicMock(return_value=router)
         self.fake_client.remove_interface_from_router = \
             mock.MagicMock(return_value=None)

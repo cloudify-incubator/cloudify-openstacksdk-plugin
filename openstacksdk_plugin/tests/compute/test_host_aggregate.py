@@ -53,7 +53,7 @@ class HostAggregateTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.create')
 
         aggregate_instance = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_host_aggregate',
             'availability_zone': 'test_availability_zone',
         })
@@ -65,7 +65,7 @@ class HostAggregateTestCase(OpenStackTestBase):
         host_aggregate.create()
 
         self.assertEqual(self._ctx.instance.runtime_properties[RESOURCE_ID],
-                         '1')
+                         'a95b5509-c122-4c2f-823e-884bb559afe8')
 
         self.assertEqual(
             self._ctx.instance.runtime_properties[OPENSTACK_NAME_PROPERTY],
@@ -82,7 +82,7 @@ class HostAggregateTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.configure')
 
         old_aggregate_instance = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_host_aggregate',
             'availability_zone': 'test_availability_zone',
         })
@@ -129,7 +129,7 @@ class HostAggregateTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.delete')
 
         aggregate_instance = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_host_aggregate',
             'availability_zone': 'test_availability_zone',
         })
@@ -159,12 +159,12 @@ class HostAggregateTestCase(OpenStackTestBase):
 
         aggregate_list = [
             openstack.compute.v2.aggregate.Aggregate(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_aggregate_1',
                 'availability_zone': 'test_availability_zone_1',
             }),
             openstack.compute.v2.aggregate.Aggregate(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_aggregate_2',
                 'availability_zone': 'test_availability_zone_2',
             }),
@@ -194,13 +194,13 @@ class HostAggregateTestCase(OpenStackTestBase):
 
         hosts_to_add = ['host-1', 'host-2']
         old_aggregate_instance = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_host_aggregate',
             'availability_zone': 'test_availability_zone',
         })
 
         new_aggregate_instance = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_host_aggregate',
             'availability_zone': 'test_availability_zone',
             'hosts': hosts_to_add
@@ -236,14 +236,14 @@ class HostAggregateTestCase(OpenStackTestBase):
 
         hosts_to_remove = ['host-1']
         old_aggregate_instance = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_host_aggregate',
             'availability_zone': 'test_availability_zone',
             'hosts': ['host-1', 'host-2']
         })
 
         new_aggregate_instance = openstack.compute.v2.aggregate.Aggregate(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_host_aggregate',
             'availability_zone': 'test_availability_zone',
             'hosts': ['host-2']

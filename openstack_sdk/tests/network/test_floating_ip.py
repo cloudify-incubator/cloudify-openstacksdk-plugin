@@ -39,7 +39,7 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
 
     def test_get_floating_ip(self):
         floating_ip = openstack.network.v2.floating_ip.FloatingIP(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'description': 'test_description',
             'name': '127.0.0.1',
             'created_at': '0',
@@ -59,18 +59,19 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
             'tags': ['15', '16']
 
         })
-        self.floating_ip_instance.resource_id = '1'
+        self.floating_ip_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_ip = mock.MagicMock(return_value=floating_ip)
 
         response = self.floating_ip_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, '127.0.0.1')
         self.assertEqual(response.description, 'test_description')
 
     def test_list_floating_ips(self):
         ips = [
             openstack.network.v2.floating_ip.FloatingIP(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'description': 'test_description_1',
                 'name': 'test_name_1',
                 'created_at': '0',
@@ -91,7 +92,7 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
 
             }),
             openstack.network.v2.floating_ip.FloatingIP(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'description': 'test_description_2',
                 'name': 'test_name_2',
                 'created_at': '0',
@@ -120,6 +121,7 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
 
     def test_create_floating_ip(self):
         floating_ip = {
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'description': 'test_description',
             'name': '127.0.0.1',
             'fixed_ip_address': '1',
@@ -144,7 +146,7 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
 
     def test_update_floating_ip(self):
         old_ip = openstack.network.v2.floating_ip.FloatingIP(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'description': 'test_description',
             'name': 'test_name_1',
             'created_at': '0',
@@ -172,7 +174,7 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
         }
 
         new_ip = openstack.network.v2.floating_ip.FloatingIP(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'description': 'test_description_update',
             'name': 'test_name',
             'created_at': '0',
@@ -193,7 +195,8 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.floating_ip_instance.resource_id = '1'
+        self.floating_ip_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_ip = mock.MagicMock(return_value=old_ip)
         self.fake_client.update_ip = mock.MagicMock(return_value=new_ip)
 
@@ -204,7 +207,7 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_floating_ip(self):
         floating_ip = openstack.network.v2.floating_ip.FloatingIP(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'description': 'test_description',
             'name': 'test_name',
             'created_at': '0',
@@ -225,7 +228,8 @@ class FloatingIPTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.floating_ip_instance.resource_id = '1'
+        self.floating_ip_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_ip = mock.MagicMock(return_value=floating_ip)
         self.fake_client.delete_ip = mock.MagicMock(return_value=None)
 

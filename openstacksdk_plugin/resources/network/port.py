@@ -164,31 +164,6 @@ def _update_external_port(openstack_resource):
                 'to be connected'.format(port.id, rel_network_id))
 
 
-@with_openstack_resource(
-    OpenstackPort,
-    existing_resource_handler=_update_external_port)
-def create(openstack_resource):
-    """
-    Create openstack port instance
-    :param openstack_resource: instance of openstack port resource
-    """
-    # Update port config before create port
-    _update_port_config(openstack_resource.config)
-
-    # Create port
-    created_resource = openstack_resource.create()
-
-    # Handle runtime properties
-    update_runtime_properties(
-        {
-            RESOURCE_ID: created_resource.id,
-            'fixed_ips': created_resource.fixed_ips,
-            'mac_address': created_resource.mac_address,
-            'allowed_address_pairs': created_resource.allowed_address_pairs,
-        }
-    )
-
-
 def _clean_addresses_from_external_port(openstack_resource):
     """
     This method will clean all updated addresses added to the external port
@@ -228,6 +203,31 @@ def _clean_addresses_from_external_port(openstack_resource):
 
         # Update port for allowed paris
         openstack_resource.update({'allowed_address_pairs':  updated_pairs})
+
+
+@with_openstack_resource(
+    OpenstackPort,
+    existing_resource_handler=_update_external_port)
+def create(openstack_resource):
+    """
+    Create openstack port instance
+    :param openstack_resource: instance of openstack port resource
+    """
+    # Update port config before create port
+    _update_port_config(openstack_resource.config)
+
+    # Create port
+    created_resource = openstack_resource.create()
+
+    # Handle runtime properties
+    update_runtime_properties(
+        {
+            RESOURCE_ID: created_resource.id,
+            'fixed_ips': created_resource.fixed_ips,
+            'mac_address': created_resource.mac_address,
+            'allowed_address_pairs': created_resource.allowed_address_pairs,
+        }
+    )
 
 
 @with_openstack_resource(

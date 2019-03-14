@@ -39,7 +39,7 @@ class RBACPolicyTestCase(base.OpenStackSDKTestBase):
 
     def test_get_rbac_policy(self):
         sg = openstack.network.v2.rbac_policy.RBACPolicy(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': None,
             'target_project_id': 'test_target_project_id',
             'object_type': 'test_object_type',
@@ -48,17 +48,18 @@ class RBACPolicyTestCase(base.OpenStackSDKTestBase):
             'action': 'test_action',
             'project_id': 4
         })
-        self.rbac_policy_instance.resource_id = '1'
+        self.rbac_policy_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_rbac_policy = mock.MagicMock(return_value=sg)
 
         response = self.rbac_policy_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.target_project_id, 'test_target_project_id')
 
     def test_list_rbac_policies(self):
         policies = [
             openstack.network.v2.rbac_policy.RBACPolicy(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': None,
                 'target_project_id': 'test_target_project_id_1',
                 'object_type': 'test_object_type_1',
@@ -69,7 +70,7 @@ class RBACPolicyTestCase(base.OpenStackSDKTestBase):
 
             }),
             openstack.network.v2.rbac_policy.RBACPolicy(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': None,
                 'target_project_id': 'test_target_project_id_2',
                 'object_type': 'test_object_type_2',
@@ -105,6 +106,7 @@ class RBACPolicyTestCase(base.OpenStackSDKTestBase):
 
     def test_update_rbac_policy(self):
         old_policy = openstack.network.v2.rbac_policy.RBACPolicy(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'target_tenant': 'test_target_tenant',
             'object_type': 'test_object_type',
             'object_id': 1,
@@ -116,7 +118,7 @@ class RBACPolicyTestCase(base.OpenStackSDKTestBase):
         }
 
         new_policy = openstack.network.v2.rbac_policy.RBACPolicy(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': None,
             'target_project_id': 'test_target_tenant_update',
             'object_type': 'test_object_type',
@@ -127,7 +129,8 @@ class RBACPolicyTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.rbac_policy_instance.resource_id = '1'
+        self.rbac_policy_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_rbac_policy = \
             mock.MagicMock(return_value=old_policy)
         self.fake_client.update_rbac_policy =\
@@ -139,7 +142,7 @@ class RBACPolicyTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_security_group(self):
         policy = openstack.network.v2.rbac_policy.RBACPolicy(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': None,
             'target_project_id': 'test_target_project_id_1',
             'object_type': 'test_object_type_1',
@@ -150,7 +153,8 @@ class RBACPolicyTestCase(base.OpenStackSDKTestBase):
 
         }),
 
-        self.rbac_policy_instance.resource_id = '1'
+        self.rbac_policy_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_rbac_policy = mock.MagicMock(return_value=policy)
         self.fake_client.delete_rbac_policy = mock.MagicMock(return_value=None)
 

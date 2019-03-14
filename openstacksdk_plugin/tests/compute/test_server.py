@@ -16,6 +16,8 @@
 # Third party imports
 import mock
 import openstack.compute.v2.server
+import openstack.compute.v2.server_interface
+import openstack.compute.v2.volume_attachment
 import openstack.image.v2.image
 from cloudify.state import current_ctx
 from cloudify.exceptions import OperationRetry
@@ -85,7 +87,7 @@ class ServerTestCase(OpenStackTestBase):
             type_hierarchy=self.type_hierarchy)
 
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -126,7 +128,7 @@ class ServerTestCase(OpenStackTestBase):
             ctx_operation_name='cloudify.interfaces.lifecycle.configure',
             type_hierarchy=self.type_hierarchy)
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -152,9 +154,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.lifecycle.stop',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -170,7 +175,7 @@ class ServerTestCase(OpenStackTestBase):
         })
 
         stopped_server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -186,16 +191,16 @@ class ServerTestCase(OpenStackTestBase):
         })
         server_interfaces = [
             openstack.compute.v2.server_interface.ServerInterface(**{
-                'id': '1',
-                'net_id': '2',
-                'port_id': '3',
-                'server_id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afa8',
+                'net_id': 'a95b5509-c122-4c2f-823e-884bb559cfe8',
+                'port_id': 'a95b5509-c122-4c2f-823e-884bb559efe8',
+                'server_id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             }),
             openstack.compute.v2.server_interface.ServerInterface(**{
-                'id': '2',
-                'net_id': '3',
-                'port_id': '4',
-                'server_id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afa7',
+                'net_id': 'a95b5509-c122-4c2f-823e-884bb559cae8',
+                'port_id': 'a95b5509-c122-4c2f-823e-884bb559eae8',
+                'server_id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             })
         ]
 
@@ -217,9 +222,6 @@ class ServerTestCase(OpenStackTestBase):
         mock_connection().compute.delete_server_interface = \
             mock.MagicMock(return_value=None)
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
-
         # Stop the server
         server.stop()
 
@@ -233,9 +235,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.lifecycle.reboot',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -251,7 +256,7 @@ class ServerTestCase(OpenStackTestBase):
         })
 
         rebooted_server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -275,8 +280,6 @@ class ServerTestCase(OpenStackTestBase):
             mock.MagicMock(side_effect=[server_instance,
                                         rebooted_server_instance])
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
         self._ctx.operation.retry = mock.Mock(side_effect=OperationRetry())
 
         with self.assertRaises(OperationRetry):
@@ -290,9 +293,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.freeze.suspend',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -315,9 +321,6 @@ class ServerTestCase(OpenStackTestBase):
         mock_connection().compute.get_server = \
             mock.MagicMock(return_value=server_instance)
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
-
         # Call suspend
         server.suspend()
 
@@ -326,9 +329,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.freeze.resume',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -351,9 +357,6 @@ class ServerTestCase(OpenStackTestBase):
         mock_connection().compute.get_server = \
             mock.MagicMock(return_value=server_instance)
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
-
         # Call resume
         server.resume()
 
@@ -362,9 +365,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.snapshot.create',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -391,9 +397,6 @@ class ServerTestCase(OpenStackTestBase):
         mock_connection().image.images = \
             mock.MagicMock(return_value=[])
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
-
         # Call snapshot
         snapshot_params = {
             'snapshot_name': 'test-snapshot',
@@ -411,9 +414,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.snapshot.create',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -440,9 +446,6 @@ class ServerTestCase(OpenStackTestBase):
         mock_connection().image.images = \
             mock.MagicMock(return_value=[])
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
-
         # Call snapshot
         snapshot_params = {
             'snapshot_name': 'test-snapshot',
@@ -462,10 +465,13 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.snapshot.apply',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
 
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -479,13 +485,10 @@ class ServerTestCase(OpenStackTestBase):
             'status': 'ACTIVE',
 
         })
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
-
         # Generate the snapshot name for the mocked image
         snapshot_name = get_snapshot_name('vm', 'test-snapshot', False)
         image = openstack.image.v2.image.Image(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': snapshot_name,
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -526,10 +529,13 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.snapshot.apply',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
 
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -543,13 +549,11 @@ class ServerTestCase(OpenStackTestBase):
             'status': 'ACTIVE',
 
         })
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
 
         # Generate the snapshot name for the mocked image
         snapshot_name = get_snapshot_name('vm', 'test-snapshot', True)
         image = openstack.image.v2.image.Image(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': snapshot_name,
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -590,9 +594,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.snapshot.delete',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -607,8 +614,6 @@ class ServerTestCase(OpenStackTestBase):
 
         })
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
         # Set runtime properties for snapshot
         self._ctx.instance.runtime_properties[SERVER_TASK_BACKUP_DONE]\
             = SERVER_ACTION_STATUS_DONE
@@ -622,7 +627,7 @@ class ServerTestCase(OpenStackTestBase):
         # Generate the snapshot name for the mocked image
         snapshot_name = get_snapshot_name('vm', 'test-snapshot', False)
         image = openstack.image.v2.image.Image(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': snapshot_name,
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -661,9 +666,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.snapshot.delete',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -678,8 +686,6 @@ class ServerTestCase(OpenStackTestBase):
 
         })
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
         # Set runtime properties for snapshot
         self._ctx.instance.runtime_properties[SERVER_TASK_BACKUP_DONE]\
             = SERVER_ACTION_STATUS_DONE
@@ -693,7 +699,7 @@ class ServerTestCase(OpenStackTestBase):
         # Generate the snapshot name for the mocked image
         snapshot_name = get_snapshot_name('vm', 'test-snapshot', True)
         image = openstack.image.v2.image.Image(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
             'name': snapshot_name,
             'container_format': 'test_bare',
             'disk_format': 'test_format',
@@ -821,7 +827,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='server-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe8',
                     OPENSTACK_TYPE_PROPERTY: SERVER_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-server',
                     attachment_task_id: '1'
@@ -840,7 +846,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='volume-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe7',
                     OPENSTACK_TYPE_PROPERTY: VOLUME_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-volume',
                 }),
@@ -857,10 +863,10 @@ class ServerTestCase(OpenStackTestBase):
 
         volume_attachment = \
             openstack.compute.v2.volume_attachment.VolumeAttachment(**{
-                'id': '1',
-                'server_id': '1',
-                'volume_id': '3',
-                'attachment_id': '4',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe6',
+                'server_id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+                'volume_id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
+                'attachment_id': 'a95b5509-c122-4c2f-823e-884bb559afe3',
             })
 
         mock_wait_status.return_value = volume_attachment
@@ -887,7 +893,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='floating-ip-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe2',
                     OPENSTACK_TYPE_PROPERTY: FLOATING_IP_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-floating-ip',
                 }),
@@ -905,7 +911,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='server-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe8',
                     OPENSTACK_TYPE_PROPERTY: SERVER_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-server',
                 }),
@@ -937,7 +943,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='floating-ip-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: '10.2.3.4',
                     OPENSTACK_TYPE_PROPERTY: FLOATING_IP_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-floating-ip',
                 }),
@@ -955,7 +961,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='server-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe8',
                     OPENSTACK_TYPE_PROPERTY: SERVER_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-server',
                 }),
@@ -987,7 +993,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='security-group-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe7',
                     OPENSTACK_TYPE_PROPERTY: SECURITY_GROUP_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-security-group',
                 }),
@@ -1005,7 +1011,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='server-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe8',
                     OPENSTACK_TYPE_PROPERTY: SERVER_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-server',
                 }),
@@ -1042,7 +1048,7 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='security-group-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe7',
                     OPENSTACK_TYPE_PROPERTY: SECURITY_GROUP_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-security-group',
                 }),
@@ -1060,17 +1066,17 @@ class ServerTestCase(OpenStackTestBase):
             'instance': MockNodeInstanceContext(
                 id='server-1',
                 runtime_properties={
-                    RESOURCE_ID: '1',
+                    RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe8',
                     OPENSTACK_TYPE_PROPERTY: SERVER_OPENSTACK_TYPE,
                     OPENSTACK_NAME_PROPERTY: 'node-server',
                     'server': {
                         'name': 'test',
                         'security_groups': [
                             {
-                                'id': '1'
+                                'id': 'a95b5509-c122-4c2f-823e-884bb559afe5'
                             },
                             {
-                                'id': '2'
+                                'id': 'a95b5509-c122-4c2f-823e-884bb559afe4'
                             }
                         ]
                     }
@@ -1096,7 +1102,8 @@ class ServerTestCase(OpenStackTestBase):
             node_id='1')
 
         # Call trigger attach volume
-        server.disconnect_security_group(security_group_id='1')
+        server.disconnect_security_group(
+            security_group_id='a95b5509-c122-4c2f-823e-884bb559afe7')
         mock_clean_ports.assert_called()
 
     def test_delete(self, mock_connection):
@@ -1104,9 +1111,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.lifecycle.delete',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         server_instance = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -1128,9 +1138,6 @@ class ServerTestCase(OpenStackTestBase):
         mock_connection().compute.get_server = \
             mock.MagicMock(return_value=server_instance)
 
-        # Set resource id as runtime properties
-        self._ctx.instance.runtime_properties['id'] = '1'
-
         # Call delete server operation
         with self.assertRaises(OperationRetry):
             server.delete()
@@ -1144,9 +1151,12 @@ class ServerTestCase(OpenStackTestBase):
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.operations.update',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
         old_server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -1164,7 +1174,7 @@ class ServerTestCase(OpenStackTestBase):
         }
 
         new_server = openstack.compute.v2.server.Server(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'update_test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
@@ -1201,7 +1211,7 @@ class ServerTestCase(OpenStackTestBase):
             type_hierarchy=self.type_hierarchy)
         server_list = [
             openstack.compute.v2.server.ServerDetail(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_server_1',
                 'access_ipv4': '1',
                 'access_ipv6': '2',
@@ -1214,7 +1224,7 @@ class ServerTestCase(OpenStackTestBase):
                 'key_name': 'test_key_name',
             }),
             openstack.compute.v2.server.ServerDetail(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_server_2',
                 'access_ipv4': '1',
                 'access_ipv6': '2',
@@ -1252,7 +1262,7 @@ class ServerTestCase(OpenStackTestBase):
             type_hierarchy=self.type_hierarchy)
         server_list = [
             openstack.compute.v2.server.ServerDetail(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_server_1',
                 'access_ipv4': '1',
                 'access_ipv6': '2',
@@ -1265,7 +1275,7 @@ class ServerTestCase(OpenStackTestBase):
                 'key_name': 'test_key_name',
             }),
             openstack.compute.v2.server.ServerDetail(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_server_2',
                 'access_ipv4': '1',
                 'access_ipv6': '2',

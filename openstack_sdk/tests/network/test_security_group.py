@@ -39,7 +39,7 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
 
     def test_get_security_group(self):
         sg = openstack.network.v2.security_group.SecurityGroup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'created_at': '2016-10-04T12:14:57.233772',
             'description': '1',
@@ -48,17 +48,18 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
             'updated_at': '2016-10-14T12:16:57.233772',
             'tags': ['5']
         })
-        self.security_group_instance.resource_id = '1'
+        self.security_group_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_security_group = mock.MagicMock(return_value=sg)
 
         response = self.security_group_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_name')
 
     def test_list_security_groups(self):
         sgs = [
             openstack.network.v2.security_group.SecurityGroup(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name_1',
                 'created_at': '2016-10-04T12:14:57.233772',
                 'description': '1',
@@ -69,7 +70,7 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
 
             }),
             openstack.network.v2.security_group.SecurityGroup(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_name_2',
                 'created_at': '2016-10-04T12:14:57.233772',
                 'description': '1',
@@ -87,6 +88,7 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
 
     def test_create_security_group(self):
         sg = {
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'description': 'test_description',
             'availability_zone_hints': ['1'],
@@ -109,7 +111,7 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
 
     def test_update_security_group(self):
         old_sg = openstack.network.v2.security_group.SecurityGroup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'created_at': '2016-10-04T12:14:57.233772',
             'description': '1',
@@ -126,7 +128,7 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
         }
 
         new_sg = openstack.network.v2.security_group.SecurityGroup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name_update',
             'description': 'test_description_update',
             'created_at': '2016-10-04T12:14:57.233772',
@@ -137,7 +139,8 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.security_group_instance.resource_id = '1'
+        self.security_group_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_security_group =\
             mock.MagicMock(return_value=old_sg)
         self.fake_client.update_security_group =\
@@ -149,7 +152,7 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_security_group(self):
         sg = openstack.network.v2.security_group.SecurityGroup(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'created_at': '2016-10-04T12:14:57.233772',
             'description': '1',
@@ -160,7 +163,8 @@ class SecurityGroupTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.security_group_instance.resource_id = '1'
+        self.security_group_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_security_group = mock.MagicMock(return_value=sg)
         self.fake_client.delete_security_group = \
             mock.MagicMock(return_value=None)

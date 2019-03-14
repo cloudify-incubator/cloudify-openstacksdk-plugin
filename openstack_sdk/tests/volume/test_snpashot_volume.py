@@ -38,29 +38,30 @@ class VolumeSnapshotTestCase(base.OpenStackSDKTestBase):
     def test_get_snapshot(self):
         volume_snapshot_instance = \
             openstack.block_storage.v2.snapshot.Snapshot(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_snapshot',
                 'description': 'volume_backup_description',
                 'status': 'available'
             })
-        self.volume_snapshot_instance.resource_id = '1'
+        self.volume_snapshot_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_snapshot = \
             mock.MagicMock(return_value=volume_snapshot_instance)
 
         response = self.volume_snapshot_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_snapshot')
 
     def test_list_snapshots(self):
         volume_snapshots = [
             openstack.block_storage.v2.snapshot.Snapshot(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_snapshot_1',
                 'description': 'volume_backup_description',
                 'status': 'available'
             }),
             openstack.block_storage.v2.snapshot.Snapshot(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_snapshot_2',
                 'description': 'volume_backup_description',
                 'status': 'available'
@@ -74,7 +75,7 @@ class VolumeSnapshotTestCase(base.OpenStackSDKTestBase):
 
     def test_create_snapshot(self):
         volume_snapshot = {
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_snapshot_1',
             'description': 'volume_backup_description',
         }
@@ -88,13 +89,14 @@ class VolumeSnapshotTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_snapshot(self):
         volume_snapshot = openstack.block_storage.v2.snapshot.Snapshot(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_snapshot_1',
             'description': 'volume_backup_description',
             'status': 'available'
         })
 
-        self.volume_snapshot_instance.resource_id = '1'
+        self.volume_snapshot_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_snapshot = mock.MagicMock(
             return_value=volume_snapshot)
         self.fake_client.delete_snapshot = mock.MagicMock(return_value=None)

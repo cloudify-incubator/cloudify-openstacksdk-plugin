@@ -38,23 +38,24 @@ class VolumeTypeTestCase(base.OpenStackSDKTestBase):
 
     def test_get_volume_type(self):
         volume_type = openstack.block_storage.v2.type.Type(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_volume_type',
             'extra_specs': {
                 'capabilities': 'gpu',
             }
         })
-        self.volume_type_instance.resource_id = '1'
+        self.volume_type_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_type = mock.MagicMock(return_value=volume_type)
 
         response = self.volume_type_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_volume_type')
 
     def test_list_volume_types(self):
         volume_type_list = [
             openstack.block_storage.v2.type.Type(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_volume_type_1',
                 'extra_specs': {
                     'capabilities': 'gpu',
@@ -62,7 +63,7 @@ class VolumeTypeTestCase(base.OpenStackSDKTestBase):
 
             }),
             openstack.block_storage.v2.type.Type(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_volume_type_2',
                 'extra_specs': {
                     'capabilities': 'gpu',
@@ -90,7 +91,7 @@ class VolumeTypeTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_volume_type(self):
         volume_type = openstack.block_storage.v2.type.Type(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_volume_type_1',
             'extra_specs': {
                 'capabilities': 'gpu',
@@ -98,7 +99,8 @@ class VolumeTypeTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.volume_type_instance.resource_id = '1'
+        self.volume_type_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_type = mock.MagicMock(return_value=volume_type)
         self.fake_client.delete_type = mock.MagicMock(return_value=None)
 
