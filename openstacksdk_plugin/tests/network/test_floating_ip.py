@@ -335,7 +335,7 @@ class FloatingIPTestCase(OpenStackTestBase):
 
     @mock.patch('openstack_sdk.common.OpenstackResource.get_quota_sets')
     def test_creation_validation(self, mock_quota_sets, mock_connection):
-        # Prepare the context for list floating ips operation
+        # Prepare the context for creation validation operation
         self._prepare_context_for_operation(
             test_name='FloatingIPTestCase',
             ctx_operation_name='cloudify.interfaces.validation.creation')

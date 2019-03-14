@@ -312,7 +312,7 @@ class NetworkTestCase(OpenStackTestBase):
 
     @mock.patch('openstack_sdk.common.OpenstackResource.get_quota_sets')
     def test_creation_validation(self, mock_quota_sets, mock_connection):
-        # Prepare the context for list networks operation
+        # Prepare the context for creation validation operation
         self._prepare_context_for_operation(
             test_name='NetworkTestCase',
             ctx_operation_name='cloudify.interfaces.validation.creation')
@@ -378,7 +378,7 @@ class NetworkTestCase(OpenStackTestBase):
             }),
         ]
 
-        # Mock list project response
+        # Mock list networks response
         mock_connection().network.networks = \
             mock.MagicMock(return_value=networks)
 

@@ -176,7 +176,7 @@ class RouterTestCase(OpenStackTestBase):
             mock.MagicMock(return_value=None)
 
         # Mock get router response
-        mock_connection().network.get_port = \
+        mock_connection().network.get_router = \
             mock.MagicMock(return_value=router_instance)
 
         # Call delete router
@@ -546,10 +546,10 @@ class RouterTestCase(OpenStackTestBase):
 
     @mock.patch('openstack_sdk.common.OpenstackResource.get_quota_sets')
     def test_creation_validation(self, mock_quota_sets, mock_connection):
-        # Prepare the context for list routers operation
+        # Prepare the context for creation validation operation
         self._prepare_context_for_operation(
             test_name='RouterTestCase',
-            ctx_operation_name='cloudify.interfaces.operations.list')
+            ctx_operation_name='cloudify.interfaces.validation.creation')
 
         routers = [
             openstack.network.v2.router.Router(**{
