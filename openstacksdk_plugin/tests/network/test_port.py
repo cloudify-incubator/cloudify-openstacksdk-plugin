@@ -21,7 +21,6 @@ import openstack.network.v2.port
 from openstacksdk_plugin.tests.base import OpenStackTestBase
 from openstacksdk_plugin.resources.network import port
 from openstacksdk_plugin.constants import (RESOURCE_ID,
-                                           USE_EXTERNAL_RESOURCE_PROPERTY,
                                            OPENSTACK_NAME_PROPERTY,
                                            OPENSTACK_TYPE_PROPERTY,
                                            PORT_OPENSTACK_TYPE,
