@@ -184,7 +184,7 @@ class RouterTestCase(OpenStackTestBase):
 
         for attr in [RESOURCE_ID,
                      OPENSTACK_NAME_PROPERTY,
-                     OPENSTACK_TYPE_PROPERTY,]:
+                     OPENSTACK_TYPE_PROPERTY]:
             self.assertNotIn(attr, self._ctx.instance.runtime_properties)
 
     def test_update(self, mock_connection):
@@ -403,8 +403,8 @@ class RouterTestCase(OpenStackTestBase):
         # Prepare the context for postconfigure operation
         self._prepare_context_for_operation(
             test_name='RouterTestCase',
-            ctx_operation_name=
-            'cloudify.interfaces.relationship_lifecycle.postconfigure',
+            ctx_operation_name='cloudify.interfaces.relationship_lifecycle.'
+                               'postconfigure',
             test_runtime_properties={
                 'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
             })
@@ -444,8 +444,8 @@ class RouterTestCase(OpenStackTestBase):
         # Prepare the context for unlink operation
         self._prepare_context_for_operation(
             test_name='RouterTestCase',
-            ctx_operation_name=
-            'cloudify.interfaces.relationship_lifecycle.unlink',
+            ctx_operation_name='cloudify.interfaces.relationship_lifecycle.'
+                               'unlink',
             test_runtime_properties={
                 'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
             })

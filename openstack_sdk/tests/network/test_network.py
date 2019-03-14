@@ -276,7 +276,8 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.network_instance.resource_id = 'a95b5509-c122-4c2f-823e-884bb559afe8'
+        self.network_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_network = mock.MagicMock(return_value=net)
         self.fake_client.delete_network = mock.MagicMock(return_value=None)
 
