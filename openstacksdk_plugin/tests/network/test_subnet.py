@@ -366,4 +366,3 @@ class SubnetTestCase(OpenStackTestBase):
 
         # Call creation validation
         subnet.creation_validation()
-
