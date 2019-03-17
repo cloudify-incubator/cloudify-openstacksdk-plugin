@@ -18,9 +18,11 @@ import mock
 import openstack.compute.v2.server
 import openstack.compute.v2.server_interface
 import openstack.compute.v2.volume_attachment
+import openstack.compute.v2.keypair
 import openstack.image.v2.image
+import openstack.exceptions
 from cloudify.state import current_ctx
-from cloudify.exceptions import OperationRetry
+from cloudify.exceptions import (OperationRetry, NonRecoverableError)
 from cloudify.mocks import (
     MockContext,
     MockNodeContext,
@@ -40,9 +42,19 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SECURITY_GROUP_OPENSTACK_TYPE,
                                            VOLUME_OPENSTACK_TYPE,
                                            SERVER_OPENSTACK_TYPE,
+                                           NETWORK_OPENSTACK_TYPE,
+                                           PORT_OPENSTACK_TYPE,
+                                           KEYPAIR_OPENSTACK_TYPE,
+                                           SERVER_GROUP_OPENSTACK_TYPE,
+                                           NETWORK_NODE_TYPE,
+                                           PORT_NODE_TYPE,
+                                           KEYPAIR_NODE_TYPE,
+                                           VOLUME_NODE_TYPE,
+                                           SERVER_GROUP_NODE_TYPE,
                                            SERVER_TASK_DELETE,
                                            SERVER_TASK_START,
                                            SERVER_TASK_STOP,
+                                           SERVER_INTERFACE_IDS,
                                            SERVER_TASK_BACKUP_DONE,
                                            SERVER_TASK_RESTORE_STATE,
                                            VOLUME_ATTACHMENT_TASK,
@@ -81,17 +93,124 @@ class ServerTestCase(OpenStackTestBase):
 
     def test_create(self, mock_connection):
         # Prepare the context for create operation
+        rel_specs = [
+            {
+                'node': {
+                    'id': 'network-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-network',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'network-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe4',
+                        OPENSTACK_TYPE_PROPERTY: NETWORK_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-network'
+                    }
+                },
+                'type': NETWORK_NODE_TYPE,
+            },
+            {
+                'node': {
+                    'id': 'port-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-port',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'port-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe2',
+                        OPENSTACK_TYPE_PROPERTY: PORT_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-port'
+                    }
+                },
+                'type': PORT_NODE_TYPE,
+            },
+            {
+                'node': {
+                    'id': 'volume-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-volume',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'volume-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe1',
+                        OPENSTACK_TYPE_PROPERTY: VOLUME_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-volume'
+                    }
+                },
+                'type': VOLUME_NODE_TYPE,
+            },
+            {
+                'node': {
+                    'id': 'keypair-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-keypair',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'keypair-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe0',
+                        OPENSTACK_TYPE_PROPERTY: KEYPAIR_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-keypair'
+                    }
+                },
+                'type': KEYPAIR_NODE_TYPE,
+            },
+            {
+                'node': {
+                    'id': 'server-group-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-server-group',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'server-group-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe9',
+                        OPENSTACK_TYPE_PROPERTY: SERVER_GROUP_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-server-group'
+                    }
+                },
+                'type': SERVER_GROUP_NODE_TYPE,
+                'type_hierarchy': [SERVER_GROUP_NODE_TYPE,
+                                   'cloudify.nodes.Root']
+            }
+        ]
+        server_rels = self.get_mock_relationship_ctx_for_node(rel_specs)
+        # Prepare the context for create operation
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
             ctx_operation_name='cloudify.interfaces.lifecycle.create',
-            type_hierarchy=self.type_hierarchy)
+            type_hierarchy=self.type_hierarchy,
+            test_relationships=server_rels)
 
         server_instance = openstack.compute.v2.server.Server(**{
             'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -114,6 +233,254 @@ class ServerTestCase(OpenStackTestBase):
             SERVER_OPENSTACK_TYPE,
             self._ctx.instance.runtime_properties)
 
+    def test_create_external_resource(self, mock_connection):
+        properties = dict()
+        # Enable external resource
+        properties['use_external_resource'] = True
+
+        # Add node properties config to this dict
+        properties.update(self.node_properties)
+        # Reset resource config since we are going to use external resource
+        # and do not care about the resource config data
+        properties['resource_config'] = {}
+
+        # Prepare the context for create operation
+        rel_specs = [
+            {
+                'node': {
+                    'id': 'network-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-network',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'network-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe4',
+                        OPENSTACK_TYPE_PROPERTY: NETWORK_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-network'
+                    }
+                },
+                'type': NETWORK_NODE_TYPE,
+            },
+            {
+                'node': {
+                    'id': 'port-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-port',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'port-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe2',
+                        OPENSTACK_TYPE_PROPERTY: PORT_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-port'
+                    }
+                },
+                'type': PORT_NODE_TYPE,
+            },
+            {
+                'node': {
+                    'id': 'keypair-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-keypair',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'keypair-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe0',
+                        OPENSTACK_TYPE_PROPERTY: KEYPAIR_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-keypair',
+                        'use_external_resource': True,
+                    }
+                },
+                'type': KEYPAIR_NODE_TYPE,
+            }
+        ]
+        server_rels = self.get_mock_relationship_ctx_for_node(rel_specs)
+        # Prepare the context for create operation
+        self._prepare_context_for_operation(
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.create',
+            type_hierarchy=self.type_hierarchy,
+            test_properties=properties,
+            test_relationships=server_rels,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
+
+        old_server_instance = openstack.compute.v2.server.Server(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+            'name': 'test_server',
+            'access_ipv4': '1',
+            'access_ipv6': '2',
+            'addresses': {
+                'network-1': [
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '10.1.0.1',
+                        'version': 4
+                    }
+                ]
+            },
+            'config_drive': True,
+            'created': '2015-03-09T12:14:57.233772',
+            'flavor_id': '2',
+            'image_id': '3',
+            'availability_zone': 'test_availability_zone',
+            'key_name': 'test-keypair',
+            'networks': [
+                {
+                    'port_id': 'b95b5509-c122-4c2f-823e-884bb559afe2'
+                },
+                {
+                    'uuid': 'e95b5509-c122-4c2f-823e-884bb559afe1'
+                }
+            ]
+        })
+
+        updated_server_instance = openstack.compute.v2.server.Server(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+            'name': 'test_server',
+            'access_ipv4': '10.1.0.1',
+            'access_ipv6': '',
+            'config_drive': True,
+            'created': '2015-03-09T12:14:57.233772',
+            'flavor_id': '2',
+            'image_id': '3',
+            'availability_zone': 'test_availability_zone',
+            'key_name': 'test-keypair',
+            'addresses': {
+                'network-1': [
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '10.1.0.1',
+                        'version': 4
+                    }
+                ],
+                'network-2': [
+                    {
+                        'OS-EXT-IPS:type': 'fixed',
+                        'addr': '10.2.0.1',
+                        'version': 4
+                    }
+                ]
+            },
+            'networks': [
+                {
+                    'port_id': 'b95b5509-c122-4c2f-823e-884bb559afe2'
+                },
+                {
+                    'port_id': 'a95b5509-c122-4c2f-823e-884bb559afe2'
+                },
+                {
+                    'uuid': 'e95b5509-c122-4c2f-823e-884bb559afe1'
+                },
+                {
+                    'uuid': 'a95b5509-c122-4c2f-823e-884bb559afe4'
+                }
+            ]
+        })
+
+        server_interface = \
+            openstack.compute.v2.server_interface.ServerInterface(**{
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afb1',
+                'net_id': 'a95b5509-c122-4c2f-823e-884bb559cfb2',
+                'port_id': 'a95b5509-c122-4c2f-823e-884bb559afb3',
+                'server_id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+            })
+
+        port_interface = \
+            openstack.compute.v2.server_interface.ServerInterface(**{
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afa5',
+                'net_id': 'a95b5509-c122-4c2f-823e-884bb559cfs3',
+                'port_id': 'a95b5509-c122-4c2f-823e-884bb559afe2',
+                'server_id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+            })
+
+        network_interface = \
+            openstack.compute.v2.server_interface.ServerInterface(**{
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afa7',
+                'net_id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
+                'port_id': 'a95b5509-c122-4c2f-823e-884bb559eae3',
+                'server_id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+            })
+
+        keypair_instance = openstack.compute.v2.keypair.Keypair(**{
+            'id': 'test-keypair',
+            'name': 'test-keypair',
+            'fingerprint': 'test_fingerprint',
+
+        })
+
+        # Mock keypair response gor get
+        mock_connection().compute.get_keypair = \
+            mock.MagicMock(return_value=keypair_instance)
+
+        # Mock get operation in two places
+        # First one will be when get the server for the first time
+        # Second one will be when we update the server with all interfaces
+        # Third one will be when set the runtime properties
+        mock_connection().compute.get_server = \
+            mock.MagicMock(side_effect=[old_server_instance,
+                                        updated_server_instance,
+                                        updated_server_instance])
+
+        # Mock create server interface operation
+        # Create server interface will be called in multiple places
+        # The first one when adding interface from port node
+        # The second one will be when adding interface from network node
+        mock_connection().compute.create_server_interface = \
+            mock.MagicMock(side_effect=[port_interface, network_interface])
+
+        # Mock list server interface operation
+        # The first one is when check the attached interface to external server
+        # The second one will contains the attached interface + the port
+        # interface added
+        mock_connection().compute.server_interfaces = \
+            mock.MagicMock(side_effect=[[server_interface],
+                                        [server_interface, port_interface]])
+
+        server.create()
+
+        # Check if the resource id is already set or not
+        self.assertEqual(
+            'a95b5509-c122-4c2f-823e-884bb559afe8',
+            self._ctx.instance.runtime_properties[RESOURCE_ID])
+
+        # Check if the server payload is assigned for the created server
+        self.assertEqual(
+            SERVER_OPENSTACK_TYPE,
+            self._ctx.instance.runtime_properties[OPENSTACK_TYPE_PROPERTY])
+
+        for interface_id in ['a95b5509-c122-4c2f-823e-884bb559afa5',
+                             'a95b5509-c122-4c2f-823e-884bb559afa7']:
+            self.assertTrue(
+                interface_id in
+                self._ctx.instance.runtime_properties[SERVER_INTERFACE_IDS])
+
+        self.assertEqual(
+            '10.1.0.1',
+            self._ctx.instance.runtime_properties['access_ipv4'])
+
+        self.assertTrue(self._ctx.instance.runtime_properties['ip']
+                        in ['10.1.0.1', '10.2.0.1'])
+
+        self.assertEqual(
+            2,
+            len(self._ctx.instance.runtime_properties['ipv4_addresses']))
+
     @mock.patch('openstacksdk_plugin.resources.compute.server'
                 '._get_user_password')
     @mock.patch('openstacksdk_plugin.resources.compute.server'
@@ -132,7 +499,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -149,6 +516,78 @@ class ServerTestCase(OpenStackTestBase):
         mock_ips_runtime_properties.assert_called()
         mock_user_password.assert_called()
 
+    @mock.patch('openstacksdk_plugin.resources.compute.server'
+                '._get_user_password')
+    @mock.patch('openstacksdk_plugin.resources.compute.server'
+                '._set_server_ips_runtime_properties')
+    def test_configure_with_retry(self,
+                                  mock_ips_runtime_properties,
+                                  mock_user_password,
+                                  mock_connection):
+        # Prepare the context for configure operation
+        self._prepare_context_for_operation(
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.configure',
+            type_hierarchy=self.type_hierarchy)
+        server_instance = openstack.compute.v2.server.Server(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+            'name': 'test_server',
+            'access_ipv4': '1',
+            'access_ipv6': '2',
+            'addresses': {},
+            'config_drive': True,
+            'created': '2015-03-09T12:14:57.233772',
+            'flavor_id': '2',
+            'image_id': '3',
+            'availability_zone': 'test_availability_zone',
+            'key_name': 'test_key_name',
+            'status': 'UNKNOWN'
+
+        })
+        mock_connection().compute.get_server = \
+            mock.MagicMock(return_value=server_instance)
+
+        with self.assertRaises(OperationRetry):
+            server.configure()
+            mock_ips_runtime_properties.assert_not_called()
+            mock_user_password.assert_not_called()
+
+    @mock.patch('openstacksdk_plugin.resources.compute.server'
+                '._get_user_password')
+    @mock.patch('openstacksdk_plugin.resources.compute.server'
+                '._set_server_ips_runtime_properties')
+    def test_configure_with_error(self,
+                                  mock_ips_runtime_properties,
+                                  mock_user_password,
+                                  mock_connection):
+        # Prepare the context for configure operation
+        self._prepare_context_for_operation(
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.configure',
+            type_hierarchy=self.type_hierarchy)
+        server_instance = openstack.compute.v2.server.Server(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+            'name': 'test_server',
+            'access_ipv4': '1',
+            'access_ipv6': '2',
+            'addresses': {},
+            'config_drive': True,
+            'created': '2015-03-09T12:14:57.233772',
+            'flavor_id': '2',
+            'image_id': '3',
+            'availability_zone': 'test_availability_zone',
+            'key_name': 'test_key_name',
+            'status': 'ERROR'
+
+        })
+        mock_connection().compute.get_server = \
+            mock.MagicMock(return_value=server_instance)
+
+        with self.assertRaises(NonRecoverableError):
+            server.configure()
+            mock_ips_runtime_properties.assert_not_called()
+            mock_user_password.assert_not_called()
+
     def test_stop(self, mock_connection):
         # Prepare the context for stop operation
         self._prepare_context_for_operation(
@@ -163,7 +602,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -179,7 +618,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -230,6 +669,59 @@ class ServerTestCase(OpenStackTestBase):
             SERVER_TASK_STOP,
             self._ctx.instance.runtime_properties)
 
+    @mock.patch('openstack_sdk.resources.compute'
+                '.OpenstackServer.delete_server_interface')
+    def test_stop_external_resource(self,
+                                    mock_delete_server_interface,
+                                    mock_connection):
+
+        properties = dict()
+        # Enable external resource
+        properties['use_external_resource'] = True
+
+        # Add node properties config to this dict
+        properties.update(self.node_properties)
+        # Reset resource config since we are going to use external resource
+        # and do not care about the resource config data
+        properties['resource_config'] = {}
+
+        # Prepare the context for stop operation
+        self._prepare_context_for_operation(
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.stop',
+            type_hierarchy=self.type_hierarchy,
+            test_properties=properties,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+                SERVER_INTERFACE_IDS: [
+                    'a95b5509-c122-4c2f-823e-884bb559afe2',
+                    'a95b5509-c122-4c2f-823e-884bb559af21'
+                ]
+            })
+        server_instance = openstack.compute.v2.server.Server(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+            'name': 'test_server',
+            'access_ipv4': '1',
+            'access_ipv6': '2',
+            'addresses': {},
+            'config_drive': True,
+            'created': '2015-03-09T12:14:57.233772',
+            'flavor_id': '2',
+            'image_id': '3',
+            'availability_zone': 'test_availability_zone',
+            'key_name': 'test_key_name',
+            'status': 'ACTIVE',
+
+        })
+
+        # Mock get operation
+        mock_connection().compute.get_server = \
+            mock.MagicMock(return_value=server_instance)
+        # Stop the server
+        server.stop()
+
+        self.assertEqual(mock_delete_server_interface.call_count, 2)
+
     def test_reboot(self, mock_connection):
         # Prepare the context for reboot operation
         self._prepare_context_for_operation(
@@ -244,7 +736,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -260,7 +752,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -302,7 +794,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -338,7 +830,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -374,7 +866,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -423,7 +915,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -475,7 +967,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -539,7 +1031,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -603,7 +1095,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -675,7 +1167,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -1106,7 +1598,7 @@ class ServerTestCase(OpenStackTestBase):
             security_group_id='a95b5509-c122-4c2f-823e-884bb559afe7')
         mock_clean_ports.assert_called()
 
-    def test_delete(self, mock_connection):
+    def test_delete_with_retry(self, mock_connection):
         # Prepare the context for delete operation
         self._prepare_context_for_operation(
             test_name='ServerTestCase',
@@ -1120,7 +1612,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -1146,6 +1638,40 @@ class ServerTestCase(OpenStackTestBase):
                 SERVER_TASK_DELETE,
                 self._ctx.instance.runtime_properties)
 
+    def test_delete_with_success(self, mock_connection):
+        # Prepare the context for delete operation
+        self._prepare_context_for_operation(
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.delete',
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
+                SERVER_TASK_DELETE: True,
+            })
+
+        # Mock get operation
+        mock_connection().compute.get_server = \
+            mock.MagicMock(side_effect=openstack.exceptions.ResourceNotFound)
+
+        server.delete()
+
+    def test_delete_with_error(self, mock_connection):
+        # Prepare the context for delete operation
+        self._prepare_context_for_operation(
+            test_name='ServerTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.delete',
+            type_hierarchy=self.type_hierarchy,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8'
+            })
+
+        # Mock get operation
+        mock_connection().compute.get_server = \
+            mock.MagicMock(side_effect=openstack.exceptions.ResourceNotFound)
+
+        with self.assertRaises(NonRecoverableError):
+            server.delete()
+
     def test_update(self, mock_connection):
         # Prepare the context for update operation
         self._prepare_context_for_operation(
@@ -1160,7 +1686,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -1178,7 +1704,7 @@ class ServerTestCase(OpenStackTestBase):
             'name': 'update_test_server',
             'access_ipv4': '1',
             'access_ipv6': '2',
-            'addresses': {'region': '3'},
+            'addresses': {},
             'config_drive': True,
             'created': '2015-03-09T12:14:57.233772',
             'flavor_id': '2',
@@ -1215,7 +1741,7 @@ class ServerTestCase(OpenStackTestBase):
                 'name': 'test_server_1',
                 'access_ipv4': '1',
                 'access_ipv6': '2',
-                'addresses': {'region': '3'},
+                'addresses': {},
                 'config_drive': True,
                 'created': '2015-03-09T12:14:57.233772',
                 'flavor_id': '2',
@@ -1228,7 +1754,7 @@ class ServerTestCase(OpenStackTestBase):
                 'name': 'test_server_2',
                 'access_ipv4': '1',
                 'access_ipv6': '2',
-                'addresses': {'region': '3'},
+                'addresses': {},
                 'config_drive': True,
                 'created': '2015-03-09T12:14:57.233772',
                 'flavor_id': '2',
@@ -1266,7 +1792,7 @@ class ServerTestCase(OpenStackTestBase):
                 'name': 'test_server_1',
                 'access_ipv4': '1',
                 'access_ipv6': '2',
-                'addresses': {'region': '3'},
+                'addresses': {},
                 'config_drive': True,
                 'created': '2015-03-09T12:14:57.233772',
                 'flavor_id': '2',

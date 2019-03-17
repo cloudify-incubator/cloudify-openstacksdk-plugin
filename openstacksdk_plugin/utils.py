@@ -539,7 +539,7 @@ def handle_external_resource(ctx_node_instance,
         if 'openstack_resource' in func_args:
             kwargs['openstack_resource'] = openstack_resource
 
-        print existing_resource_handler(**kwargs)
+        existing_resource_handler(**kwargs)
 
 
 def get_snapshot_name(object_type, snapshot_name, snapshot_incremental):

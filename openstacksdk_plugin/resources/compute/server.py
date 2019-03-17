@@ -167,8 +167,8 @@ def _set_server_ips_runtime_properties(server):
     ipv4_addresses = []
     ipv6_addresses = []
 
-    for network, addresses in addresses.iteritems():
-        for address in addresses:
+    for network, address_object in addresses.iteritems():
+        for address in address_object:
             # ip config
             ipv4 = dict()
             ipv4['addr'] = address['addr']
@@ -219,7 +219,7 @@ def _set_server_ips_runtime_properties(server):
 
     # Check to see if "use_public_ip" is set or not in order to update the
     # "ip" to use the public address
-    if ctx.node.properties['use_public_ip']:
+    if ctx.node.properties.get('use_public_ip'):
         pip = ctx.instance.runtime_properties.get('public_ip_address')
         if pip:
             ctx.instance.runtime_properties['ip'] = pip

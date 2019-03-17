@@ -60,6 +60,31 @@ class ServerTestCase(base.OpenStackSDKTestBase):
         self.assertEqual(response.id, 'a34b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_server')
 
+    def test_get_password(self):
+        server = openstack.compute.v2.server.Server(**{
+            'id': 'a34b5509-c122-4c2f-823e-884bb559afe8',
+            'name': 'test_server',
+            'access_ipv4': '1',
+            'access_ipv6': '2',
+            'addresses': {'region': '3'},
+            'config_drive': True,
+            'created': '2015-03-09T12:14:57.233772',
+            'flavor_id': '2',
+            'image_id': '3',
+            'availability_zone': 'test_availability_zone',
+            'key_name': 'test_key_name',
+
+        })
+
+        self.server_instance.name = 'test_server'
+        self.server_instance.id = 'a34b5509-c122-4c2f-823e-884bb559afe8'
+        self.fake_client.get_server = mock.MagicMock(return_value=server)
+        self.fake_client.get_server_password = \
+            mock.MagicMock(return_value='884bb559afe8')
+
+        password = self.server_instance.get_server_password()
+        self.assertEqual(password, '884bb559afe8')
+
     def test_list_servers(self):
         server_list = [
             openstack.compute.v2.server.ServerDetail(**{

@@ -139,9 +139,8 @@ def _update_external_port(openstack_resource):
                 ''.format(common_ips, external_port.id))
 
         # Update port for allowed paris
-        openstack_resource.update({'allowed_address_pairs':  addresses_to_add})
-        # Get the latest version of port resource
-        updated_port = openstack_resource.get()
+        updated_port = openstack_resource.update(
+            {'allowed_address_pairs':  addresses_to_add})
         # Update runtime properties
         update_runtime_properties(
             {
@@ -179,7 +178,6 @@ def _clean_addresses_from_external_port(openstack_resource):
 
     if addresses_to_remove:
         remote_addresses = external_port.allowed_address_pairs or []
-
         # Get the remote ips from the each pair
         remote_ips = \
             [
@@ -198,8 +196,11 @@ def _clean_addresses_from_external_port(openstack_resource):
 
         # Check if there are a common ips between old ips and the one we
         # should remove via node
-        diff_ips = set(ips_to_remove) - set(remote_ips)
-        updated_pairs = list(diff_ips) if diff_ips else []
+        diff_ips = set(remote_ips) - set(ips_to_remove)
+        diff_ips = list(diff_ips) if diff_ips else []
+        updated_pairs = []
+        for ip_address in diff_ips:
+            updated_pairs.append({'ip_address': ip_address})
 
         # Update port for allowed paris
         openstack_resource.update({'allowed_address_pairs':  updated_pairs})

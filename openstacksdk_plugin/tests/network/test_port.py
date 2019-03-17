@@ -113,7 +113,15 @@ class PortTestCase(OpenStackTestBase):
             'dns_name': '12',
             'extra_dhcp_opts': [{'13': 13}],
             'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
-            'allowed_address_pairs': ['10.0.0.3', '10.0.0.4'],
+            'allowed_address_pairs':
+                [
+                    {
+                        'ip_address': '10.0.0.3'
+                    },
+                    {
+                        'ip_address': '10.0.0.4'
+                    }
+                ],
             'mac_address': '00-14-22-01-23-45',
             'network_id': '18',
             'port_security_enabled': True,
@@ -152,7 +160,7 @@ class PortTestCase(OpenStackTestBase):
 
         self.assertEqual(
             self._ctx.instance.runtime_properties['allowed_address_pairs'],
-            ['10.0.0.3', '10.0.0.4'])
+            [{'ip_address': '10.0.0.3'}, {'ip_address': '10.0.0.4'}])
 
     def test_delete(self, mock_connection):
         # Prepare the context for delete operation
@@ -179,7 +187,15 @@ class PortTestCase(OpenStackTestBase):
             'dns_name': '12',
             'extra_dhcp_opts': [{'13': 13}],
             'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
-            'allowed_address_pairs': ['10.0.0.3', '10.0.0.4'],
+            'allowed_address_pairs':
+                [
+                    {
+                        'ip_address': '10.0.0.3'
+                    },
+                    {
+                        'ip_address': '10.0.0.4'
+                    }
+                ],
             'mac_address': '00-14-22-01-23-45',
             'network_id': '18',
             'port_security_enabled': True,
@@ -234,7 +250,15 @@ class PortTestCase(OpenStackTestBase):
             'dns_name': '12',
             'extra_dhcp_opts': [{'13': 13}],
             'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
-            'allowed_address_pairs': ['10.0.0.3', '10.0.0.4'],
+            'allowed_address_pairs':
+                [
+                    {
+                        'ip_address': '10.0.0.3'
+                    },
+                    {
+                        'ip_address': '10.0.0.4'
+                    }
+                ],
             'mac_address': '00-14-22-01-23-45',
             'network_id': '18',
             'port_security_enabled': True,
@@ -270,7 +294,15 @@ class PortTestCase(OpenStackTestBase):
                 'dns_name': '12',
                 'extra_dhcp_opts': [{'13': 13}],
                 'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
-                'allowed_address_pairs': ['10.0.0.3', '10.0.0.4'],
+                'allowed_address_pairs':
+                    [
+                        {
+                            'ip_address': '10.0.0.3'
+                        },
+                        {
+                            'ip_address': '10.0.0.4'
+                        }
+                    ],
                 'mac_address': '00-14-22-01-23-45',
                 'network_id': '18',
                 'port_security_enabled': True,
@@ -292,6 +324,329 @@ class PortTestCase(OpenStackTestBase):
 
         # Call update port
         port.update(args=new_config)
+
+    def test_create_external_port(self, mock_connection):
+        # Prepare relationship data which is connected to external port
+        # resource
+        rel_specs = [
+            {
+                'node': {
+                    'id': 'network-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-network',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'network-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe4',
+                        OPENSTACK_TYPE_PROPERTY: NETWORK_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-network'
+                    }
+                },
+                'type': NETWORK_NODE_TYPE,
+            },
+        ]
+
+        port_rels = self.get_mock_relationship_ctx_for_node(rel_specs)
+
+        # Update external port, will be part of create operation when use
+        # external resource is set to True
+        properties = dict()
+        # Enable external resource
+        properties['use_external_resource'] = True
+
+        # Add node properties config to this dict
+        properties.update(self.node_properties)
+        # Reset resource config since we are going to use external resource
+        # and do not care about the resource config data
+        properties['resource_config'] = {}
+        # Set resource id so that we can lookup the external resource
+        properties['resource_config']['id'] = \
+            'a95b5509-c122-4c2f-823e-884bb559afe1'
+
+        # Set allowed address resource pairs
+        properties['resource_config']['allowed_address_pairs'] = [
+            {
+                'ip_address': '10.0.0.5'
+            },
+
+            {
+                'ip_address': '10.0.0.6'
+            }
+        ]
+
+        self._prepare_context_for_operation(
+            test_name='PortTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.create',
+            test_properties=properties,
+            test_relationships=port_rels)
+
+        port_instance = openstack.network.v2.port.Port(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe1',
+            'name': 'test_port',
+            'admin_state_up': True,
+            'binding_host_id': '3',
+            'binding_profile': {'4': 4},
+            'binding_vif_details': {'5': 5},
+            'binding_vif_type': '6',
+            'binding_vnic_type': '7',
+            'created_at': '2016-03-09T12:14:57.233772',
+            'data_plane_status': '32',
+            'description': 'port_description',
+            'device_id': '9',
+            'device_owner': '10',
+            'dns_assignment': [{'11': 11}],
+            'dns_domain': 'a11',
+            'dns_name': '12',
+            'extra_dhcp_opts': [{'13': 13}],
+            'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
+            'allowed_address_pairs': [
+                {
+                    'ip_address': '10.0.0.3'
+                },
+                {
+                    'ip_address': '10.0.0.4'
+                }
+            ],
+            'mac_address': '00-14-22-01-23-45',
+            'network_id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
+            'port_security_enabled': True,
+            'qos_policy_id': '21',
+            'revision_number': 22,
+            'security_groups': ['23'],
+            'status': '25',
+            'tenant_id': '26',
+            'updated_at': '2016-07-09T12:14:57.233772',
+        })
+
+        updated_port_instance = openstack.network.v2.port.Port(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe1',
+            'name': 'test_port',
+            'admin_state_up': True,
+            'binding_host_id': '3',
+            'binding_profile': {'4': 4},
+            'binding_vif_details': {'5': 5},
+            'binding_vif_type': '6',
+            'binding_vnic_type': '7',
+            'created_at': '2016-03-09T12:14:57.233772',
+            'data_plane_status': '32',
+            'description': 'port_description',
+            'device_id': '9',
+            'device_owner': '10',
+            'dns_assignment': [{'11': 11}],
+            'dns_domain': 'a11',
+            'dns_name': '12',
+            'extra_dhcp_opts': [{'13': 13}],
+            'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
+            'allowed_address_pairs': [
+                {
+                    'ip_address': '10.0.0.3'
+                },
+                {
+                    'ip_address': '10.0.0.4'
+                },
+                {
+                    'ip_address': '10.0.0.5'
+                },
+                {
+                    'ip_address': '10.0.0.6'
+                }
+            ],
+            'mac_address': '00-14-22-01-23-45',
+            'network_id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
+            'port_security_enabled': True,
+            'qos_policy_id': '21',
+            'revision_number': 22,
+            'security_groups': ['23'],
+            'status': '25',
+            'tenant_id': '26',
+            'updated_at': '2016-07-09T12:14:57.233772',
+        })
+
+        # Mock get port response
+        mock_connection().network.get_port = \
+            mock.MagicMock(return_value=port_instance)
+
+        # Mock update port response
+        mock_connection().network.update_port = \
+            mock.MagicMock(return_value=updated_port_instance)
+
+        # Call create port
+        port.create()
+
+        for attr in [RESOURCE_ID,
+                     OPENSTACK_NAME_PROPERTY,
+                     OPENSTACK_TYPE_PROPERTY,
+                     'fixed_ips',
+                     'mac_address',
+                     'allowed_address_pairs']:
+            self.assertIn(attr, self._ctx.instance.runtime_properties)
+
+    def test_delete_external_port(self, mock_connection):
+        # Prepare relationship data which is connected to external port
+        # resource
+        rel_specs = [
+            {
+                'node': {
+                    'id': 'network-1',
+                    'properties': {
+                        'client_config': self.client_config,
+                        'resource_config': {
+                            'name': 'test-network',
+                        }
+                    }
+                },
+                'instance': {
+                    'id': 'network-1-efrgsd',
+                    'runtime_properties': {
+                        RESOURCE_ID: 'a95b5509-c122-4c2f-823e-884bb559afe4',
+                        OPENSTACK_TYPE_PROPERTY: NETWORK_OPENSTACK_TYPE,
+                        OPENSTACK_NAME_PROPERTY: 'test-network'
+                    }
+                },
+                'type': NETWORK_NODE_TYPE,
+            },
+        ]
+
+        port_rels = self.get_mock_relationship_ctx_for_node(rel_specs)
+
+        properties = dict()
+        # Enable external resource
+        properties['use_external_resource'] = True
+
+        # Add node properties config to this dict
+        properties.update(self.node_properties)
+        # Reset resource config since we are going to use external resource
+        # and do not care about the resource config data
+        properties['resource_config'] = {}
+        # Set resource id so that we can lookup the external resource
+        properties['resource_config']['id'] = \
+            'a95b5509-c122-4c2f-823e-884bb559afe1'
+
+        # Set allowed address resource pairs
+        properties['resource_config']['allowed_address_pairs'] = [
+            {
+                'ip_address': '10.0.0.5'
+            },
+
+            {
+                'ip_address': '10.0.0.6'
+            }
+        ]
+
+        self._prepare_context_for_operation(
+            test_name='PortTestCase',
+            ctx_operation_name='cloudify.interfaces.lifecycle.delete',
+            test_properties=properties,
+            test_relationships=port_rels,
+            test_runtime_properties={
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe1'
+            })
+
+        port_instance = openstack.network.v2.port.Port(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe1',
+            'name': 'test_port',
+            'admin_state_up': True,
+            'binding_host_id': '3',
+            'binding_profile': {'4': 4},
+            'binding_vif_details': {'5': 5},
+            'binding_vif_type': '6',
+            'binding_vnic_type': '7',
+            'created_at': '2016-03-09T12:14:57.233772',
+            'data_plane_status': '32',
+            'description': 'port_description',
+            'device_id': '9',
+            'device_owner': '10',
+            'dns_assignment': [{'11': 11}],
+            'dns_domain': 'a11',
+            'dns_name': '12',
+            'extra_dhcp_opts': [{'13': 13}],
+            'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
+            'allowed_address_pairs': [
+                {
+                    'ip_address': '10.0.0.3'
+                },
+                {
+                    'ip_address': '10.0.0.4'
+                },
+                {
+                    'ip_address': '10.0.0.5'
+                },
+                {
+                    'ip_address': '10.0.0.6'
+                }
+            ],
+            'mac_address': '00-14-22-01-23-45',
+            'network_id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
+            'port_security_enabled': True,
+            'qos_policy_id': '21',
+            'revision_number': 22,
+            'security_groups': ['23'],
+            'status': '25',
+            'tenant_id': '26',
+            'updated_at': '2016-07-09T12:14:57.233772',
+        })
+
+        updated_port_instance = openstack.network.v2.port.Port(**{
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe1',
+            'name': 'test_port',
+            'admin_state_up': True,
+            'binding_host_id': '3',
+            'binding_profile': {'4': 4},
+            'binding_vif_details': {'5': 5},
+            'binding_vif_type': '6',
+            'binding_vnic_type': '7',
+            'created_at': '2016-03-09T12:14:57.233772',
+            'data_plane_status': '32',
+            'description': 'port_description',
+            'device_id': '9',
+            'device_owner': '10',
+            'dns_assignment': [{'11': 11}],
+            'dns_domain': 'a11',
+            'dns_name': '12',
+            'extra_dhcp_opts': [{'13': 13}],
+            'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
+            'allowed_address_pairs': [
+                {
+                    'ip_address': '10.0.0.3'
+                },
+                {
+                    'ip_address': '10.0.0.4'
+                }
+            ],
+            'mac_address': '00-14-22-01-23-45',
+            'network_id': 'a95b5509-c122-4c2f-823e-884bb559afe4',
+            'port_security_enabled': True,
+            'qos_policy_id': '21',
+            'revision_number': 22,
+            'security_groups': ['23'],
+            'status': '25',
+            'tenant_id': '26',
+            'updated_at': '2016-07-09T12:14:57.233772',
+        })
+
+        # Mock get port response
+        mock_connection().network.get_port = \
+            mock.MagicMock(return_value=port_instance)
+
+        # Mock update port response
+        mock_connection().network.update_port = \
+            mock.MagicMock(return_value=updated_port_instance)
+
+        # Call delete port
+        port.delete()
+
+        for attr in [RESOURCE_ID,
+                     OPENSTACK_NAME_PROPERTY,
+                     OPENSTACK_TYPE_PROPERTY,
+                     'fixed_ips',
+                     'mac_address',
+                     'allowed_address_pairs']:
+            self.assertNotIn(attr, self._ctx.instance.runtime_properties)
 
     def test_list_ports(self, mock_connection):
         # Prepare the context for list ports operation
@@ -319,7 +674,15 @@ class PortTestCase(OpenStackTestBase):
                 'dns_name': '12',
                 'extra_dhcp_opts': [{'13': 13}],
                 'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
-                'allowed_address_pairs': ['10.0.0.3', '10.0.0.4'],
+                'allowed_address_pairs':
+                    [
+                        {
+                            'ip_address': '10.0.0.3'
+                        },
+                        {
+                            'ip_address': '10.0.0.4'
+                        }
+                    ],
                 'mac_address': '00-14-22-01-23-45',
                 'network_id': '18',
                 'port_security_enabled': True,
@@ -349,7 +712,15 @@ class PortTestCase(OpenStackTestBase):
                 'dns_name': '12',
                 'extra_dhcp_opts': [{'13': 13}],
                 'fixed_ips': [{'10.0.0.3': '10.0.0.4'}],
-                'allowed_address_pairs': ['10.0.0.6', '10.0.0.7'],
+                'allowed_address_pairs':
+                    [
+                        {
+                            'ip_address': '10.0.0.3'
+                        },
+                        {
+                            'ip_address': '10.0.0.4'
+                        }
+                    ],
                 'mac_address': '00-41-23-23-23-24',
                 'network_id': '18',
                 'port_security_enabled': True,
@@ -404,7 +775,15 @@ class PortTestCase(OpenStackTestBase):
                 'dns_name': '12',
                 'extra_dhcp_opts': [{'13': 13}],
                 'fixed_ips': [{'10.0.0.1': '10.0.0.2'}],
-                'allowed_address_pairs': ['10.0.0.3', '10.0.0.4'],
+                'allowed_address_pairs':
+                    [
+                        {
+                            'ip_address': '10.0.0.3'
+                        },
+                        {
+                            'ip_address': '10.0.0.4'
+                        }
+                    ],
                 'mac_address': '00-14-22-01-23-45',
                 'network_id': '18',
                 'port_security_enabled': True,
@@ -434,7 +813,15 @@ class PortTestCase(OpenStackTestBase):
                 'dns_name': '12',
                 'extra_dhcp_opts': [{'13': 13}],
                 'fixed_ips': [{'10.0.0.3': '10.0.0.4'}],
-                'allowed_address_pairs': ['10.0.0.6', '10.0.0.7'],
+                'allowed_address_pairs':
+                    [
+                        {
+                            'ip_address': '10.0.0.3'
+                        },
+                        {
+                            'ip_address': '10.0.0.4'
+                        }
+                    ],
                 'mac_address': '00-41-23-23-23-24',
                 'network_id': '18',
                 'port_security_enabled': True,

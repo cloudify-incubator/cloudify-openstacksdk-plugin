@@ -96,6 +96,7 @@ IMAGE_NODE_TYPE = 'cloudify.nodes.openstack.Image'
 NETWORK_NODE_TYPE = 'cloudify.nodes.openstack.Network'
 PORT_NODE_TYPE = 'cloudify.nodes.openstack.Port'
 SUBNET_NODE_TYPE = 'cloudify.nodes.openstack.Subnet'
+VOLUME_NODE_TYPE = 'cloudify.nodes.openstack.Volume'
 SECURITY_GROUP_NODE_TYPE = 'cloudify.nodes.openstack.SecurityGroup'
 
 # Cloudify relationship types

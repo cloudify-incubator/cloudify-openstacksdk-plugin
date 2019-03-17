@@ -30,6 +30,26 @@ from cloudify.mocks import (
 )
 
 
+class CustomMockNodeContext(MockNodeContext):
+    def __init__(self,
+                 id=None,
+                 properties=None,
+                 type=None,
+                 type_hierarchy=['cloudify.nodes.Root']):
+        super(CustomMockNodeContext, self).__init__(id=id,
+                                                    properties=properties)
+        self._type = type
+        self._type_hierarchy = type_hierarchy
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def type_hierarchy(self):
+        return self._type_hierarchy
+
+
 class OpenStackTestBase(unittest.TestCase):
 
     def setUp(self):
@@ -178,7 +198,16 @@ class OpenStackTestBase(unittest.TestCase):
                 node_id, uuid.uuid4().hex))
             if 'properties' not in node:
                 node['properties'] = {}
-            node_ctx = MockNodeContext(id=node_id, **node)
+
+            mock_data = {
+                'id': node_id,
+                'properties': node['properties'],
+            }
+
+            if rel_spec.get('type_hierarchy'):
+                mock_data['type_hierarchy'] = rel_spec['type_hierarchy']
+
+            node_ctx = CustomMockNodeContext(**mock_data)
             instance_ctx = MockNodeInstanceContext(id=instance_id, **instance)
 
             rel_subject_ctx = MockRelationshipSubjectContext(
