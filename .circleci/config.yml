@@ -29,3 +29,13 @@ workflows:
   tests:
     jobs:
       - unittests
+  nightly:
+    triggers:
+    - schedule:
+        cron: "0 0 * * *"
+        filters:
+          branches:
+            only:
+              - dev
+    jobs:
+      - unittests

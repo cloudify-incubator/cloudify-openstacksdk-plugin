@@ -1,5 +1,5 @@
 ########
-# Copyright (c) 2018 GigaSpaces Technologies Ltd. All rights reserved
+# Copyright (c) 2018 Cloudify Platform Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,16 @@
 
 
 from setuptools import setup
+from setuptools import find_packages
 
 
 setup(
     name='cloudify-openstacksdk-plugin',
-    version='1.0.0',
+    version='3.0.0',
     author='Cloudify',
     author_email='info@cloudify.co',
     license='LICENSE',
     zip_safe=False,
-    packages=['openstacksdk_plugin', 'openstack_sdk'],
-    install_requires=['cloudify-plugins-common>=4.0', 'openstacksdk'],
+    packages=find_packages(exclude=['tests*']),
+    install_requires=['cloudify-common', 'openstacksdk'],
     test_requires=['mock', 'requests-mock'])

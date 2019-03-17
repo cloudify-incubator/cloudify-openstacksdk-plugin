@@ -43,6 +43,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+cover/
 *.cover
 .hypothesis/
 .pytest_cache/
@@ -103,3 +104,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 .idea/*
+
+.DS_Store
+*.wgn
