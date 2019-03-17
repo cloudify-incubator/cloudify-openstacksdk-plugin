@@ -2,9 +2,9 @@ plugins:
 
   openstacksdk:
     executor: central_deployment_agent
-    source: https://github.com/cloudify-incubator/cloudify-openstacksdk-plugin/archive/dev.zip
+    source: https://github.com/cloudify-incubator/cloudify-openstacksdk-plugin/archive/3.0.0.zip
     package_name: cloudify-openstacksdk-plugin
-    package_version: '1.0.0'
+    package_version: '3.0.0'
 
 dsl_definitions:
 
