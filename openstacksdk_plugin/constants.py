@@ -74,7 +74,7 @@ NETWORK_OPENSTACK_TYPE = 'network'
 SUBNET_OPENSTACK_TYPE = 'subnet'
 ROUTER_OPENSTACK_TYPE = 'router'
 PORT_OPENSTACK_TYPE = 'port'
-FLOATING_IP_OPENSTACK_TYPE = 'floatingip'
+FLOATING_IP_OPENSTACK_TYPE = 'ip'
 SECURITY_GROUP_OPENSTACK_TYPE = 'security_group'
 SECURITY_GROUP_RULE_OPENSTACK_TYPE = 'security_group_rule'
 RBAC_POLICY_OPENSTACK_TYPE = 'rbac_policy'
@@ -82,6 +82,7 @@ QOS_POLICY_OPENSTACK_TYPE = 'policy'
 VOLUME_OPENSTACK_TYPE = 'volume'
 VOLUME_BACKUP_OPENSTACK_TYPE = 'backup'
 VOLUME_SNAPSHOT_OPENSTACK_TYPE = 'snapshot'
+VOLUME_TYPE_OPENSTACK_TYPE = 'volume_type'
 
 # Openstack Image status
 IMAGE_UPLOADING = 'image_uploading'
@@ -91,6 +92,12 @@ IMAGE_STATUS_ACTIVE = 'active'
 # Cloudify node types
 SERVER_GROUP_NODE_TYPE = 'cloudify.nodes.openstack.ServerGroup'
 KEYPAIR_NODE_TYPE = 'cloudify.nodes.openstack.KeyPair'
+IMAGE_NODE_TYPE = 'cloudify.nodes.openstack.Image'
+NETWORK_NODE_TYPE = 'cloudify.nodes.openstack.Network'
+PORT_NODE_TYPE = 'cloudify.nodes.openstack.Port'
+SUBNET_NODE_TYPE = 'cloudify.nodes.openstack.Subnet'
+VOLUME_NODE_TYPE = 'cloudify.nodes.openstack.Volume'
+SECURITY_GROUP_NODE_TYPE = 'cloudify.nodes.openstack.SecurityGroup'
 
 # Cloudify relationship types
 RBAC_POLICY_RELATIONSHIP_TYPE = \

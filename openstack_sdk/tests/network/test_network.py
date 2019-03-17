@@ -36,7 +36,7 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
 
     def test_get_network(self):
         net = openstack.network.v2.network.Network(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_network',
             'admin_state_up': True,
             'availability_zone_hints': ['1', '2'],
@@ -65,18 +65,19 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
             'vlan_transparent': False,
 
         })
-        self.network_instance.resource_id = '1'
+        self.network_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_network = mock.MagicMock(return_value=net)
 
         response = self.network_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_network')
         self.assertEqual(response.is_router_external, True)
 
     def test_list_networks(self):
         nets = [
             openstack.network.v2.network.Network(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_network_1',
                 'description': 'test_description_1',
                 'admin_state_up': True,
@@ -106,7 +107,7 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
 
             }),
             openstack.network.v2.network.Network(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_network_2',
                 'description': 'test_description_2',
                 'admin_state_up': True,
@@ -143,6 +144,7 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
 
     def test_create_network(self):
         net = {
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_network',
             'description': 'test_description',
             'admin_state_up': True,
@@ -161,7 +163,7 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
 
     def test_update_network(self):
         old_network = openstack.network.v2.network.Network(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_network',
             'description': 'test_description',
             'admin_state_up': True,
@@ -199,7 +201,7 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
         }
 
         new_network = openstack.network.v2.network.Network(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_network_updated',
             'description': 'test_description_updated',
             'admin_state_up': False,
@@ -229,7 +231,8 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.network_instance.resource_id = '1'
+        self.network_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_network = mock.MagicMock(return_value=old_network)
         self.fake_client.update_network = \
             mock.MagicMock(return_value=new_network)
@@ -243,7 +246,7 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_network(self):
         net = openstack.network.v2.network.Network(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_network',
             'description': 'test_description',
             'admin_state_up': True,
@@ -273,7 +276,8 @@ class NetworkTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.network_instance.resource_id = '1'
+        self.network_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_network = mock.MagicMock(return_value=net)
         self.fake_client.delete_network = mock.MagicMock(return_value=None)
 

@@ -39,7 +39,7 @@ class ServerGroupTestCase(base.OpenStackSDKTestBase):
 
     def test_get_server_group(self):
         server_group = openstack.compute.v2.server_group.ServerGroup(**{
-            'id': '1',
+            'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             'name': 'test_server_group',
             'members': ['server1', 'server2'],
             'metadata': {'k': 'v'},
@@ -48,25 +48,25 @@ class ServerGroupTestCase(base.OpenStackSDKTestBase):
         })
 
         self.server_group_instance.name = 'test_server_group'
-        self.server_group_instance.id = '1'
+        self.server_group_instance.id = 'a34b5509-d122-4d2f-823e-884bb559afe8'
         self.fake_client.get_server_group =\
             mock.MagicMock(return_value=server_group)
 
         response = self.server_group_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a34b5509-d122-4d2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_server_group')
 
     def test_list_server_groups(self):
         server_group_list = [
             openstack.compute.v2.server_group.ServerGroup(**{
-                'id': '1',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
                 'name': 'test_server_group',
                 'members': ['server1', 'server2'],
                 'metadata': {'k': 'v'},
                 'policies': ['anti-affinity'],
             }),
             openstack.compute.v2.server_group.ServerGroup(**{
-                'id': '1',
+                'id': 'a34b5509-d122-4d2f-823e-884bb559afe7',
                 'name': 'test_server_group',
                 'members': ['server2', 'server3'],
                 'metadata': {'k': 'v'},
@@ -86,7 +86,7 @@ class ServerGroupTestCase(base.OpenStackSDKTestBase):
         }
 
         server_group = {
-            'id': '1',
+            'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             'name': 'test_server_group',
             'members': ['server1', 'server2'],
             'metadata': {'k': 'v'},
@@ -103,7 +103,7 @@ class ServerGroupTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_server_group(self):
         server_group = openstack.compute.v2.server_group.ServerGroup(**{
-            'id': '1',
+            'id': 'a34b5509-d122-4d2f-823e-884bb559afe8',
             'name': 'test_server_group',
             'members': ['server1', 'server2'],
             'metadata': {'k': 'v'},
@@ -111,7 +111,8 @@ class ServerGroupTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.server_group_instance.resource_id = '1'
+        self.server_group_instance.resource_id = \
+            'a34b5509-d122-4d2f-823e-884bb559afe8'
 
         self.fake_client.get_server_group = \
             mock.MagicMock(return_value=server_group)

@@ -40,7 +40,6 @@ from openstacksdk_plugin.constants import (RESOURCE_ID,
                                            SERVER_STATUS_HARD_REBOOT,
                                            SERVER_STATUS_UNKNOWN,
                                            SERVER_STATUS_ERROR,
-                                           SERVER_TASK_CREATE,
                                            SERVER_TASK_DELETE,
                                            SERVER_TASK_STOP,
                                            SERVER_TASK_START,
@@ -168,8 +167,8 @@ def _set_server_ips_runtime_properties(server):
     ipv4_addresses = []
     ipv6_addresses = []
 
-    for network, addresses in addresses.iteritems():
-        for address in addresses:
+    for network, address_object in addresses.iteritems():
+        for address in address_object:
             # ip config
             ipv4 = dict()
             ipv4['addr'] = address['addr']
@@ -220,7 +219,7 @@ def _set_server_ips_runtime_properties(server):
 
     # Check to see if "use_public_ip" is set or not in order to update the
     # "ip" to use the public address
-    if ctx.node.properties['use_public_ip']:
+    if ctx.node.properties.get('use_public_ip'):
         pip = ctx.instance.runtime_properties.get('public_ip_address')
         if pip:
             ctx.instance.runtime_properties['ip'] = pip
@@ -990,36 +989,32 @@ def create(openstack_resource):
     Create openstack server instance
     :param openstack_resource: instance of openstack server resource
     """
-    if SERVER_TASK_CREATE not in ctx.instance.runtime_properties:
-        blueprint_user_data = openstack_resource.config.get('user_data')
-        user_data = handle_userdata(blueprint_user_data)
+    blueprint_user_data = openstack_resource.config.get('user_data')
+    user_data = handle_userdata(blueprint_user_data)
 
-        # Handle user data
-        if user_data:
-            openstack_resource.config['user_data'] = user_data
+    # Handle user data
+    if user_data:
+        openstack_resource.config['user_data'] = user_data
 
-        # Update server config by depending on relationships
-        _update_server_config(openstack_resource.config)
+    # Update server config by depending on relationships
+    _update_server_config(openstack_resource.config)
 
-        # Handle server group
-        _handle_server_group(openstack_resource)
+    # Handle server group
+    _handle_server_group(openstack_resource)
 
-        # Create resource
-        created_resource = openstack_resource.create()
+    # Create resource
+    created_resource = openstack_resource.create()
 
-        # Set the "id" as a runtime property for the created server
-        ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
+    # Set the "id" as a runtime property for the created server
+    ctx.instance.runtime_properties[RESOURCE_ID] = created_resource.id
 
-        # Update the resource_id with the new "id" returned from API
-        openstack_resource.resource_id = created_resource.id
+    # Update the resource_id with the new "id" returned from API
+    openstack_resource.resource_id = created_resource.id
 
-        # Assign runtime properties for server
-        assign_resource_payload_as_runtime_properties(ctx,
-                                                      created_resource,
-                                                      SERVER_OPENSTACK_TYPE)
-    else:
-        resource_id = ctx.instance.runtime_properties[RESOURCE_ID]
-        openstack_resource.resource_id = resource_id
+    # Assign runtime properties for server
+    assign_resource_payload_as_runtime_properties(ctx,
+                                                  created_resource,
+                                                  SERVER_OPENSTACK_TYPE)
 
 
 @with_openstack_resource(OpenstackServer)
@@ -1043,7 +1038,6 @@ def configure(openstack_resource):
             'Server {0} cannot be started, '
             'because it is on error state'.format(server.id))
     else:
-        ctx.instance.runtime_properties[SERVER_TASK_CREATE] = True
         raise OperationRetry(
             message='Waiting for server to be in {0} state but is in {1} '
                     'state. Retrying...'.format(SERVER_STATUS_ACTIVE, status))
@@ -1301,7 +1295,8 @@ def snapshot_delete(openstack_resource, **kwargs):
                      SERVER_TASK_STOP,
                      SERVER_TASK_START]:
 
-            del ctx.instance.runtime_properties[attr]
+            if attr in ctx.instance.runtime_properties:
+                del ctx.instance.runtime_properties[attr]
 
 
 @with_openstack_resource(OpenstackServer)

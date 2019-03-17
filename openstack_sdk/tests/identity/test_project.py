@@ -36,7 +36,7 @@ class UserTestCase(base.OpenStackSDKTestBase):
 
     def test_get_project(self):
         project = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -46,18 +46,19 @@ class UserTestCase(base.OpenStackSDKTestBase):
             'parent_id': 'test_parent_id'
 
         })
-        self.project_instance.resource_id = '1'
+        self.project_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_project = mock.MagicMock(return_value=project)
 
         response = self.project_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_project')
         self.assertEqual(response.domain_id, 'test_domain_id')
 
     def test_list_projects(self):
         projects = [
             openstack.identity.v3.project.Project(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_project_1',
                 'description': 'Testing Project 1',
                 'domain_id': 'test_domain_id',
@@ -67,7 +68,7 @@ class UserTestCase(base.OpenStackSDKTestBase):
                 'parent_id': 'test_parent_id'
             }),
             openstack.identity.v3.project.Project(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_project_1',
                 'description': 'Testing Project 1',
                 'domain_id': 'test_domain_id',
@@ -103,7 +104,7 @@ class UserTestCase(base.OpenStackSDKTestBase):
 
     def test_update_project(self):
         old_project = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -123,7 +124,7 @@ class UserTestCase(base.OpenStackSDKTestBase):
         }
 
         new_project = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project_updated',
             'description': 'Testing Project 1',
             'domain_id': 'test_updated_domain_id',
@@ -134,7 +135,8 @@ class UserTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.project_instance.resource_id = '1'
+        self.project_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_project = mock.MagicMock(return_value=old_project)
         self.fake_client.update_project =\
             mock.MagicMock(return_value=new_project)
@@ -147,7 +149,7 @@ class UserTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_project(self):
         project = openstack.identity.v3.project.Project(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_project',
             'description': 'Testing Project',
             'domain_id': 'test_domain_id',
@@ -157,7 +159,8 @@ class UserTestCase(base.OpenStackSDKTestBase):
             'parent_id': 'test_parent_id'
         })
 
-        self.project_instance.resource_id = '1'
+        self.project_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_project = mock.MagicMock(return_value=project)
         self.fake_client.delete_project = mock.MagicMock(return_value=None)
 

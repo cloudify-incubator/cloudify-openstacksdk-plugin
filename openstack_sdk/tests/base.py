@@ -49,6 +49,7 @@ class OpenStackSDKTestBase(unittest.TestCase):
             'volume': self._fake_block_storage_volume,
             'volume_attachment': self._fake_compute_volume_attachment,
             'volume_type': self._fake_block_storage_type,
+            'backup': self._fake_block_storage_backup,
             'snapshot': self._fake_block_storage_snapshot,
             'user': self._fake_identity_user,
             'project': self._fake_identity_project,
@@ -78,6 +79,32 @@ class OpenStackSDKTestBase(unittest.TestCase):
         server_conn.get_server = self._gen_openstack_sdk_error()
         server_conn.create_server = self._gen_openstack_sdk_error()
         server_conn.delete_server = self._gen_openstack_sdk_error()
+        server_conn.reboot_server = self._gen_openstack_sdk_error()
+        server_conn.resume_server = self._gen_openstack_sdk_error()
+        server_conn.suspend_server = self._gen_openstack_sdk_error()
+        server_conn.backup_server = self._gen_openstack_sdk_error()
+        server_conn.rebuild_server = self._gen_openstack_sdk_error()
+        server_conn.create_server_image = self._gen_openstack_sdk_error()
+        server_conn.update_server = self._gen_openstack_sdk_error()
+        server_conn.start_server = self._gen_openstack_sdk_error()
+        server_conn.stop_server = self._gen_openstack_sdk_error()
+        server_conn.get_server_password = self._gen_openstack_sdk_error()
+        server_conn.volume_attachments = self._gen_openstack_sdk_error()
+        server_conn.get_volume_attachment = self._gen_openstack_sdk_error()
+        server_conn.create_volume_attachment = self._gen_openstack_sdk_error()
+        server_conn.delete_volume_attachment = self._gen_openstack_sdk_error()
+        server_conn.create_server_interface = self._gen_openstack_sdk_error()
+        server_conn.delete_server_interface = self._gen_openstack_sdk_error()
+        server_conn.get_server_interface = self._gen_openstack_sdk_error()
+        server_conn.server_interfaces = self._gen_openstack_sdk_error()
+        server_conn.add_security_group_to_server = \
+            self._gen_openstack_sdk_error()
+        server_conn.remove_security_group_from_server = \
+            self._gen_openstack_sdk_error()
+        server_conn.add_floating_ip_to_server = \
+            self._gen_openstack_sdk_error()
+        server_conn.remove_floating_ip_from_server = \
+            self._gen_openstack_sdk_error()
 
         self.connection.compute = server_conn
         return self.connection.compute
@@ -283,6 +310,16 @@ class OpenStackSDKTestBase(unittest.TestCase):
         snapshot.create_snapshot = self._gen_openstack_sdk_error()
         snapshot.delete_snapshot = self._gen_openstack_sdk_error()
         self.connection.block_storage = snapshot
+        return self.connection.block_storage
+
+    def _fake_block_storage_backup(self):
+        backup = mock.MagicMock()
+        backup.backups = self._gen_openstack_sdk_error()
+        backup.get_backup = self._gen_openstack_sdk_error()
+        backup.create_backup = self._gen_openstack_sdk_error()
+        backup.delete_backup = self._gen_openstack_sdk_error()
+        backup.restore_backup = self._gen_openstack_sdk_error()
+        self.connection.block_storage = backup
         return self.connection.block_storage
 
     def _fake_identity_user(self):

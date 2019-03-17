@@ -77,7 +77,7 @@ def _validate_users(client_config, users):
     """
     This method will validate if the users are already exists before doing
     any role assignment. Morever, it will check if the roles also exist or not
-    :param dict users: List of users (dict) that contains user names and
+    :param list users: List of users (dict) that contains user names and
     roles associated
     :param client_config: Openstack configuration in order to connect to
     openstack

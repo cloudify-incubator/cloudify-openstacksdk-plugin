@@ -139,9 +139,8 @@ def _update_external_port(openstack_resource):
                 ''.format(common_ips, external_port.id))
 
         # Update port for allowed paris
-        openstack_resource.update({'allowed_address_pairs':  addresses_to_add})
-        # Get the latest version of port resource
-        updated_port = openstack_resource.get()
+        updated_port = openstack_resource.update(
+            {'allowed_address_pairs':  addresses_to_add})
         # Update runtime properties
         update_runtime_properties(
             {
@@ -162,6 +161,49 @@ def _update_external_port(openstack_resource):
             raise NonRecoverableError(
                 'Expected external resources port {0} and network {1} '
                 'to be connected'.format(port.id, rel_network_id))
+
+
+def _clean_addresses_from_external_port(openstack_resource):
+    """
+    This method will clean all updated addresses added to the external port
+    while the port node created at install workflow
+    :param openstack_resource:
+    """
+    # Get the external port using the resource id provided via port node
+    external_port = openstack_resource.get()
+    # Check if the current port node has allowed_address_pairs as part of
+    # resource_config
+    addresses_to_remove = openstack_resource.config.get(
+        'allowed_address_pairs')
+
+    if addresses_to_remove:
+        remote_addresses = external_port.allowed_address_pairs or []
+        # Get the remote ips from the each pair
+        remote_ips = \
+            [
+                remote_address['ip_address']
+                for remote_address
+                in remote_addresses if remote_address.get('ip_address')
+            ]
+
+        # Get the ips need to be removed to the external port
+        ips_to_remove = \
+            [
+                address_to_remove['ip_address']
+                for address_to_remove
+                in addresses_to_remove if address_to_remove.get('ip_address')
+            ]
+
+        # Check if there are a common ips between old ips and the one we
+        # should remove via node
+        diff_ips = set(remote_ips) - set(ips_to_remove)
+        diff_ips = list(diff_ips) if diff_ips else []
+        updated_pairs = []
+        for ip_address in diff_ips:
+            updated_pairs.append({'ip_address': ip_address})
+
+        # Update port for allowed paris
+        openstack_resource.update({'allowed_address_pairs':  updated_pairs})
 
 
 @with_openstack_resource(
@@ -187,47 +229,6 @@ def create(openstack_resource):
             'allowed_address_pairs': created_resource.allowed_address_pairs,
         }
     )
-
-
-def _clean_addresses_from_external_port(openstack_resource):
-    """
-    This method will clean all updated addresses added to the external port
-    while the port node created at install workflow
-    :param openstack_resource:
-    """
-    # Get the external port using the resource id provided via port node
-    external_port = openstack_resource.get()
-    # Check if the current port node has allowed_address_pairs as part of
-    # resource_config
-    addresses_to_remove = openstack_resource.config.get(
-        'allowed_address_pairs')
-
-    if addresses_to_remove:
-        remote_addresses = external_port.allowed_address_pairs or []
-
-        # Get the remote ips from the each pair
-        remote_ips = \
-            [
-                remote_address['ip_address']
-                for remote_address
-                in remote_addresses if remote_address.get('ip_address')
-            ]
-
-        # Get the ips need to be removed to the external port
-        ips_to_remove = \
-            [
-                address_to_remove['ip_address']
-                for address_to_remove
-                in addresses_to_remove if address_to_remove.get('ip_address')
-            ]
-
-        # Check if there are a common ips between old ips and the one we
-        # should remove via node
-        diff_ips = set(ips_to_remove) - set(remote_ips)
-        updated_pairs = list(diff_ips) if diff_ips else []
-
-        # Update port for allowed paris
-        openstack_resource.update({'allowed_address_pairs':  updated_pairs})
 
 
 @with_openstack_resource(

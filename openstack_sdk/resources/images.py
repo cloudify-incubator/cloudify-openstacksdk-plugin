@@ -56,10 +56,7 @@ class OpenstackImage(OpenstackResource):
         image = self.get()
         self.logger.debug(
             'Attempting to delete this image: {0}'.format(image))
-        result = self.connection.image.delete_image(image)
-        self.logger.debug(
-            'Deleted image with this result: {0}'.format(result))
-        return result
+        self.connection.image.delete_image(image)
 
     def update(self, new_config=None):
         image = self.get()

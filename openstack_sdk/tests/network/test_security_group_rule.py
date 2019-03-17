@@ -40,7 +40,7 @@ class SecurityGroupRuleTestCase(base.OpenStackSDKTestBase):
     def test_get_security_group_rule(self):
         sg_rule =\
             openstack.network.v2.security_group_rule.SecurityGroupRule(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name',
                 'created_at': '0',
                 'description': '1',
@@ -56,18 +56,19 @@ class SecurityGroupRuleTestCase(base.OpenStackSDKTestBase):
                 'tenant_id': '11',
                 'updated_at': '12'
             })
-        self.security_group_rule_instance.resource_id = '1'
+        self.security_group_rule_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_security_group_rule =\
             mock.MagicMock(return_value=sg_rule)
 
         response = self.security_group_rule_instance.get()
-        self.assertEqual(response.id, '1')
+        self.assertEqual(response.id, 'a95b5509-c122-4c2f-823e-884bb559afe8')
         self.assertEqual(response.name, 'test_name')
 
     def test_list_security_group_rules(self):
         sgs = [
             openstack.network.v2.security_group_rule.SecurityGroupRule(**{
-                'id': '1',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name_1',
                 'created_at': '0',
                 'description': '1',
@@ -84,7 +85,7 @@ class SecurityGroupRuleTestCase(base.OpenStackSDKTestBase):
                 'updated_at': '12'
             }),
             openstack.network.v2.security_group_rule.SecurityGroupRule(**{
-                'id': '2',
+                'id': 'a95b5509-c122-4c2f-823e-884bb559afe7',
                 'name': 'test_name_2',
                 'created_at': '0',
                 'description': '1',
@@ -109,6 +110,7 @@ class SecurityGroupRuleTestCase(base.OpenStackSDKTestBase):
 
     def test_create_security_group_rule(self):
         rule = {
+                'id:': 'a95b5509-c122-4c2f-823e-884bb559afe8',
                 'name': 'test_name',
                 'description': 'test_description',
                 'availability_zone_hints': ['1'],
@@ -132,7 +134,7 @@ class SecurityGroupRuleTestCase(base.OpenStackSDKTestBase):
 
     def test_delete_security_group_rule(self):
         sg = openstack.network.v2.security_group_rule.SecurityGroupRule(**{
-            'id': '1',
+            'id': 'a95b5509-c122-4c2f-823e-884bb559afe8',
             'name': 'test_name',
             'description': 'test_description',
             'created_at': '0',
@@ -150,7 +152,8 @@ class SecurityGroupRuleTestCase(base.OpenStackSDKTestBase):
 
         })
 
-        self.security_group_rule_instance.resource_id = '1'
+        self.security_group_rule_instance.resource_id = \
+            'a95b5509-c122-4c2f-823e-884bb559afe8'
         self.fake_client.get_security_group_rule =\
             mock.MagicMock(return_value=sg)
         self.fake_client.delete_security_group_rule = \

@@ -13,11 +13,41 @@
 #    * See the License for the specific language governing permissions and
 #    * limitations under the License.
 
+# Standard imports
 import copy
+import uuid
 import unittest
 
+# Third party imports
 from cloudify.manager import DirtyTrackingDict
-from cloudify.mocks import MockCloudifyContext
+from cloudify.state import current_ctx
+from cloudify.mocks import (
+    MockCloudifyContext,
+    MockNodeContext,
+    MockNodeInstanceContext,
+    MockRelationshipContext,
+    MockRelationshipSubjectContext,
+)
+
+
+class CustomMockNodeContext(MockNodeContext):
+    def __init__(self,
+                 id=None,
+                 properties=None,
+                 type=None,
+                 type_hierarchy=['cloudify.nodes.Root']):
+        super(CustomMockNodeContext, self).__init__(id=id,
+                                                    properties=properties)
+        self._type = type
+        self._type_hierarchy = type_hierarchy
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def type_hierarchy(self):
+        return self._type_hierarchy
 
 
 class OpenStackTestBase(unittest.TestCase):
@@ -26,6 +56,7 @@ class OpenStackTestBase(unittest.TestCase):
         super(OpenStackTestBase, self).setUp()
 
     def tearDown(self):
+        current_ctx.clear()
         super(OpenStackTestBase, self).tearDown()
 
     def _to_DirtyTrackingDict(self, origin):
@@ -62,9 +93,7 @@ class OpenStackTestBase(unittest.TestCase):
 
     @property
     def runtime_properties(self):
-        return {
-            'resource_config': self.resource_config
-        }
+        return {}
 
     def get_mock_ctx(self,
                      test_name,
@@ -72,6 +101,8 @@ class OpenStackTestBase(unittest.TestCase):
                      test_runtime_properties={},
                      test_relationships=None,
                      type_hierarchy=['cloudify.nodes.Root'],
+                     test_source=None,
+                     test_target=None,
                      ctx_operation_name=None):
 
         operation_ctx = {
@@ -88,6 +119,8 @@ class OpenStackTestBase(unittest.TestCase):
             runtime_properties=self._to_DirtyTrackingDict(
                 test_runtime_properties or self.runtime_properties
             ),
+            source=test_source,
+            target=test_target,
             relationships=test_relationships,
             operation=operation_ctx
         )
@@ -96,18 +129,92 @@ class OpenStackTestBase(unittest.TestCase):
 
         return ctx
 
+    def _prepare_context_for_operation(self,
+                                       test_name,
+                                       test_properties={},
+                                       test_runtime_properties={},
+                                       test_relationships=None,
+                                       type_hierarchy=['cloudify.nodes.Root'],
+                                       test_source=None,
+                                       test_target=None,
+                                       ctx_operation_name=None):
+        self._ctx = self.get_mock_ctx(
+            test_name=test_name,
+            test_properties=test_properties,
+            test_runtime_properties=test_runtime_properties,
+            test_relationships=test_relationships,
+            type_hierarchy=type_hierarchy,
+            test_source=test_source,
+            test_target=test_target,
+            ctx_operation_name=ctx_operation_name)
+        current_ctx.set(self._ctx)
+
     def get_mock_relationship_ctx(self,
-                                  deployment_name,
+                                  deployment_name=None,
+                                  node_id=None,
                                   test_properties={},
                                   test_runtime_properties={},
                                   test_source=None,
-                                  test_target=None,
-                                  type_hierarchy=['cloudify.nodes.Root']):
+                                  test_target=None):
 
         ctx = MockCloudifyContext(
+            node_id=node_id,
             deployment_id=deployment_name,
             properties=copy.deepcopy(test_properties),
             source=test_source,
             target=test_target,
             runtime_properties=copy.deepcopy(test_runtime_properties))
         return ctx
+
+    def get_mock_relationship_ctx_for_node(self, rel_specs):
+        """
+        This method will generate list of mock relationship associated with
+        certain node
+        :param rel_specs: Relationships is an ordered collection of
+        relationship specs - dicts with the keys "node" and "instance" used
+        to construct the MockNodeContext and the MockNodeInstanceContext,
+        and optionally a "type" key.
+        Examples: [
+            {},
+            {"node": {"id": 5}},
+            {
+                "type": "some_type",
+                "instance": {
+                    "id": 3,
+                    "runtime_properties":{}
+                }
+            }
+        ]
+        :return list: Return list of "MockRelationshipContext" instances
+        """
+
+        relationships = []
+        for rel_spec in rel_specs:
+            node = rel_spec.get('node', {})
+            node_id = node.pop('id', uuid.uuid4().hex)
+
+            instance = rel_spec.get('instance', {})
+            instance_id = instance.pop('id', '{0}_{1}'.format(
+                node_id, uuid.uuid4().hex))
+            if 'properties' not in node:
+                node['properties'] = {}
+
+            mock_data = {
+                'id': node_id,
+                'properties': node['properties'],
+            }
+
+            if rel_spec.get('type_hierarchy'):
+                mock_data['type_hierarchy'] = rel_spec['type_hierarchy']
+
+            node_ctx = CustomMockNodeContext(**mock_data)
+            instance_ctx = MockNodeInstanceContext(id=instance_id, **instance)
+
+            rel_subject_ctx = MockRelationshipSubjectContext(
+                node=node_ctx, instance=instance_ctx)
+            rel_type = rel_spec.get('type')
+            rel_ctx = MockRelationshipContext(target=rel_subject_ctx,
+                                              type=rel_type)
+            relationships.append(rel_ctx)
+
+        return relationships
